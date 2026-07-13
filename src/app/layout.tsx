@@ -21,6 +21,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <span className="tagline">
               Quality · Value · Momentum · Growth — ranked nightly, explained by AI
             </span>
+            <nav className="nav">
+              <Link href="/">Rankings</Link>
+              <Link href="/dashboard">Dashboard</Link>
+            </nav>
           </div>
         </header>
         {children}

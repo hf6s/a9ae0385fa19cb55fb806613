@@ -6,3 +6,4 @@ node_modules/
 *.tsbuildinfo
 next-env.d.ts
 *.log
+data/scan-status.json

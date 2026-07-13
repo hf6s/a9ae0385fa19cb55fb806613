@@ -22,12 +22,44 @@ import {
   stage1Filter,
   type StockInput,
 } from "../src/lib/scoring";
-import type { Candle, RankedStock, Rankings } from "../src/lib/types";
+import type { Candle, RankedStock, Rankings, ScanStatus } from "../src/lib/types";
 
 loadEnv();
 
 const DATA_DIR = path.join(process.cwd(), "data");
 const HISTORY_DIR = path.join(DATA_DIR, "history");
+const STATUS_PATH = path.join(DATA_DIR, "scan-status.json");
+
+const status: ScanStatus = {
+  state: "running",
+  mode: "sp500",
+  phase: "starting",
+  done: 0,
+  total: 0,
+  startedAt: new Date().toISOString(),
+  phaseStartedAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString(),
+};
+
+function writeStatus(patch: Partial<ScanStatus>): void {
+  Object.assign(status, patch, { updatedAt: new Date().toISOString() });
+  try {
+    fs.mkdirSync(DATA_DIR, { recursive: true });
+    fs.writeFileSync(STATUS_PATH, JSON.stringify(status, null, 2));
+  } catch {
+    /* status is best-effort */
+  }
+}
+
+function startPhase(phase: string, total: number): void {
+  Object.assign(status, {
+    phase,
+    total,
+    done: 0,
+    phaseStartedAt: new Date().toISOString(),
+  });
+  writeStatus({});
+}
 
 const CONSTITUENTS_URL =
   "https://raw.githubusercontent.com/datasets/s-and-p-500-companies/main/data/constituents.csv";
@@ -41,7 +73,8 @@ interface Constituent {
 async function fetchUniverse(): Promise<Constituent[]> {
   // Prefer the full US common-stock universe if `npm run universe` has built it
   const universePath = path.join(DATA_DIR, "universe.json");
-  if (fs.existsSync(universePath)) {
+  const forceSp500 = process.argv.includes("--sp500");
+  if (!forceSp500 && fs.existsSync(universePath)) {
     const u = JSON.parse(fs.readFileSync(universePath, "utf8")) as {
       generatedAt: string;
       tickers: Constituent[];
@@ -49,6 +82,7 @@ async function fetchUniverse(): Promise<Constituent[]> {
     console.log(
       `Using data/universe.json (${u.tickers.length} US common stocks, built ${u.generatedAt.slice(0, 10)}).`,
     );
+    status.mode = "universe";
     return u.tickers;
   }
 
@@ -89,9 +123,11 @@ async function main() {
   const inputs: StockInput[] = [];
   const histories = new Map<string, Candle[]>();
   let done = 0;
+  startPhase("market data", universe.length);
 
   for (const c of universe) {
     done++;
+    writeStatus({ done });
     const label = `[${done}/${universe.length}] ${c.ticker}`;
     try {
       const [quote, profile, metricsRes, history] = await Promise.all([
@@ -183,9 +219,11 @@ async function main() {
 
   // SEC EDGAR pass: Altman Z, Piotroski, accruals, FCF growth, GP/Assets, Debt/EBITDA
   console.log("Fetching SEC EDGAR fundamentals for provisional survivors...");
+  startPhase("SEC EDGAR fundamentals", provisional.length);
   const survivors: StockInput[] = [];
   let edgarOk = 0;
   for (const s of provisional) {
+    writeStatus({ done: status.done + 1 });
     const ed = await edgarFundamentals(s.ticker, s.marketCap * 1_000_000);
     if (ed) {
       edgarOk++;
@@ -210,8 +248,10 @@ async function main() {
 
   // Earnings-surprise + insider-transaction penalty inputs, survivors only
   console.log("Fetching earnings surprises + insider transactions for survivors...");
+  startPhase("penalty inputs", survivors.length);
   const sixMonthsAgo = new Date(Date.now() - 183 * 24 * 3600 * 1000).toISOString().slice(0, 10);
   for (const s of survivors) {
+    writeStatus({ done: status.done + 1 });
     const [earnings, insider] = await Promise.all([
       finnhub.earnings(s.ticker),
       finnhub.insiderTransactions(s.ticker, sixMonthsAgo),
@@ -303,7 +343,16 @@ async function main() {
   }
 }
 
-main().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+main()
+  .then(() => {
+    writeStatus({ state: "done", phase: "complete", finishedAt: new Date().toISOString() });
+  })
+  .catch((err) => {
+    console.error(err);
+    writeStatus({
+      state: "error",
+      error: (err as Error).message,
+      finishedAt: new Date().toISOString(),
+    });
+    process.exit(1);
+  });

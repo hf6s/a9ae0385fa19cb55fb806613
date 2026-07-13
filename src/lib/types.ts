@@ -52,3 +52,16 @@ export interface AnalysisFile {
   model: string;
   analyses: Record<string, StockAnalysis>;
 }
+
+export interface ScanStatus {
+  state: "idle" | "running" | "done" | "error";
+  mode: "sp500" | "universe";
+  phase: string; // "market data" | "edgar" | "penalties" | ...
+  done: number;
+  total: number;
+  startedAt: string;
+  phaseStartedAt: string;
+  updatedAt: string;
+  finishedAt?: string;
+  error?: string;
+}
