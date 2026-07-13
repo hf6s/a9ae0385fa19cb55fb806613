@@ -27,6 +27,8 @@ const CAPS = [
 
 const DEFAULT_HORIZON = "1y";
 
+const scoreClass = (v: number) => (v >= 60 ? "sc-hi" : v >= 40 ? "sc-mid" : "sc-lo");
+
 export default function RankingsExplorer({ stocks }: { stocks: RankedStock[] }) {
   const [horizonKey, setHorizonKey] = useState<string>(DEFAULT_HORIZON);
   const [capKey, setCapKey] = useState<string>("all");
@@ -118,16 +120,24 @@ export default function RankingsExplorer({ stocks }: { stocks: RankedStock[] }) 
                 {s.viewScore.toFixed(1)}
               </td>
               <td style={{ textAlign: "right" }}>
-                <span className="factor-mini">{Math.round(s.scores.quality)}</span>
+                <span className={`factor-mini ${scoreClass(s.scores.quality)}`}>
+                  {Math.round(s.scores.quality)}
+                </span>
               </td>
               <td style={{ textAlign: "right" }}>
-                <span className="factor-mini">{Math.round(s.scores.value)}</span>
+                <span className={`factor-mini ${scoreClass(s.scores.value)}`}>
+                  {Math.round(s.scores.value)}
+                </span>
               </td>
               <td style={{ textAlign: "right" }}>
-                <span className="factor-mini">{Math.round(s.scores.momentum)}</span>
+                <span className={`factor-mini ${scoreClass(s.scores.momentum)}`}>
+                  {Math.round(s.scores.momentum)}
+                </span>
               </td>
               <td style={{ textAlign: "right" }}>
-                <span className="factor-mini">{Math.round(s.scores.growth)}</span>
+                <span className={`factor-mini ${scoreClass(s.scores.growth)}`}>
+                  {Math.round(s.scores.growth)}
+                </span>
               </td>
               <td>
                 {i < 20 ? <span className="badge">Top 20</span> : (

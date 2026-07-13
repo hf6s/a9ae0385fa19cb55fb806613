@@ -1,0 +1,5696 @@
+{
+  "generatedAt": "2026-07-13T18:42:13.346Z",
+  "minCap": 1500,
+  "tickers": [
+    {
+      "ticker": "A",
+      "name": "Agilent Technologies Inc",
+      "sector": "Life Sciences Tools & Services"
+    },
+    {
+      "ticker": "AA",
+      "name": "Alcoa Corp",
+      "sector": "Metals & Mining"
+    },
+    {
+      "ticker": "AADX",
+      "name": "Applied Aerospace & Defense Inc",
+      "sector": "Aerospace & Defense"
+    },
+    {
+      "ticker": "AAMI",
+      "name": "Acadian Asset Management Inc",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "AAP",
+      "name": "Advance Auto Parts Inc",
+      "sector": "Retail"
+    },
+    {
+      "ticker": "AAUC",
+      "name": "Allied Gold Corp",
+      "sector": "Metals & Mining"
+    },
+    {
+      "ticker": "ABBV",
+      "name": "AbbVie Inc",
+      "sector": "Biotechnology"
+    },
+    {
+      "ticker": "ABCB",
+      "name": "Ameris Bancorp",
+      "sector": "Banking"
+    },
+    {
+      "ticker": "ABG",
+      "name": "Asbury Automotive Group Inc",
+      "sector": "Retail"
+    },
+    {
+      "ticker": "ABM",
+      "name": "ABM Industries Inc",
+      "sector": "Commercial Services & Supplies"
+    },
+    {
+      "ticker": "ABT",
+      "name": "Abbott Laboratories",
+      "sector": "Health Care"
+    },
+    {
+      "ticker": "ACA",
+      "name": "Arcosa Inc",
+      "sector": "Construction"
+    },
+    {
+      "ticker": "ACHR",
+      "name": "Archer Aviation Inc",
+      "sector": "Aerospace & Defense"
+    },
+    {
+      "ticker": "ACI",
+      "name": "Albertsons Companies Inc",
+      "sector": "Retail"
+    },
+    {
+      "ticker": "ACM",
+      "name": "AECOM",
+      "sector": "Construction"
+    },
+    {
+      "ticker": "ACN",
+      "name": "Accenture PLC",
+      "sector": "Technology"
+    },
+    {
+      "ticker": "AD",
+      "name": "Array Digital Infrastructure Inc",
+      "sector": "Telecommunication"
+    },
+    {
+      "ticker": "ADM",
+      "name": "Archer-Daniels-Midland Co",
+      "sector": "Food Products"
+    },
+    {
+      "ticker": "ADNT",
+      "name": "Adient PLC",
+      "sector": "Auto Components"
+    },
+    {
+      "ticker": "ADT",
+      "name": "ADT Inc",
+      "sector": "Diversified Consumer Services"
+    },
+    {
+      "ticker": "AEE",
+      "name": "Ameren Corp",
+      "sector": "Utilities"
+    },
+    {
+      "ticker": "AEM",
+      "name": "Agnico Eagle Mines Ltd",
+      "sector": "Metals & Mining"
+    },
+    {
+      "ticker": "AEO",
+      "name": "American Eagle Outfitters Inc",
+      "sector": "Retail"
+    },
+    {
+      "ticker": "AER",
+      "name": "AerCap Holdings NV",
+      "sector": "Trading Companies & Distributors"
+    },
+    {
+      "ticker": "AES",
+      "name": "AES Corp",
+      "sector": "Utilities"
+    },
+    {
+      "ticker": "AESI",
+      "name": "Atlas Energy Solutions Inc",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "AFG",
+      "name": "American Financial Group Inc",
+      "sector": "Insurance"
+    },
+    {
+      "ticker": "AFL",
+      "name": "Aflac Inc",
+      "sector": "Insurance"
+    },
+    {
+      "ticker": "AG",
+      "name": "First Majestic Silver Corp",
+      "sector": "Metals & Mining"
+    },
+    {
+      "ticker": "AGBK",
+      "name": "Primo Brands Corp",
+      "sector": "Beverages"
+    },
+    {
+      "ticker": "AGCO",
+      "name": "AGCO Corp",
+      "sector": "Machinery"
+    },
+    {
+      "ticker": "AGI",
+      "name": "Alamos Gold Inc",
+      "sector": "Metals & Mining"
+    },
+    {
+      "ticker": "AGL",
+      "name": "agilon health inc",
+      "sector": "Health Care"
+    },
+    {
+      "ticker": "AGM",
+      "name": "Federal Agricultural Mortgage Corp",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "AGM.A",
+      "name": "Federal Agricultural Mortgage Corp",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "AGO",
+      "name": "Assured Guaranty Ltd",
+      "sector": "Insurance"
+    },
+    {
+      "ticker": "AGX",
+      "name": "Argan Inc",
+      "sector": "Construction"
+    },
+    {
+      "ticker": "AIG",
+      "name": "American International Group Inc",
+      "sector": "Insurance"
+    },
+    {
+      "ticker": "AIN",
+      "name": "Albany International Corp",
+      "sector": "Machinery"
+    },
+    {
+      "ticker": "AIR",
+      "name": "AAR Corp",
+      "sector": "Aerospace & Defense"
+    },
+    {
+      "ticker": "AIT",
+      "name": "Applied Industrial Technologies Inc",
+      "sector": "Trading Companies & Distributors"
+    },
+    {
+      "ticker": "AIZ",
+      "name": "Assurant Inc",
+      "sector": "Insurance"
+    },
+    {
+      "ticker": "AJG",
+      "name": "Arthur J. Gallagher & Co.",
+      "sector": "Insurance"
+    },
+    {
+      "ticker": "ALB",
+      "name": "Albemarle Corp",
+      "sector": "Chemicals"
+    },
+    {
+      "ticker": "ALC",
+      "name": "Alcon AG",
+      "sector": "Health Care"
+    },
+    {
+      "ticker": "ALG",
+      "name": "Alamo Group Inc",
+      "sector": "Machinery"
+    },
+    {
+      "ticker": "ALH",
+      "name": "Alliance Laundry Holdings Inc",
+      "sector": "Machinery"
+    },
+    {
+      "ticker": "ALK",
+      "name": "Alaska Air Group Inc",
+      "sector": "Airlines"
+    },
+    {
+      "ticker": "ALL",
+      "name": "Allstate Corp",
+      "sector": "Insurance"
+    },
+    {
+      "ticker": "ALLE",
+      "name": "Allegion PLC",
+      "sector": "Building"
+    },
+    {
+      "ticker": "ALLY",
+      "name": "Ally Financial Inc",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "ALSN",
+      "name": "Allison Transmission Holdings Inc",
+      "sector": "Machinery"
+    },
+    {
+      "ticker": "ALV",
+      "name": "Autoliv Inc",
+      "sector": "Auto Components"
+    },
+    {
+      "ticker": "AM",
+      "name": "Antero Midstream Corp",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "AMBP",
+      "name": "Ardagh Metal Packaging SA",
+      "sector": "Packaging"
+    },
+    {
+      "ticker": "AMBQ",
+      "name": "Ambiq Micro Inc",
+      "sector": "Semiconductors"
+    },
+    {
+      "ticker": "AMC",
+      "name": "AMC Entertainment Holdings Inc",
+      "sector": "Media"
+    },
+    {
+      "ticker": "AMCR",
+      "name": "Amcor PLC",
+      "sector": "Packaging"
+    },
+    {
+      "ticker": "AME",
+      "name": "AMETEK Inc",
+      "sector": "Electrical Equipment"
+    },
+    {
+      "ticker": "AMG",
+      "name": "Affiliated Managers Group Inc",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "AMP",
+      "name": "Ameriprise Financial Inc",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "AMPX",
+      "name": "Amprius Technologies Inc",
+      "sector": "Electrical Equipment"
+    },
+    {
+      "ticker": "AMR",
+      "name": "Alpha Metallurgical Resources Inc",
+      "sector": "Metals & Mining"
+    },
+    {
+      "ticker": "AMRZ",
+      "name": "Amrize AG",
+      "sector": "Construction"
+    },
+    {
+      "ticker": "AMTM",
+      "name": "Amentum Holdings Inc",
+      "sector": "Professional Services"
+    },
+    {
+      "ticker": "AN",
+      "name": "AutoNation Inc",
+      "sector": "Retail"
+    },
+    {
+      "ticker": "ANDG",
+      "name": "Andersen Group Inc",
+      "sector": "Professional Services"
+    },
+    {
+      "ticker": "ANET",
+      "name": "Arista Networks Inc",
+      "sector": "Communications"
+    },
+    {
+      "ticker": "ANF",
+      "name": "Abercrombie & Fitch Co",
+      "sector": "Retail"
+    },
+    {
+      "ticker": "AON",
+      "name": "Aon PLC",
+      "sector": "Insurance"
+    },
+    {
+      "ticker": "AOS",
+      "name": "A O Smith Corp",
+      "sector": "Building"
+    },
+    {
+      "ticker": "APAM",
+      "name": "Artisan Partners Asset Management Inc",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "APD",
+      "name": "Air Products and Chemicals Inc",
+      "sector": "Chemicals"
+    },
+    {
+      "ticker": "APG",
+      "name": "APi Group Corp",
+      "sector": "Construction"
+    },
+    {
+      "ticker": "APH",
+      "name": "Amphenol Corp",
+      "sector": "Electrical Equipment"
+    },
+    {
+      "ticker": "APO",
+      "name": "Apollo Global Management Inc",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "APTV",
+      "name": "APTIV PLC",
+      "sector": "Auto Components"
+    },
+    {
+      "ticker": "AQN",
+      "name": "Algonquin Power & Utilities Corp",
+      "sector": "Utilities"
+    },
+    {
+      "ticker": "AR",
+      "name": "Antero Resources Corp",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "ARCO",
+      "name": "Arcos Dorados Holdings Inc",
+      "sector": "Hotels, Restaurants & Leisure"
+    },
+    {
+      "ticker": "ARES",
+      "name": "Ares Management Corp",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "ARIS",
+      "name": "Aris Gold Corp",
+      "sector": "Metals & Mining"
+    },
+    {
+      "ticker": "ARMK",
+      "name": "Aramark",
+      "sector": "Hotels, Restaurants & Leisure"
+    },
+    {
+      "ticker": "AROC",
+      "name": "Archrock Inc",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "ARW",
+      "name": "Arrow Electronics Inc",
+      "sector": "Electrical Equipment"
+    },
+    {
+      "ticker": "ARX",
+      "name": "Accelerant Holdings",
+      "sector": "Insurance"
+    },
+    {
+      "ticker": "AS",
+      "name": "Amer Sports Inc",
+      "sector": "Textiles, Apparel & Luxury Goods"
+    },
+    {
+      "ticker": "ASAN",
+      "name": "Asana Inc",
+      "sector": "Technology"
+    },
+    {
+      "ticker": "ASB",
+      "name": "Associated Banc-Corp",
+      "sector": "Banking"
+    },
+    {
+      "ticker": "ASH",
+      "name": "Ashland Inc",
+      "sector": "Chemicals"
+    },
+    {
+      "ticker": "ATEN",
+      "name": "A10 Networks Inc",
+      "sector": "Technology"
+    },
+    {
+      "ticker": "ATI",
+      "name": "ATI Inc",
+      "sector": "Aerospace & Defense"
+    },
+    {
+      "ticker": "ATKR",
+      "name": "Atkore Inc",
+      "sector": "Electrical Equipment"
+    },
+    {
+      "ticker": "ATMU",
+      "name": "Atmus Filtration Technologies Inc",
+      "sector": "Machinery"
+    },
+    {
+      "ticker": "ATO",
+      "name": "Atmos Energy Corp",
+      "sector": "Utilities"
+    },
+    {
+      "ticker": "ATR",
+      "name": "Aptargroup Inc",
+      "sector": "Packaging"
+    },
+    {
+      "ticker": "ATS",
+      "name": "ATS Corp",
+      "sector": "Machinery"
+    },
+    {
+      "ticker": "AU",
+      "name": "Anglogold Ashanti PLC",
+      "sector": "Metals & Mining"
+    },
+    {
+      "ticker": "AUB",
+      "name": "Atlantic Union Bankshares Corp",
+      "sector": "Banking"
+    },
+    {
+      "ticker": "AVA",
+      "name": "Avista Corp",
+      "sector": "Utilities"
+    },
+    {
+      "ticker": "AVEX",
+      "name": "AEVEX Corp",
+      "sector": "Aerospace & Defense"
+    },
+    {
+      "ticker": "AVNT",
+      "name": "Avient Corp",
+      "sector": "Chemicals"
+    },
+    {
+      "ticker": "AVTR",
+      "name": "Avantor Inc",
+      "sector": "Life Sciences Tools & Services"
+    },
+    {
+      "ticker": "AVY",
+      "name": "Avery Dennison Corp",
+      "sector": "Packaging"
+    },
+    {
+      "ticker": "AWI",
+      "name": "Armstrong World Industries Inc",
+      "sector": "Building"
+    },
+    {
+      "ticker": "AWK",
+      "name": "American Water Works Co Inc",
+      "sector": "Utilities"
+    },
+    {
+      "ticker": "AWR",
+      "name": "American States Water Co",
+      "sector": "Utilities"
+    },
+    {
+      "ticker": "AX",
+      "name": "Axos Financial Inc",
+      "sector": "Banking"
+    },
+    {
+      "ticker": "AXP",
+      "name": "American Express Co",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "AXS",
+      "name": "AXIS Capital Holdings Ltd",
+      "sector": "Insurance"
+    },
+    {
+      "ticker": "AXTA",
+      "name": "Axalta Coating Systems Ltd",
+      "sector": "Chemicals"
+    },
+    {
+      "ticker": "AYI",
+      "name": "Acuity Inc",
+      "sector": "Electrical Equipment"
+    },
+    {
+      "ticker": "AZN",
+      "name": "AstraZeneca PLC",
+      "sector": "Pharmaceuticals"
+    },
+    {
+      "ticker": "AZO",
+      "name": "Autozone Inc",
+      "sector": "Retail"
+    },
+    {
+      "ticker": "AZZ",
+      "name": "AZZ Inc",
+      "sector": "Building"
+    },
+    {
+      "ticker": "B",
+      "name": "Barrick Mining Corp",
+      "sector": "Metals & Mining"
+    },
+    {
+      "ticker": "BA",
+      "name": "Boeing Co",
+      "sector": "Aerospace & Defense"
+    },
+    {
+      "ticker": "BAC",
+      "name": "Bank of America Corp",
+      "sector": "Banking"
+    },
+    {
+      "ticker": "BAH",
+      "name": "Booz Allen Hamilton Holding Corp",
+      "sector": "Professional Services"
+    },
+    {
+      "ticker": "BALL",
+      "name": "Ball Corp",
+      "sector": "Packaging"
+    },
+    {
+      "ticker": "BAM",
+      "name": "BROOKFIELD ASSET MANAGEMENT LTD",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "BANC",
+      "name": "Banc of California Inc",
+      "sector": "Banking"
+    },
+    {
+      "ticker": "BAP",
+      "name": "Credicorp Ltd",
+      "sector": "Banking"
+    },
+    {
+      "ticker": "BAX",
+      "name": "Baxter International Inc",
+      "sector": "Health Care"
+    },
+    {
+      "ticker": "BB",
+      "name": "BlackBerry Ltd",
+      "sector": "Technology"
+    },
+    {
+      "ticker": "BBAI",
+      "name": "BigBear.ai Holdings Inc",
+      "sector": "Technology"
+    },
+    {
+      "ticker": "BBT",
+      "name": "Beacon Financial Corp",
+      "sector": "Banking"
+    },
+    {
+      "ticker": "BBUC",
+      "name": "Brookfield Business Holdings Corp",
+      "sector": "Industrial Conglomerates"
+    },
+    {
+      "ticker": "BBWI",
+      "name": "Bath & Body Works Inc",
+      "sector": "Retail"
+    },
+    {
+      "ticker": "BBY",
+      "name": "Best Buy Co Inc",
+      "sector": "Retail"
+    },
+    {
+      "ticker": "BC",
+      "name": "Brunswick Corp",
+      "sector": "Leisure Products"
+    },
+    {
+      "ticker": "BCC",
+      "name": "Boise Cascade Co",
+      "sector": "Trading Companies & Distributors"
+    },
+    {
+      "ticker": "BCE",
+      "name": "BCE Inc",
+      "sector": "Telecommunication"
+    },
+    {
+      "ticker": "BCO",
+      "name": "Brinks Co",
+      "sector": "Commercial Services & Supplies"
+    },
+    {
+      "ticker": "BDC",
+      "name": "Belden Inc",
+      "sector": "Electrical Equipment"
+    },
+    {
+      "ticker": "BDX",
+      "name": "Becton Dickinson and Co",
+      "sector": "Health Care"
+    },
+    {
+      "ticker": "BE",
+      "name": "Bloom Energy Corp",
+      "sector": "Electrical Equipment"
+    },
+    {
+      "ticker": "BEN",
+      "name": "Franklin Resources Inc",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "BEPC",
+      "name": "Brookfield Renewable Corp",
+      "sector": "Utilities"
+    },
+    {
+      "ticker": "BETA",
+      "name": "BETA Technologies Inc",
+      "sector": "Aerospace & Defense"
+    },
+    {
+      "ticker": "BF.A",
+      "name": "Brown-Forman Corp",
+      "sector": "Beverages"
+    },
+    {
+      "ticker": "BF.B",
+      "name": "Brown-Forman Corp",
+      "sector": "Beverages"
+    },
+    {
+      "ticker": "BFAM",
+      "name": "Bright Horizons Family Solutions Inc",
+      "sector": "Diversified Consumer Services"
+    },
+    {
+      "ticker": "BFH",
+      "name": "Bread Financial Holdings Inc",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "BFLY",
+      "name": "Butterfly Network Inc",
+      "sector": "Health Care"
+    },
+    {
+      "ticker": "BG",
+      "name": "Bunge Global SA",
+      "sector": "Food Products"
+    },
+    {
+      "ticker": "BGSI",
+      "name": "Boyd Group Services Inc",
+      "sector": "Commercial Services & Supplies"
+    },
+    {
+      "ticker": "BHC",
+      "name": "Bausch Health Companies Inc",
+      "sector": "Pharmaceuticals"
+    },
+    {
+      "ticker": "BHE",
+      "name": "Benchmark Electronics Inc",
+      "sector": "Electrical Equipment"
+    },
+    {
+      "ticker": "BHVN",
+      "name": "Biohaven Ltd",
+      "sector": "Biotechnology"
+    },
+    {
+      "ticker": "BILL",
+      "name": "BILL Holdings Inc",
+      "sector": "Technology"
+    },
+    {
+      "ticker": "BIO",
+      "name": "Bio Rad Laboratories Inc",
+      "sector": "Life Sciences Tools & Services"
+    },
+    {
+      "ticker": "BIO.B",
+      "name": "Bio Rad Laboratories Inc",
+      "sector": "Life Sciences Tools & Services"
+    },
+    {
+      "ticker": "BIPC",
+      "name": "Brookfield Infrastructure Corp",
+      "sector": "Utilities"
+    },
+    {
+      "ticker": "BIRK",
+      "name": "Birkenstock Holding PLC",
+      "sector": "Textiles, Apparel & Luxury Goods"
+    },
+    {
+      "ticker": "BJ",
+      "name": "BJ's Wholesale Club Holdings Inc",
+      "sector": "Retail"
+    },
+    {
+      "ticker": "BKD",
+      "name": "Brookdale Senior Living Inc",
+      "sector": "Health Care"
+    },
+    {
+      "ticker": "BKE",
+      "name": "Buckle Inc",
+      "sector": "Retail"
+    },
+    {
+      "ticker": "BKH",
+      "name": "Black Hills Corp",
+      "sector": "Utilities"
+    },
+    {
+      "ticker": "BKU",
+      "name": "BankUnited Inc",
+      "sector": "Banking"
+    },
+    {
+      "ticker": "BKV",
+      "name": "BKV Corp",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "BLCO",
+      "name": "Bausch + Lomb Corp",
+      "sector": "Health Care"
+    },
+    {
+      "ticker": "BLDR",
+      "name": "Builders FirstSource Inc",
+      "sector": "Building"
+    },
+    {
+      "ticker": "BLK",
+      "name": "BlackRock Inc",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "BLSH",
+      "name": "Bullish",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "BLX",
+      "name": "Banco Latinoamericano de Comercio Exterior SA",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "BMI",
+      "name": "Badger Meter Inc",
+      "sector": "Electrical Equipment"
+    },
+    {
+      "ticker": "BMNR",
+      "name": "Bitmine Immersion Technologies Inc",
+      "sector": "Technology"
+    },
+    {
+      "ticker": "BMO",
+      "name": "Bank of Montreal",
+      "sector": "Banking"
+    },
+    {
+      "ticker": "BMY",
+      "name": "Bristol-Myers Squibb Co",
+      "sector": "Pharmaceuticals"
+    },
+    {
+      "ticker": "BN",
+      "name": "Brookfield Corp",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "BNS",
+      "name": "Bank of Nova Scotia",
+      "sector": "Banking"
+    },
+    {
+      "ticker": "BNT",
+      "name": "Brookfield Wealth Solutions Ltd",
+      "sector": "Insurance"
+    },
+    {
+      "ticker": "BNY",
+      "name": "Bank of New York Mellon Corp",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "BOBS",
+      "name": "Bob's Discount Furniture, Inc",
+      "sector": "Retail"
+    },
+    {
+      "ticker": "BOH",
+      "name": "Bank of Hawaii Corp",
+      "sector": "Banking"
+    },
+    {
+      "ticker": "BOOT",
+      "name": "Boot Barn Holdings Inc",
+      "sector": "Retail"
+    },
+    {
+      "ticker": "BOX",
+      "name": "Box Inc",
+      "sector": "Technology"
+    },
+    {
+      "ticker": "BR",
+      "name": "Broadridge Financial Solutions Inc",
+      "sector": "Professional Services"
+    },
+    {
+      "ticker": "BRC",
+      "name": "Brady Corp",
+      "sector": "Commercial Services & Supplies"
+    },
+    {
+      "ticker": "BRK.A",
+      "name": "Berkshire Hathaway Inc",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "BRK.B",
+      "name": "Berkshire Hathaway Inc",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "BRO",
+      "name": "Brown & Brown Inc",
+      "sector": "Insurance"
+    },
+    {
+      "ticker": "BROS",
+      "name": "Dutch Bros Inc",
+      "sector": "Hotels, Restaurants & Leisure"
+    },
+    {
+      "ticker": "BRSL",
+      "name": "Brightstar Lottery PLC",
+      "sector": "Hotels, Restaurants & Leisure"
+    },
+    {
+      "ticker": "BSX",
+      "name": "Boston Scientific Corp",
+      "sector": "Health Care"
+    },
+    {
+      "ticker": "BTE",
+      "name": "Baytex Energy Corp",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "BTG",
+      "name": "B2Gold Corp",
+      "sector": "Metals & Mining"
+    },
+    {
+      "ticker": "BTU",
+      "name": "Peabody Energy Corp",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "BURL",
+      "name": "Burlington Stores Inc",
+      "sector": "Retail"
+    },
+    {
+      "ticker": "BW",
+      "name": "Babcock & Wilcox Enterprises Inc",
+      "sector": "Electrical Equipment"
+    },
+    {
+      "ticker": "BWA",
+      "name": "Borgwarner Inc",
+      "sector": "Auto Components"
+    },
+    {
+      "ticker": "BWLP",
+      "name": "BW LPG Ltd",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "BWXT",
+      "name": "BWX Technologies Inc",
+      "sector": "Aerospace & Defense"
+    },
+    {
+      "ticker": "BX",
+      "name": "Blackstone Inc",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "BXSL",
+      "name": "Blackstone Secured Lending Fund",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "BY",
+      "name": "Byline Bancorp Inc",
+      "sector": "Banking"
+    },
+    {
+      "ticker": "BYD",
+      "name": "Boyd Gaming Corp",
+      "sector": "Hotels, Restaurants & Leisure"
+    },
+    {
+      "ticker": "C",
+      "name": "Citigroup Inc",
+      "sector": "Banking"
+    },
+    {
+      "ticker": "CAAP",
+      "name": "Corporacion America Airports SA",
+      "sector": "Transportation Infrastructure"
+    },
+    {
+      "ticker": "CACI",
+      "name": "CACI International Inc",
+      "sector": "Professional Services"
+    },
+    {
+      "ticker": "CAE",
+      "name": "CAE Inc",
+      "sector": "Aerospace & Defense"
+    },
+    {
+      "ticker": "CAG",
+      "name": "Conagra Brands Inc",
+      "sector": "Food Products"
+    },
+    {
+      "ticker": "CAH",
+      "name": "Cardinal Health Inc",
+      "sector": "Health Care"
+    },
+    {
+      "ticker": "CALX",
+      "name": "Calix Inc",
+      "sector": "Communications"
+    },
+    {
+      "ticker": "CALY",
+      "name": "Callaway Golf Co",
+      "sector": "Leisure Products"
+    },
+    {
+      "ticker": "CARR",
+      "name": "Carrier Global Corp",
+      "sector": "Building"
+    },
+    {
+      "ticker": "CAT",
+      "name": "Caterpillar Inc",
+      "sector": "Machinery"
+    },
+    {
+      "ticker": "CAVA",
+      "name": "CAVA Group Inc",
+      "sector": "Hotels, Restaurants & Leisure"
+    },
+    {
+      "ticker": "CB",
+      "name": "Chubb Limited",
+      "sector": "Insurance"
+    },
+    {
+      "ticker": "CBOE",
+      "name": "Cboe Global Markets Inc",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "CBRE",
+      "name": "CBRE Group Inc",
+      "sector": "Real Estate"
+    },
+    {
+      "ticker": "CBT",
+      "name": "Cabot Corp",
+      "sector": "Chemicals"
+    },
+    {
+      "ticker": "CBU",
+      "name": "Community Financial System Inc",
+      "sector": "Banking"
+    },
+    {
+      "ticker": "CBZ",
+      "name": "CBIZ Inc",
+      "sector": "Professional Services"
+    },
+    {
+      "ticker": "CC",
+      "name": "Chemours Co",
+      "sector": "Chemicals"
+    },
+    {
+      "ticker": "CCJ",
+      "name": "Cameco Corp",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "CCK",
+      "name": "Crown Holdings Inc",
+      "sector": "Packaging"
+    },
+    {
+      "ticker": "CCL",
+      "name": "Carnival Corp",
+      "sector": "Hotels, Restaurants & Leisure"
+    },
+    {
+      "ticker": "CCS",
+      "name": "Century Communities Inc",
+      "sector": "Consumer products"
+    },
+    {
+      "ticker": "CDE",
+      "name": "Coeur Mining, Inc",
+      "sector": "Metals & Mining"
+    },
+    {
+      "ticker": "CE",
+      "name": "Celanese Corp",
+      "sector": "Chemicals"
+    },
+    {
+      "ticker": "CF",
+      "name": "CF Industries Holdings Inc",
+      "sector": "Chemicals"
+    },
+    {
+      "ticker": "CFG",
+      "name": "Citizens Financial Group Inc",
+      "sector": "Banking"
+    },
+    {
+      "ticker": "CFR",
+      "name": "Cullen/Frost Bankers Inc",
+      "sector": "Banking"
+    },
+    {
+      "ticker": "CGAU",
+      "name": "Centerra Gold Inc",
+      "sector": "Metals & Mining"
+    },
+    {
+      "ticker": "CHD",
+      "name": "Church & Dwight Co Inc",
+      "sector": "Consumer products"
+    },
+    {
+      "ticker": "CHE",
+      "name": "Chemed Corp",
+      "sector": "Health Care"
+    },
+    {
+      "ticker": "CHH",
+      "name": "Choice Hotels International Inc",
+      "sector": "Hotels, Restaurants & Leisure"
+    },
+    {
+      "ticker": "CHWY",
+      "name": "Chewy Inc",
+      "sector": "Retail"
+    },
+    {
+      "ticker": "CI",
+      "name": "Cigna Group",
+      "sector": "Health Care"
+    },
+    {
+      "ticker": "CIEN",
+      "name": "Ciena Corp",
+      "sector": "Communications"
+    },
+    {
+      "ticker": "CL",
+      "name": "Colgate-Palmolive Co",
+      "sector": "Consumer products"
+    },
+    {
+      "ticker": "CLF",
+      "name": "Cleveland-Cliffs Inc",
+      "sector": "Metals & Mining"
+    },
+    {
+      "ticker": "CLH",
+      "name": "Clean Harbors Inc",
+      "sector": "Commercial Services & Supplies"
+    },
+    {
+      "ticker": "CLS",
+      "name": "Celestica Inc",
+      "sector": "Electrical Equipment"
+    },
+    {
+      "ticker": "CLX",
+      "name": "Clorox Co",
+      "sector": "Consumer products"
+    },
+    {
+      "ticker": "CM",
+      "name": "Canadian Imperial Bank of Commerce",
+      "sector": "Banking"
+    },
+    {
+      "ticker": "CMBT",
+      "name": "CMB.TECH NV",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "CMC",
+      "name": "Commercial Metals Co",
+      "sector": "Metals & Mining"
+    },
+    {
+      "ticker": "CMG",
+      "name": "Chipotle Mexican Grill Inc",
+      "sector": "Hotels, Restaurants & Leisure"
+    },
+    {
+      "ticker": "CMI",
+      "name": "Cummins Inc",
+      "sector": "Machinery"
+    },
+    {
+      "ticker": "CMRE",
+      "name": "Costamare Inc",
+      "sector": "Marine"
+    },
+    {
+      "ticker": "CMS",
+      "name": "CMS Energy Corp",
+      "sector": "Utilities"
+    },
+    {
+      "ticker": "CNA",
+      "name": "CNA Financial Corp",
+      "sector": "Insurance"
+    },
+    {
+      "ticker": "CNC",
+      "name": "Centene Corp",
+      "sector": "Health Care"
+    },
+    {
+      "ticker": "CNH",
+      "name": "CNH Industrial NV",
+      "sector": "Machinery"
+    },
+    {
+      "ticker": "CNI",
+      "name": "Canadian National Railway Co",
+      "sector": "Road & Rail"
+    },
+    {
+      "ticker": "CNK",
+      "name": "Cinemark Holdings Inc",
+      "sector": "Media"
+    },
+    {
+      "ticker": "CNL",
+      "name": "Collective Mining Ltd",
+      "sector": "Metals & Mining"
+    },
+    {
+      "ticker": "CNM",
+      "name": "Core & Main Inc",
+      "sector": "Trading Companies & Distributors"
+    },
+    {
+      "ticker": "CNO",
+      "name": "CNO Financial Group Inc",
+      "sector": "Insurance"
+    },
+    {
+      "ticker": "CNP",
+      "name": "CenterPoint Energy Inc",
+      "sector": "Utilities"
+    },
+    {
+      "ticker": "CNQ",
+      "name": "Canadian Natural Resources Ltd",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "CNR",
+      "name": "Core Natural Resources Inc",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "CNS",
+      "name": "Cohen & Steers Inc",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "CNX",
+      "name": "CNX Resources Corp",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "COF",
+      "name": "Capital One Financial Corp",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "COHR",
+      "name": "Coherent Corp",
+      "sector": "Electrical Equipment"
+    },
+    {
+      "ticker": "COMP",
+      "name": "Compass Inc",
+      "sector": "Real Estate"
+    },
+    {
+      "ticker": "CON",
+      "name": "Concentra Group Holdings Parent Inc",
+      "sector": "Health Care"
+    },
+    {
+      "ticker": "COP",
+      "name": "ConocoPhillips",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "COR",
+      "name": "Cencora Inc",
+      "sector": "Health Care"
+    },
+    {
+      "ticker": "COTY",
+      "name": "Coty Inc",
+      "sector": "Consumer products"
+    },
+    {
+      "ticker": "COUR",
+      "name": "Coursera Inc",
+      "sector": "Diversified Consumer Services"
+    },
+    {
+      "ticker": "CP",
+      "name": "Canadian Pacific Kansas City Ltd",
+      "sector": "Road & Rail"
+    },
+    {
+      "ticker": "CPA",
+      "name": "Copa Holdings SA",
+      "sector": "Airlines"
+    },
+    {
+      "ticker": "CPAY",
+      "name": "Corpay Inc",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "CPK",
+      "name": "Chesapeake Utilities Corp",
+      "sector": "Utilities"
+    },
+    {
+      "ticker": "CPNG",
+      "name": "Coupang Inc",
+      "sector": "Retail"
+    },
+    {
+      "ticker": "CPRI",
+      "name": "Capri Holdings Ltd",
+      "sector": "Textiles, Apparel & Luxury Goods"
+    },
+    {
+      "ticker": "CR",
+      "name": "Crane Co",
+      "sector": "Machinery"
+    },
+    {
+      "ticker": "CRBG",
+      "name": "Corebridge Financial Inc",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "CRC",
+      "name": "California Resources Corp",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "CRCL",
+      "name": "Circle Internet Group Inc",
+      "sector": "Technology"
+    },
+    {
+      "ticker": "CRGY",
+      "name": "Crescent Energy Co",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "CRH",
+      "name": "CRH PLC",
+      "sector": "Construction"
+    },
+    {
+      "ticker": "CRK",
+      "name": "Comstock Resources Inc",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "CRL",
+      "name": "Charles River Laboratories International Inc",
+      "sector": "Life Sciences Tools & Services"
+    },
+    {
+      "ticker": "CRM",
+      "name": "Salesforce Inc",
+      "sector": "Technology"
+    },
+    {
+      "ticker": "CRS",
+      "name": "Carpenter Technology Corp",
+      "sector": "Aerospace & Defense"
+    },
+    {
+      "ticker": "CSL",
+      "name": "Carlisle Companies Inc",
+      "sector": "Building"
+    },
+    {
+      "ticker": "CSTM",
+      "name": "Constellium SE",
+      "sector": "Metals & Mining"
+    },
+    {
+      "ticker": "CSW",
+      "name": "CSW Industrials Inc",
+      "sector": "Building"
+    },
+    {
+      "ticker": "CTOS",
+      "name": "Custom Truck One Source Inc",
+      "sector": "Trading Companies & Distributors"
+    },
+    {
+      "ticker": "CTRI",
+      "name": "Centuri Holdings Inc",
+      "sector": "Construction"
+    },
+    {
+      "ticker": "CTS",
+      "name": "CTS Corp",
+      "sector": "Electrical Equipment"
+    },
+    {
+      "ticker": "CTVA",
+      "name": "Corteva Inc",
+      "sector": "Chemicals"
+    },
+    {
+      "ticker": "CUBI",
+      "name": "Customers Bancorp Inc",
+      "sector": "Banking"
+    },
+    {
+      "ticker": "CVE",
+      "name": "Cenovus Energy Incorporation",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "CVI",
+      "name": "CVR Energy Inc",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "CVNA",
+      "name": "Carvana Co",
+      "sector": "Retail"
+    },
+    {
+      "ticker": "CVS",
+      "name": "CVS Health Corp",
+      "sector": "Health Care"
+    },
+    {
+      "ticker": "CVSA",
+      "name": "Covista Inc",
+      "sector": "Diversified Consumer Services"
+    },
+    {
+      "ticker": "CVX",
+      "name": "Chevron Corp",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "CW",
+      "name": "Curtiss-Wright Corp",
+      "sector": "Aerospace & Defense"
+    },
+    {
+      "ticker": "CWEN",
+      "name": "Clearway Energy Inc",
+      "sector": "Utilities"
+    },
+    {
+      "ticker": "CWK",
+      "name": "Cushman & Wakefield Ltd",
+      "sector": "Real Estate"
+    },
+    {
+      "ticker": "CWT",
+      "name": "California Water Service Group",
+      "sector": "Utilities"
+    },
+    {
+      "ticker": "CXT",
+      "name": "Crane NXT Co",
+      "sector": "Electrical Equipment"
+    },
+    {
+      "ticker": "CXW",
+      "name": "CoreCivic Inc",
+      "sector": "Commercial Services & Supplies"
+    },
+    {
+      "ticker": "CYD",
+      "name": "China Yuchai International Ltd",
+      "sector": "Machinery"
+    },
+    {
+      "ticker": "D",
+      "name": "Dominion Energy Inc",
+      "sector": "Utilities"
+    },
+    {
+      "ticker": "DAC",
+      "name": "Danaos Corp",
+      "sector": "Marine"
+    },
+    {
+      "ticker": "DAL",
+      "name": "Delta Air Lines Inc",
+      "sector": "Airlines"
+    },
+    {
+      "ticker": "DAN",
+      "name": "Dana Inc",
+      "sector": "Auto Components"
+    },
+    {
+      "ticker": "DAR",
+      "name": "Darling Ingredients Inc",
+      "sector": "Food Products"
+    },
+    {
+      "ticker": "DB",
+      "name": "Deutsche Bank AG",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "DBD",
+      "name": "Diebold Nixdorf Inc",
+      "sector": "Technology"
+    },
+    {
+      "ticker": "DBRG",
+      "name": "DigitalBridge Group Inc",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "DCI",
+      "name": "Donaldson Company Inc",
+      "sector": "Machinery"
+    },
+    {
+      "ticker": "DCO",
+      "name": "Ducommun Inc",
+      "sector": "Aerospace & Defense"
+    },
+    {
+      "ticker": "DCOM",
+      "name": "Dime Community Bancshares Inc",
+      "sector": "Banking"
+    },
+    {
+      "ticker": "DD",
+      "name": "Dupont De Nemours Inc",
+      "sector": "Chemicals"
+    },
+    {
+      "ticker": "DDS",
+      "name": "Dillard's Inc",
+      "sector": "Retail"
+    },
+    {
+      "ticker": "DE",
+      "name": "Deere & Co",
+      "sector": "Machinery"
+    },
+    {
+      "ticker": "DECK",
+      "name": "Deckers Outdoor Corp",
+      "sector": "Textiles, Apparel & Luxury Goods"
+    },
+    {
+      "ticker": "DELL",
+      "name": "Dell Technologies Inc",
+      "sector": "Technology"
+    },
+    {
+      "ticker": "DG",
+      "name": "Dollar General Corp",
+      "sector": "Retail"
+    },
+    {
+      "ticker": "DGX",
+      "name": "Quest Diagnostics Inc",
+      "sector": "Health Care"
+    },
+    {
+      "ticker": "DHI",
+      "name": "D.R. Horton Inc",
+      "sector": "Consumer products"
+    },
+    {
+      "ticker": "DHR",
+      "name": "Danaher Corp",
+      "sector": "Life Sciences Tools & Services"
+    },
+    {
+      "ticker": "DHT",
+      "name": "DHT Holdings Inc",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "DINO",
+      "name": "HF Sinclair Corp",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "DIS",
+      "name": "Walt Disney Co",
+      "sector": "Media"
+    },
+    {
+      "ticker": "DK",
+      "name": "Delek US Holdings Inc",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "DKS",
+      "name": "DICK'S Sporting Goods Inc",
+      "sector": "Retail"
+    },
+    {
+      "ticker": "DLB",
+      "name": "Dolby Laboratories Inc",
+      "sector": "Technology"
+    },
+    {
+      "ticker": "DNN",
+      "name": "Denison Mines Corp",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "DNOW",
+      "name": "DNOW Inc",
+      "sector": "Trading Companies & Distributors"
+    },
+    {
+      "ticker": "DOCN",
+      "name": "DigitalOcean Holdings Inc",
+      "sector": "Technology"
+    },
+    {
+      "ticker": "DOCS",
+      "name": "Doximity Inc",
+      "sector": "Health Care"
+    },
+    {
+      "ticker": "DOV",
+      "name": "Dover Corp",
+      "sector": "Machinery"
+    },
+    {
+      "ticker": "DOW",
+      "name": "Dow Inc",
+      "sector": "Chemicals"
+    },
+    {
+      "ticker": "DPC",
+      "name": "DPC Holdings Ltd",
+      "sector": "N/A"
+    },
+    {
+      "ticker": "DRI",
+      "name": "Darden Restaurants Inc",
+      "sector": "Hotels, Restaurants & Leisure"
+    },
+    {
+      "ticker": "DT",
+      "name": "Dynatrace Inc",
+      "sector": "Technology"
+    },
+    {
+      "ticker": "DTE",
+      "name": "DTE Energy Co",
+      "sector": "Utilities"
+    },
+    {
+      "ticker": "DTM",
+      "name": "DT Midstream Inc",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "DUK",
+      "name": "Duke Energy Corp",
+      "sector": "Utilities"
+    },
+    {
+      "ticker": "DV",
+      "name": "Doubleverify Holdings Inc",
+      "sector": "Media"
+    },
+    {
+      "ticker": "DVA",
+      "name": "DaVita Inc",
+      "sector": "Health Care"
+    },
+    {
+      "ticker": "DVN",
+      "name": "Devon Energy Corp",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "DXC",
+      "name": "DXC Technology Co",
+      "sector": "Technology"
+    },
+    {
+      "ticker": "DY",
+      "name": "Dycom Industries Inc",
+      "sector": "Construction"
+    },
+    {
+      "ticker": "EAT",
+      "name": "Brinker International Inc",
+      "sector": "Hotels, Restaurants & Leisure"
+    },
+    {
+      "ticker": "ECG",
+      "name": "Everus Construction Group Inc",
+      "sector": "Construction"
+    },
+    {
+      "ticker": "ECL",
+      "name": "Ecolab Inc",
+      "sector": "Chemicals"
+    },
+    {
+      "ticker": "ECO",
+      "name": "Okeanis Eco Tankers Corp",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "ED",
+      "name": "Consolidated Edison Inc",
+      "sector": "Utilities"
+    },
+    {
+      "ticker": "EE",
+      "name": "Excelerate Energy Inc",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "EFX",
+      "name": "Equifax Inc",
+      "sector": "Professional Services"
+    },
+    {
+      "ticker": "EFXT",
+      "name": "Enerflex Ltd",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "EG",
+      "name": "Everest Group Ltd",
+      "sector": "Insurance"
+    },
+    {
+      "ticker": "EGO",
+      "name": "Eldorado Gold Corp",
+      "sector": "Metals & Mining"
+    },
+    {
+      "ticker": "EHC",
+      "name": "Encompass Health Corp",
+      "sector": "Health Care"
+    },
+    {
+      "ticker": "EIX",
+      "name": "Edison International",
+      "sector": "Utilities"
+    },
+    {
+      "ticker": "EL",
+      "name": "Estee Lauder Companies Inc",
+      "sector": "Consumer products"
+    },
+    {
+      "ticker": "ELAN",
+      "name": "Elanco Animal Health Inc",
+      "sector": "Pharmaceuticals"
+    },
+    {
+      "ticker": "ELF",
+      "name": "elf Beauty Inc",
+      "sector": "Consumer products"
+    },
+    {
+      "ticker": "ELV",
+      "name": "Elevance Health Inc",
+      "sector": "Health Care"
+    },
+    {
+      "ticker": "EMA",
+      "name": "Emera Inc",
+      "sector": "Utilities"
+    },
+    {
+      "ticker": "EME",
+      "name": "EMCOR Group Inc",
+      "sector": "Construction"
+    },
+    {
+      "ticker": "EMN",
+      "name": "Eastman Chemical Co",
+      "sector": "Chemicals"
+    },
+    {
+      "ticker": "EMR",
+      "name": "Emerson Electric Co",
+      "sector": "Electrical Equipment"
+    },
+    {
+      "ticker": "ENB",
+      "name": "Enbridge Inc",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "ENS",
+      "name": "EnerSys",
+      "sector": "Electrical Equipment"
+    },
+    {
+      "ticker": "ENVA",
+      "name": "Enova International Inc",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "EOG",
+      "name": "EOG Resources Inc",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "EPAC",
+      "name": "Enerpac Tool Group Corp",
+      "sector": "Machinery"
+    },
+    {
+      "ticker": "EPAM",
+      "name": "Epam Systems Inc",
+      "sector": "Technology"
+    },
+    {
+      "ticker": "EQH",
+      "name": "Equitable Holdings Inc",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "EQT",
+      "name": "EQT Corp",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "EQX",
+      "name": "Equinox Gold Corp",
+      "sector": "Metals & Mining"
+    },
+    {
+      "ticker": "ERO",
+      "name": "Ero Copper Corp",
+      "sector": "Metals & Mining"
+    },
+    {
+      "ticker": "EROC",
+      "name": "ERock Inc",
+      "sector": "Electrical Equipment"
+    },
+    {
+      "ticker": "EROK",
+      "name": "EagleRock Land LLC",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "ES",
+      "name": "Eversource Energy",
+      "sector": "Utilities"
+    },
+    {
+      "ticker": "ESAB",
+      "name": "ESAB Corp",
+      "sector": "Machinery"
+    },
+    {
+      "ticker": "ESE",
+      "name": "ESCO Technologies Inc",
+      "sector": "Machinery"
+    },
+    {
+      "ticker": "ESI",
+      "name": "Element Solutions Inc",
+      "sector": "Chemicals"
+    },
+    {
+      "ticker": "ESNT",
+      "name": "Essent Group Ltd",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "ESTC",
+      "name": "Elastic NV",
+      "sector": "Technology"
+    },
+    {
+      "ticker": "ETN",
+      "name": "Eaton Corporation PLC",
+      "sector": "Electrical Equipment"
+    },
+    {
+      "ticker": "ETR",
+      "name": "Entergy Corp",
+      "sector": "Utilities"
+    },
+    {
+      "ticker": "ETSY",
+      "name": "ETSY Inc",
+      "sector": "Retail"
+    },
+    {
+      "ticker": "EVR",
+      "name": "Evercore Inc",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "EVTC",
+      "name": "Evertec Inc",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "EW",
+      "name": "Edwards Lifesciences Corp",
+      "sector": "Health Care"
+    },
+    {
+      "ticker": "EXK",
+      "name": "Endeavour Silver Corp",
+      "sector": "Metals & Mining"
+    },
+    {
+      "ticker": "EXP",
+      "name": "Eagle Materials Inc",
+      "sector": "Construction"
+    },
+    {
+      "ticker": "EXPD",
+      "name": "Expeditors International of Washington Inc",
+      "sector": "Logistics & Transportation"
+    },
+    {
+      "ticker": "F",
+      "name": "Ford Motor Co",
+      "sector": "Automobiles"
+    },
+    {
+      "ticker": "FAF",
+      "name": "First American Financial Corp",
+      "sector": "Insurance"
+    },
+    {
+      "ticker": "FBIN",
+      "name": "Fortune Brands Innovations Inc",
+      "sector": "Building"
+    },
+    {
+      "ticker": "FBK",
+      "name": "FB Financial Corp",
+      "sector": "Banking"
+    },
+    {
+      "ticker": "FBP",
+      "name": "First BanCorp",
+      "sector": "Banking"
+    },
+    {
+      "ticker": "FCF",
+      "name": "First Commonwealth Financial Corp",
+      "sector": "Banking"
+    },
+    {
+      "ticker": "FCN",
+      "name": "FTI Consulting Inc",
+      "sector": "Professional Services"
+    },
+    {
+      "ticker": "FCX",
+      "name": "Freeport-McMoRan Inc",
+      "sector": "Metals & Mining"
+    },
+    {
+      "ticker": "FDS",
+      "name": "Factset Research Systems Inc",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "FDX",
+      "name": "FedEx Corp",
+      "sector": "Logistics & Transportation"
+    },
+    {
+      "ticker": "FDXF",
+      "name": "FedEx Freight Holding Company Inc",
+      "sector": "Road & Rail"
+    },
+    {
+      "ticker": "FE",
+      "name": "FirstEnergy Corp",
+      "sector": "Utilities"
+    },
+    {
+      "ticker": "FERG",
+      "name": "Ferguson Enterprises Inc",
+      "sector": "Trading Companies & Distributors"
+    },
+    {
+      "ticker": "FG",
+      "name": "F&G Annuities & Life Inc",
+      "sector": "Insurance"
+    },
+    {
+      "ticker": "FHI",
+      "name": "Federated Hermes Inc",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "FHN",
+      "name": "First Horizon Corp",
+      "sector": "Banking"
+    },
+    {
+      "ticker": "FICO",
+      "name": "Fair Isaac Corp",
+      "sector": "Technology"
+    },
+    {
+      "ticker": "FIG",
+      "name": "Figma Inc",
+      "sector": "Technology"
+    },
+    {
+      "ticker": "FIGS",
+      "name": "Figs Inc",
+      "sector": "Textiles, Apparel & Luxury Goods"
+    },
+    {
+      "ticker": "FIS",
+      "name": "Fidelity National Information Services Inc",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "FITB",
+      "name": "Fifth Third Bancorp",
+      "sector": "Banking"
+    },
+    {
+      "ticker": "FIX",
+      "name": "Comfort Systems USA Inc",
+      "sector": "Construction"
+    },
+    {
+      "ticker": "FLG",
+      "name": "Flagstar Bank NA",
+      "sector": "Banking"
+    },
+    {
+      "ticker": "FLNG",
+      "name": "FLEX LNG Ltd",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "FLO",
+      "name": "Flowers Foods Inc",
+      "sector": "Food Products"
+    },
+    {
+      "ticker": "FLOC",
+      "name": "Flowco Holdings Inc",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "FLR",
+      "name": "Fluor Corp",
+      "sector": "Construction"
+    },
+    {
+      "ticker": "FLS",
+      "name": "Flowserve Corp",
+      "sector": "Machinery"
+    },
+    {
+      "ticker": "FLUT",
+      "name": "Flutter Entertainment PLC",
+      "sector": "Hotels, Restaurants & Leisure"
+    },
+    {
+      "ticker": "FN",
+      "name": "Fabrinet",
+      "sector": "Electrical Equipment"
+    },
+    {
+      "ticker": "FNB",
+      "name": "FNB Corp",
+      "sector": "Banking"
+    },
+    {
+      "ticker": "FND",
+      "name": "Floor & Decor Holdings Inc",
+      "sector": "Retail"
+    },
+    {
+      "ticker": "FNF",
+      "name": "Fidelity National Financial Inc",
+      "sector": "Insurance"
+    },
+    {
+      "ticker": "FNV",
+      "name": "Franco-Nevada Corp",
+      "sector": "Metals & Mining"
+    },
+    {
+      "ticker": "FOR",
+      "name": "Forestar Group Inc",
+      "sector": "Real Estate"
+    },
+    {
+      "ticker": "FOUR",
+      "name": "Shift4 Payments, Inc",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "FPS",
+      "name": "Forgent Power Solutions, Inc",
+      "sector": "Electrical Equipment"
+    },
+    {
+      "ticker": "FRO",
+      "name": "Frontline PLC",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "FSK",
+      "name": "FS KKR Capital Corp",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "FSM",
+      "name": "Fortuna Mining Corp",
+      "sector": "Metals & Mining"
+    },
+    {
+      "ticker": "FSS",
+      "name": "Federal Signal Corp",
+      "sector": "Machinery"
+    },
+    {
+      "ticker": "FTI",
+      "name": "TechnipFMC PLC",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "FTS",
+      "name": "Fortis Inc",
+      "sector": "Utilities"
+    },
+    {
+      "ticker": "FTV",
+      "name": "Fortive Corp",
+      "sector": "Machinery"
+    },
+    {
+      "ticker": "FUL",
+      "name": "H.B. Fuller Company",
+      "sector": "Chemicals"
+    },
+    {
+      "ticker": "FUN",
+      "name": "Six Flags Entertainment Corp",
+      "sector": "Hotels, Restaurants & Leisure"
+    },
+    {
+      "ticker": "G",
+      "name": "Genpact Ltd",
+      "sector": "Professional Services"
+    },
+    {
+      "ticker": "GAP",
+      "name": "Gap Inc",
+      "sector": "Retail"
+    },
+    {
+      "ticker": "GATX",
+      "name": "GATX Corp",
+      "sector": "Trading Companies & Distributors"
+    },
+    {
+      "ticker": "GBCI",
+      "name": "Glacier Bancorp Inc",
+      "sector": "Banking"
+    },
+    {
+      "ticker": "GBTG",
+      "name": "Global Business Travel Group Inc",
+      "sector": "Hotels, Restaurants & Leisure"
+    },
+    {
+      "ticker": "GD",
+      "name": "General Dynamics Corp",
+      "sector": "Aerospace & Defense"
+    },
+    {
+      "ticker": "GDDY",
+      "name": "GoDaddy Inc",
+      "sector": "Technology"
+    },
+    {
+      "ticker": "GE",
+      "name": "General Electric Co",
+      "sector": "Aerospace & Defense"
+    },
+    {
+      "ticker": "GEF",
+      "name": "Greif Inc",
+      "sector": "Packaging"
+    },
+    {
+      "ticker": "GEF.B",
+      "name": "Greif Inc",
+      "sector": "Packaging"
+    },
+    {
+      "ticker": "GENI",
+      "name": "Genius Sports Ltd",
+      "sector": "Hotels, Restaurants & Leisure"
+    },
+    {
+      "ticker": "GEO",
+      "name": "Geo Group Inc",
+      "sector": "Commercial Services & Supplies"
+    },
+    {
+      "ticker": "GEV",
+      "name": "GE Vernova Inc",
+      "sector": "Electrical Equipment"
+    },
+    {
+      "ticker": "GFF",
+      "name": "Griffon Corp",
+      "sector": "Building"
+    },
+    {
+      "ticker": "GFL",
+      "name": "GFL Environmental Inc",
+      "sector": "Commercial Services & Supplies"
+    },
+    {
+      "ticker": "GGG",
+      "name": "Graco Inc",
+      "sector": "Machinery"
+    },
+    {
+      "ticker": "GHC",
+      "name": "Graham Holdings Co",
+      "sector": "Diversified Consumer Services"
+    },
+    {
+      "ticker": "GIB",
+      "name": "CGI Inc",
+      "sector": "Technology"
+    },
+    {
+      "ticker": "GIL",
+      "name": "Gildan Activewear Inc",
+      "sector": "Textiles, Apparel & Luxury Goods"
+    },
+    {
+      "ticker": "GIS",
+      "name": "General Mills Inc",
+      "sector": "Food Products"
+    },
+    {
+      "ticker": "GKOS",
+      "name": "Glaukos Corp",
+      "sector": "Health Care"
+    },
+    {
+      "ticker": "GL",
+      "name": "Globe Life Inc",
+      "sector": "Insurance"
+    },
+    {
+      "ticker": "GLW",
+      "name": "Corning Inc",
+      "sector": "Electrical Equipment"
+    },
+    {
+      "ticker": "GM",
+      "name": "General Motors Co",
+      "sector": "Automobiles"
+    },
+    {
+      "ticker": "GME",
+      "name": "GameStop Corp",
+      "sector": "Retail"
+    },
+    {
+      "ticker": "GMED",
+      "name": "Globus Medical Inc",
+      "sector": "Health Care"
+    },
+    {
+      "ticker": "GNRC",
+      "name": "Generac Holdings Inc",
+      "sector": "Electrical Equipment"
+    },
+    {
+      "ticker": "GNW",
+      "name": "Genworth Financial Inc",
+      "sector": "Insurance"
+    },
+    {
+      "ticker": "GOLF",
+      "name": "Acushnet Holdings Corp",
+      "sector": "Leisure Products"
+    },
+    {
+      "ticker": "GPC",
+      "name": "Genuine Parts Co",
+      "sector": "Distributors"
+    },
+    {
+      "ticker": "GPGI",
+      "name": "GPGI Inc",
+      "sector": "Technology"
+    },
+    {
+      "ticker": "GPI",
+      "name": "Group 1 Automotive Inc",
+      "sector": "Retail"
+    },
+    {
+      "ticker": "GPK",
+      "name": "Graphic Packaging Holding Co",
+      "sector": "Packaging"
+    },
+    {
+      "ticker": "GPN",
+      "name": "Global Payments Inc",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "GPOR",
+      "name": "Gulfport Energy Corp",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "GRBK",
+      "name": "Green Brick Partners Inc",
+      "sector": "Consumer products"
+    },
+    {
+      "ticker": "GRC",
+      "name": "Gorman- Rupp Co",
+      "sector": "Machinery"
+    },
+    {
+      "ticker": "GRDN",
+      "name": "Guardian Pharmacy Services Inc",
+      "sector": "Health Care"
+    },
+    {
+      "ticker": "GRMN",
+      "name": "Garmin Ltd",
+      "sector": "Consumer products"
+    },
+    {
+      "ticker": "GRND",
+      "name": "Grindr Inc",
+      "sector": "Media"
+    },
+    {
+      "ticker": "GS",
+      "name": "Goldman Sachs Group Inc",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "GTES",
+      "name": "Gates Industrial Corporation PLC",
+      "sector": "Machinery"
+    },
+    {
+      "ticker": "GTLS",
+      "name": "Chart Industries Inc",
+      "sector": "Machinery"
+    },
+    {
+      "ticker": "GVA",
+      "name": "Granite Construction Inc",
+      "sector": "Construction"
+    },
+    {
+      "ticker": "GWRE",
+      "name": "Guidewire Software Inc",
+      "sector": "Technology"
+    },
+    {
+      "ticker": "GWW",
+      "name": "WW Grainger Inc",
+      "sector": "Trading Companies & Distributors"
+    },
+    {
+      "ticker": "GXO",
+      "name": "GXO Logistics Inc",
+      "sector": "Logistics & Transportation"
+    },
+    {
+      "ticker": "H",
+      "name": "Hyatt Hotels Corp",
+      "sector": "Hotels, Restaurants & Leisure"
+    },
+    {
+      "ticker": "HAE",
+      "name": "Haemonetics Corp",
+      "sector": "Health Care"
+    },
+    {
+      "ticker": "HAFN",
+      "name": "Hafnia Ltd",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "HAL",
+      "name": "Halliburton Co",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "HASI",
+      "name": "HA Sustainable Infrastructure Capital Inc",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "HAWK",
+      "name": "HawkEye 360 Inc",
+      "sector": "Aerospace & Defense"
+    },
+    {
+      "ticker": "HAYW",
+      "name": "Hayward Holdings Inc",
+      "sector": "Building"
+    },
+    {
+      "ticker": "HBM",
+      "name": "Hudbay Minerals Inc",
+      "sector": "Metals & Mining"
+    },
+    {
+      "ticker": "HCA",
+      "name": "HCA Healthcare Inc",
+      "sector": "Health Care"
+    },
+    {
+      "ticker": "HCC",
+      "name": "Warrior Met Coal Inc",
+      "sector": "Metals & Mining"
+    },
+    {
+      "ticker": "HCI",
+      "name": "Hci Group Inc",
+      "sector": "Insurance"
+    },
+    {
+      "ticker": "HD",
+      "name": "Home Depot Inc",
+      "sector": "Retail"
+    },
+    {
+      "ticker": "HE",
+      "name": "Hawaiian Electric Industries Inc",
+      "sector": "Utilities"
+    },
+    {
+      "ticker": "HEI",
+      "name": "HEICO Corp",
+      "sector": "Aerospace & Defense"
+    },
+    {
+      "ticker": "HEI.A",
+      "name": "HEICO Corp",
+      "sector": "Aerospace & Defense"
+    },
+    {
+      "ticker": "HESM",
+      "name": "Hess Midstream LP",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "HG",
+      "name": "Hamilton Insurance Group Ltd",
+      "sector": "Insurance"
+    },
+    {
+      "ticker": "HGTY",
+      "name": "Hagerty Inc",
+      "sector": "Insurance"
+    },
+    {
+      "ticker": "HGV",
+      "name": "Hilton Grand Vacations Inc",
+      "sector": "Hotels, Restaurants & Leisure"
+    },
+    {
+      "ticker": "HHH",
+      "name": "Howard Hughes Holdings Inc",
+      "sector": "Real Estate"
+    },
+    {
+      "ticker": "HIG",
+      "name": "Hartford Insurance Group Inc",
+      "sector": "Insurance"
+    },
+    {
+      "ticker": "HII",
+      "name": "Huntington Ingalls Industries Inc",
+      "sector": "Aerospace & Defense"
+    },
+    {
+      "ticker": "HIMS",
+      "name": "Hims & Hers Health Inc",
+      "sector": "Health Care"
+    },
+    {
+      "ticker": "HL",
+      "name": "Hecla Mining Co",
+      "sector": "Metals & Mining"
+    },
+    {
+      "ticker": "HLI",
+      "name": "Houlihan Lokey Inc",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "HLIO",
+      "name": "Helios Technologies Inc",
+      "sector": "Machinery"
+    },
+    {
+      "ticker": "HLT",
+      "name": "Hilton Worldwide Holdings Inc",
+      "sector": "Hotels, Restaurants & Leisure"
+    },
+    {
+      "ticker": "HMN",
+      "name": "Horace Mann Educators Corp",
+      "sector": "Insurance"
+    },
+    {
+      "ticker": "HNGE",
+      "name": "Hinge Health Inc",
+      "sector": "Health Care"
+    },
+    {
+      "ticker": "HNI",
+      "name": "HNI Corp",
+      "sector": "Commercial Services & Supplies"
+    },
+    {
+      "ticker": "HOG",
+      "name": "Harley-Davidson Inc",
+      "sector": "Automobiles"
+    },
+    {
+      "ticker": "HOMB",
+      "name": "Home BancShares Inc",
+      "sector": "Banking"
+    },
+    {
+      "ticker": "HP",
+      "name": "Helmerich and Payne Inc",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "HPE",
+      "name": "Hewlett Packard Enterprise Co",
+      "sector": "Technology"
+    },
+    {
+      "ticker": "HPQ",
+      "name": "HP Inc",
+      "sector": "Technology"
+    },
+    {
+      "ticker": "HRB",
+      "name": "H & R Block Inc",
+      "sector": "Diversified Consumer Services"
+    },
+    {
+      "ticker": "HRI",
+      "name": "Herc Holdings Inc",
+      "sector": "Trading Companies & Distributors"
+    },
+    {
+      "ticker": "HRL",
+      "name": "Hormel Foods Corp",
+      "sector": "Food Products"
+    },
+    {
+      "ticker": "HSHP",
+      "name": "Himalaya Shipping Ltd",
+      "sector": "Marine"
+    },
+    {
+      "ticker": "HSY",
+      "name": "Hershey Co",
+      "sector": "Food Products"
+    },
+    {
+      "ticker": "HTGC",
+      "name": "Hercules Capital Inc",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "HTH",
+      "name": "Hilltop Holdings Inc",
+      "sector": "Banking"
+    },
+    {
+      "ticker": "HUBB",
+      "name": "Hubbell Inc",
+      "sector": "Electrical Equipment"
+    },
+    {
+      "ticker": "HUBS",
+      "name": "HubSpot Inc",
+      "sector": "Technology"
+    },
+    {
+      "ticker": "HUM",
+      "name": "Humana Inc",
+      "sector": "Health Care"
+    },
+    {
+      "ticker": "HUN",
+      "name": "Huntsman Corp",
+      "sector": "Chemicals"
+    },
+    {
+      "ticker": "HWM",
+      "name": "Howmet Aerospace Inc",
+      "sector": "Aerospace & Defense"
+    },
+    {
+      "ticker": "HXL",
+      "name": "Hexcel Corp",
+      "sector": "Aerospace & Defense"
+    },
+    {
+      "ticker": "IAG",
+      "name": "IAMGOLD Corp",
+      "sector": "Metals & Mining"
+    },
+    {
+      "ticker": "IAUX",
+      "name": "I-80 Gold Corp",
+      "sector": "Metals & Mining"
+    },
+    {
+      "ticker": "IBM",
+      "name": "International Business Machines Corp",
+      "sector": "Technology"
+    },
+    {
+      "ticker": "IBP",
+      "name": "Installed Building Products Inc",
+      "sector": "Consumer products"
+    },
+    {
+      "ticker": "ICE",
+      "name": "Intercontinental Exchange Inc",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "ICL",
+      "name": "ICL Group Ltd",
+      "sector": "Chemicals"
+    },
+    {
+      "ticker": "IDA",
+      "name": "Idacorp Inc",
+      "sector": "Utilities"
+    },
+    {
+      "ticker": "IDT",
+      "name": "IDT Corp",
+      "sector": "Telecommunication"
+    },
+    {
+      "ticker": "IEX",
+      "name": "IDEX Corp",
+      "sector": "Machinery"
+    },
+    {
+      "ticker": "IFF",
+      "name": "International Flavors & Fragrances Inc",
+      "sector": "Chemicals"
+    },
+    {
+      "ticker": "IFS",
+      "name": "Intercorp Financial Services Inc",
+      "sector": "Banking"
+    },
+    {
+      "ticker": "IHS",
+      "name": "IHS Holding Ltd",
+      "sector": "Telecommunication"
+    },
+    {
+      "ticker": "IMAX",
+      "name": "Imax Corp",
+      "sector": "Media"
+    },
+    {
+      "ticker": "IMO",
+      "name": "Imperial Oil Ltd",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "INFQ",
+      "name": "Infleqtion Inc",
+      "sector": "Technology"
+    },
+    {
+      "ticker": "INGM",
+      "name": "Ingram Micro Holding Corp",
+      "sector": "Electrical Equipment"
+    },
+    {
+      "ticker": "INGR",
+      "name": "Ingredion Inc",
+      "sector": "Food Products"
+    },
+    {
+      "ticker": "INSW",
+      "name": "International Seaways Inc",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "INVX",
+      "name": "Innovex International Inc",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "IONQ",
+      "name": "IONQ Inc",
+      "sector": "Technology"
+    },
+    {
+      "ticker": "IOT",
+      "name": "Samsara Inc",
+      "sector": "Technology"
+    },
+    {
+      "ticker": "IP",
+      "name": "International Paper Co",
+      "sector": "Packaging"
+    },
+    {
+      "ticker": "IQV",
+      "name": "IQVIA Holdings Inc",
+      "sector": "Life Sciences Tools & Services"
+    },
+    {
+      "ticker": "IR",
+      "name": "Ingersoll Rand Inc",
+      "sector": "Machinery"
+    },
+    {
+      "ticker": "IT",
+      "name": "Gartner Inc",
+      "sector": "Technology"
+    },
+    {
+      "ticker": "ITGR",
+      "name": "Integer Holdings Corp",
+      "sector": "Health Care"
+    },
+    {
+      "ticker": "ITT",
+      "name": "ITT Inc",
+      "sector": "Machinery"
+    },
+    {
+      "ticker": "ITW",
+      "name": "Illinois Tool Works Inc",
+      "sector": "Machinery"
+    },
+    {
+      "ticker": "IVZ",
+      "name": "Invesco Ltd",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "J",
+      "name": "Jacobs Solutions Inc",
+      "sector": "Professional Services"
+    },
+    {
+      "ticker": "JBL",
+      "name": "Jabil Inc",
+      "sector": "Electrical Equipment"
+    },
+    {
+      "ticker": "JBS",
+      "name": "Jbs NV",
+      "sector": "Food Products"
+    },
+    {
+      "ticker": "JBTM",
+      "name": "JBT Marel Corp",
+      "sector": "Machinery"
+    },
+    {
+      "ticker": "JCI",
+      "name": "Johnson Controls International PLC",
+      "sector": "Building"
+    },
+    {
+      "ticker": "JEF",
+      "name": "Jefferies Financial Group Inc",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "JHX",
+      "name": "James Hardie Industries PLC",
+      "sector": "Construction"
+    },
+    {
+      "ticker": "JLL",
+      "name": "Jones Lang LaSalle Inc",
+      "sector": "Real Estate"
+    },
+    {
+      "ticker": "JNJ",
+      "name": "Johnson & Johnson",
+      "sector": "Pharmaceuticals"
+    },
+    {
+      "ticker": "JOBY",
+      "name": "Joby Aviation Inc",
+      "sector": "Airlines"
+    },
+    {
+      "ticker": "JOE",
+      "name": "St Joe Co",
+      "sector": "Real Estate"
+    },
+    {
+      "ticker": "JPM",
+      "name": "JPMorgan Chase & Co",
+      "sector": "Banking"
+    },
+    {
+      "ticker": "JXN",
+      "name": "Jackson Financial Inc",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "KAI",
+      "name": "Kadant Inc",
+      "sector": "Machinery"
+    },
+    {
+      "ticker": "KBH",
+      "name": "KB Home",
+      "sector": "Consumer products"
+    },
+    {
+      "ticker": "KBR",
+      "name": "KBR Inc",
+      "sector": "Professional Services"
+    },
+    {
+      "ticker": "KD",
+      "name": "Kyndryl Holdings Inc",
+      "sector": "Technology"
+    },
+    {
+      "ticker": "KEN",
+      "name": "Kenon Holdings Ltd",
+      "sector": "Utilities"
+    },
+    {
+      "ticker": "KEX",
+      "name": "Kirby Corp",
+      "sector": "Marine"
+    },
+    {
+      "ticker": "KEY",
+      "name": "KeyCorp",
+      "sector": "Banking"
+    },
+    {
+      "ticker": "KEYS",
+      "name": "Keysight Technologies Inc",
+      "sector": "Electrical Equipment"
+    },
+    {
+      "ticker": "KFY",
+      "name": "Korn Ferry",
+      "sector": "Professional Services"
+    },
+    {
+      "ticker": "KGC",
+      "name": "Kinross Gold Corp",
+      "sector": "Metals & Mining"
+    },
+    {
+      "ticker": "KGS",
+      "name": "Kodiak Gas Services Inc",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "KKR",
+      "name": "KKR & Co Inc",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "KLAR",
+      "name": "Klarna Group PLC",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "KMI",
+      "name": "Kinder Morgan Inc",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "KMPR",
+      "name": "Kemper Corp",
+      "sector": "Insurance"
+    },
+    {
+      "ticker": "KMT",
+      "name": "Kennametal Inc",
+      "sector": "Machinery"
+    },
+    {
+      "ticker": "KMX",
+      "name": "Carmax Inc",
+      "sector": "Retail"
+    },
+    {
+      "ticker": "KN",
+      "name": "Knowles Corp",
+      "sector": "Electrical Equipment"
+    },
+    {
+      "ticker": "KNF",
+      "name": "Knife River Corp",
+      "sector": "Construction"
+    },
+    {
+      "ticker": "KNSL",
+      "name": "Kinsale Capital Group Inc",
+      "sector": "Insurance"
+    },
+    {
+      "ticker": "KNTK",
+      "name": "Kinetik Holdings Inc",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "KNX",
+      "name": "Knight-Swift Transportation Holdings Inc",
+      "sector": "Road & Rail"
+    },
+    {
+      "ticker": "KO",
+      "name": "Coca-Cola Co",
+      "sector": "Beverages"
+    },
+    {
+      "ticker": "KR",
+      "name": "Kroger Co",
+      "sector": "Retail"
+    },
+    {
+      "ticker": "KRMN",
+      "name": "Karman Holdings Inc",
+      "sector": "Aerospace & Defense"
+    },
+    {
+      "ticker": "KSS",
+      "name": "Kohls Corp",
+      "sector": "Retail"
+    },
+    {
+      "ticker": "KTB",
+      "name": "Kontoor Brands Inc",
+      "sector": "Textiles, Apparel & Luxury Goods"
+    },
+    {
+      "ticker": "KVUE",
+      "name": "Kenvue Inc",
+      "sector": "Consumer products"
+    },
+    {
+      "ticker": "KVYO",
+      "name": "Klaviyo Inc",
+      "sector": "Technology"
+    },
+    {
+      "ticker": "KWR",
+      "name": "Quaker Chemical Corp",
+      "sector": "Chemicals"
+    },
+    {
+      "ticker": "L",
+      "name": "Loews Corp",
+      "sector": "Insurance"
+    },
+    {
+      "ticker": "LAD",
+      "name": "Lithia Motors Inc",
+      "sector": "Retail"
+    },
+    {
+      "ticker": "LAZ",
+      "name": "Lazard Inc",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "LB",
+      "name": "LandBridge Co LLC",
+      "sector": "Real Estate"
+    },
+    {
+      "ticker": "LBRT",
+      "name": "Liberty Energy Inc",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "LCII",
+      "name": "LCI Industries",
+      "sector": "Auto Components"
+    },
+    {
+      "ticker": "LCLN",
+      "name": "Lincoln International Inc",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "LDOS",
+      "name": "Leidos Holdings Inc",
+      "sector": "Professional Services"
+    },
+    {
+      "ticker": "LEA",
+      "name": "Lear Corp",
+      "sector": "Auto Components"
+    },
+    {
+      "ticker": "LEN",
+      "name": "Lennar Corp",
+      "sector": "Consumer products"
+    },
+    {
+      "ticker": "LEN.B",
+      "name": "Lennar Corp",
+      "sector": "Consumer products"
+    },
+    {
+      "ticker": "LEU",
+      "name": "Centrus Energy Corp",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "LEVI",
+      "name": "Levi Strauss & Co",
+      "sector": "Textiles, Apparel & Luxury Goods"
+    },
+    {
+      "ticker": "LH",
+      "name": "Labcorp Holdings Inc",
+      "sector": "Health Care"
+    },
+    {
+      "ticker": "LHX",
+      "name": "L3Harris Technologies Inc",
+      "sector": "Aerospace & Defense"
+    },
+    {
+      "ticker": "LII",
+      "name": "Lennox International Inc",
+      "sector": "Building"
+    },
+    {
+      "ticker": "LION",
+      "name": "Lionsgate Studios Corp",
+      "sector": "Media"
+    },
+    {
+      "ticker": "LLY",
+      "name": "Eli Lilly and Co",
+      "sector": "Pharmaceuticals"
+    },
+    {
+      "ticker": "LMND",
+      "name": "Lemonade Inc",
+      "sector": "Insurance"
+    },
+    {
+      "ticker": "LMT",
+      "name": "Lockheed Martin Corp",
+      "sector": "Aerospace & Defense"
+    },
+    {
+      "ticker": "LNC",
+      "name": "Lincoln National Corp",
+      "sector": "Insurance"
+    },
+    {
+      "ticker": "LNG",
+      "name": "Cheniere Energy Inc",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "LOAR",
+      "name": "Loar Holdings Inc",
+      "sector": "Aerospace & Defense"
+    },
+    {
+      "ticker": "LOB",
+      "name": "Live Oak Bancshares Inc",
+      "sector": "Banking"
+    },
+    {
+      "ticker": "LOW",
+      "name": "Lowe's Companies Inc",
+      "sector": "Retail"
+    },
+    {
+      "ticker": "LPG",
+      "name": "Dorian LPG Ltd",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "LPX",
+      "name": "Louisiana-Pacific Corp",
+      "sector": "Paper & Forest"
+    },
+    {
+      "ticker": "LRN",
+      "name": "Stride Inc",
+      "sector": "Diversified Consumer Services"
+    },
+    {
+      "ticker": "LSPD",
+      "name": "Lightspeed Commerce Inc",
+      "sector": "Technology"
+    },
+    {
+      "ticker": "LTH",
+      "name": "Life Time Group Holdings, Inc",
+      "sector": "Hotels, Restaurants & Leisure"
+    },
+    {
+      "ticker": "LUMN",
+      "name": "Lumen Technologies Inc",
+      "sector": "Telecommunication"
+    },
+    {
+      "ticker": "LUV",
+      "name": "Southwest Airlines Co",
+      "sector": "Airlines"
+    },
+    {
+      "ticker": "LVS",
+      "name": "Las Vegas Sands Corp",
+      "sector": "Hotels, Restaurants & Leisure"
+    },
+    {
+      "ticker": "LW",
+      "name": "Lamb Weston Holdings Inc",
+      "sector": "Food Products"
+    },
+    {
+      "ticker": "LYB",
+      "name": "LyondellBasell Industries NV",
+      "sector": "Chemicals"
+    },
+    {
+      "ticker": "LYV",
+      "name": "Live Nation Entertainment Inc",
+      "sector": "Media"
+    },
+    {
+      "ticker": "LZB",
+      "name": "La-Z-Boy Inc",
+      "sector": "Consumer products"
+    },
+    {
+      "ticker": "M",
+      "name": "Macy's Inc",
+      "sector": "Retail"
+    },
+    {
+      "ticker": "MA",
+      "name": "Mastercard Inc",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "MAIN",
+      "name": "Main Street Capital Corp",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "MAIR",
+      "name": "Madison Air Solutions Corp",
+      "sector": "Building"
+    },
+    {
+      "ticker": "MAN",
+      "name": "ManpowerGroup Inc",
+      "sector": "Professional Services"
+    },
+    {
+      "ticker": "MANE",
+      "name": "Veradermics Inc",
+      "sector": "Pharmaceuticals"
+    },
+    {
+      "ticker": "MANU",
+      "name": "Manchester United PLC",
+      "sector": "Media"
+    },
+    {
+      "ticker": "MAS",
+      "name": "Masco Corp",
+      "sector": "Building"
+    },
+    {
+      "ticker": "MATX",
+      "name": "Matson Inc",
+      "sector": "Marine"
+    },
+    {
+      "ticker": "MBC",
+      "name": "Masterbrand Inc",
+      "sector": "Building"
+    },
+    {
+      "ticker": "MC",
+      "name": "Moelis & Co",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "MCD",
+      "name": "McDonald's Corp",
+      "sector": "Hotels, Restaurants & Leisure"
+    },
+    {
+      "ticker": "MCK",
+      "name": "McKesson Corp",
+      "sector": "Health Care"
+    },
+    {
+      "ticker": "MCO",
+      "name": "Moody's Corp",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "MCY",
+      "name": "Mercury General Corp",
+      "sector": "Insurance"
+    },
+    {
+      "ticker": "MD",
+      "name": "Pediatrix Medical Group Inc",
+      "sector": "Health Care"
+    },
+    {
+      "ticker": "MDA",
+      "name": "Mda Space Ltd",
+      "sector": "Aerospace & Defense"
+    },
+    {
+      "ticker": "MDT",
+      "name": "Medtronic PLC",
+      "sector": "Health Care"
+    },
+    {
+      "ticker": "MDU",
+      "name": "MDU Resources Group Inc",
+      "sector": "Utilities"
+    },
+    {
+      "ticker": "MET",
+      "name": "MetLife Inc",
+      "sector": "Insurance"
+    },
+    {
+      "ticker": "MFC",
+      "name": "Manulife Financial Corp",
+      "sector": "Insurance"
+    },
+    {
+      "ticker": "MGA",
+      "name": "Magna International Inc",
+      "sector": "Auto Components"
+    },
+    {
+      "ticker": "MGM",
+      "name": "MGM Resorts International",
+      "sector": "Hotels, Restaurants & Leisure"
+    },
+    {
+      "ticker": "MGY",
+      "name": "Magnolia Oil & Gas Corp",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "MH",
+      "name": "McGraw Hill Inc",
+      "sector": "Diversified Consumer Services"
+    },
+    {
+      "ticker": "MHK",
+      "name": "Mohawk Industries Inc",
+      "sector": "Consumer products"
+    },
+    {
+      "ticker": "MHO",
+      "name": "M/I Homes Inc",
+      "sector": "Consumer products"
+    },
+    {
+      "ticker": "MIAX",
+      "name": "Miami International Holdings Inc",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "MICC",
+      "name": "Magnum Ice Cream Company NV",
+      "sector": "Food Products"
+    },
+    {
+      "ticker": "MIR",
+      "name": "Mirion Technologies Inc",
+      "sector": "Electrical Equipment"
+    },
+    {
+      "ticker": "MKC",
+      "name": "McCormick & Company Inc",
+      "sector": "Food Products"
+    },
+    {
+      "ticker": "MKC.V",
+      "name": "McCormick & Company Inc",
+      "sector": "Food Products"
+    },
+    {
+      "ticker": "MKL",
+      "name": "Markel Group Inc",
+      "sector": "Insurance"
+    },
+    {
+      "ticker": "MLI",
+      "name": "Mueller Industries Inc",
+      "sector": "Machinery"
+    },
+    {
+      "ticker": "MLM",
+      "name": "Martin Marietta Materials Inc",
+      "sector": "Construction"
+    },
+    {
+      "ticker": "MMM",
+      "name": "3M Co",
+      "sector": "Industrial Conglomerates"
+    },
+    {
+      "ticker": "MMS",
+      "name": "Maximus Inc",
+      "sector": "Professional Services"
+    },
+    {
+      "ticker": "MO",
+      "name": "Altria Group Inc",
+      "sector": "Tobacco"
+    },
+    {
+      "ticker": "MOD",
+      "name": "Modine Manufacturing Co",
+      "sector": "Building"
+    },
+    {
+      "ticker": "MOG.A",
+      "name": "Moog Inc",
+      "sector": "Aerospace & Defense"
+    },
+    {
+      "ticker": "MOG.B",
+      "name": "Moog Inc",
+      "sector": "Aerospace & Defense"
+    },
+    {
+      "ticker": "MOH",
+      "name": "Molina Healthcare Inc",
+      "sector": "Health Care"
+    },
+    {
+      "ticker": "MOS",
+      "name": "Mosaic Co",
+      "sector": "Chemicals"
+    },
+    {
+      "ticker": "MP",
+      "name": "MP Materials Corp",
+      "sector": "Metals & Mining"
+    },
+    {
+      "ticker": "MPC",
+      "name": "Marathon Petroleum Corp",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "MRK",
+      "name": "Merck & Co Inc",
+      "sector": "Pharmaceuticals"
+    },
+    {
+      "ticker": "MRSH",
+      "name": "Marsh & McLennan Companies Inc",
+      "sector": "Insurance"
+    },
+    {
+      "ticker": "MS",
+      "name": "Morgan Stanley",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "MSA",
+      "name": "MSA Safety Inc",
+      "sector": "Commercial Services & Supplies"
+    },
+    {
+      "ticker": "MSCI",
+      "name": "MSCI Inc",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "MSGE",
+      "name": "Madison Square Garden Entertainment Corp",
+      "sector": "Media"
+    },
+    {
+      "ticker": "MSGS",
+      "name": "Madison Square Garden Sports Corp",
+      "sector": "Media"
+    },
+    {
+      "ticker": "MSI",
+      "name": "Motorola Solutions Inc",
+      "sector": "Communications"
+    },
+    {
+      "ticker": "MSM",
+      "name": "MSC Industrial Direct Co Inc",
+      "sector": "Trading Companies & Distributors"
+    },
+    {
+      "ticker": "MTB",
+      "name": "M&T Bank Corp",
+      "sector": "Banking"
+    },
+    {
+      "ticker": "MTD",
+      "name": "Mettler-toledo International Inc",
+      "sector": "Life Sciences Tools & Services"
+    },
+    {
+      "ticker": "MTDR",
+      "name": "Matador Resources Co",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "MTG",
+      "name": "MGIC Investment Corp",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "MTH",
+      "name": "Meritage Homes Corp",
+      "sector": "Consumer products"
+    },
+    {
+      "ticker": "MTN",
+      "name": "Vail Resorts Inc",
+      "sector": "Hotels, Restaurants & Leisure"
+    },
+    {
+      "ticker": "MTRN",
+      "name": "Materion Corp",
+      "sector": "Metals & Mining"
+    },
+    {
+      "ticker": "MTX",
+      "name": "Minerals Technologies Inc",
+      "sector": "Chemicals"
+    },
+    {
+      "ticker": "MTZ",
+      "name": "MasTec Inc",
+      "sector": "Construction"
+    },
+    {
+      "ticker": "MUR",
+      "name": "Murphy Oil Corp",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "MUSA",
+      "name": "Murphy USA Inc",
+      "sector": "Retail"
+    },
+    {
+      "ticker": "MWA",
+      "name": "Mueller Water Products Inc",
+      "sector": "Machinery"
+    },
+    {
+      "ticker": "NATL",
+      "name": "NCR Atleos Corp",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "NBHC",
+      "name": "National Bank Holdings Corp",
+      "sector": "Banking"
+    },
+    {
+      "ticker": "NCLH",
+      "name": "Norwegian Cruise Line Holdings Ltd",
+      "sector": "Hotels, Restaurants & Leisure"
+    },
+    {
+      "ticker": "NE",
+      "name": "Noble Corporation PLC",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "NEE",
+      "name": "Nextera Energy Inc",
+      "sector": "Utilities"
+    },
+    {
+      "ticker": "NEM",
+      "name": "Newmont Corporation",
+      "sector": "Metals & Mining"
+    },
+    {
+      "ticker": "NET",
+      "name": "Cloudflare Inc",
+      "sector": "Technology"
+    },
+    {
+      "ticker": "NEU",
+      "name": "NewMarket Corp",
+      "sector": "Chemicals"
+    },
+    {
+      "ticker": "NEXA",
+      "name": "Nexa Resources SA",
+      "sector": "Metals & Mining"
+    },
+    {
+      "ticker": "NFG",
+      "name": "National Fuel Gas Co",
+      "sector": "Utilities"
+    },
+    {
+      "ticker": "NG",
+      "name": "NovaGold Resources Inc",
+      "sector": "Metals & Mining"
+    },
+    {
+      "ticker": "NGVT",
+      "name": "Ingevity Corp",
+      "sector": "Chemicals"
+    },
+    {
+      "ticker": "NHC",
+      "name": "National Healthcare Corp",
+      "sector": "Health Care"
+    },
+    {
+      "ticker": "NI",
+      "name": "NiSource Inc",
+      "sector": "Utilities"
+    },
+    {
+      "ticker": "NIC",
+      "name": "Nicolet Bankshares, Inc",
+      "sector": "Banking"
+    },
+    {
+      "ticker": "NIQ",
+      "name": "NIQ Global Intelligence PLC",
+      "sector": "Media"
+    },
+    {
+      "ticker": "NJR",
+      "name": "New Jersey Resources Corp",
+      "sector": "Utilities"
+    },
+    {
+      "ticker": "NKE",
+      "name": "Nike Inc",
+      "sector": "Textiles, Apparel & Luxury Goods"
+    },
+    {
+      "ticker": "NNI",
+      "name": "Nelnet Inc",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "NOC",
+      "name": "Northrop Grumman Corp",
+      "sector": "Aerospace & Defense"
+    },
+    {
+      "ticker": "NOG",
+      "name": "Northern Oil and Gas Inc",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "NOMD",
+      "name": "Nomad Foods Ltd",
+      "sector": "Food Products"
+    },
+    {
+      "ticker": "NOV",
+      "name": "Nov Inc",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "NOW",
+      "name": "ServiceNow Inc",
+      "sector": "Technology"
+    },
+    {
+      "ticker": "NP",
+      "name": "Neptune Insurance Holdings Inc",
+      "sector": "Insurance"
+    },
+    {
+      "ticker": "NPO",
+      "name": "Enpro Inc",
+      "sector": "Machinery"
+    },
+    {
+      "ticker": "NRG",
+      "name": "NRG Energy Inc",
+      "sector": "Utilities"
+    },
+    {
+      "ticker": "NSC",
+      "name": "Norfolk Southern Corp",
+      "sector": "Road & Rail"
+    },
+    {
+      "ticker": "NSP",
+      "name": "Insperity Inc",
+      "sector": "Professional Services"
+    },
+    {
+      "ticker": "NTB",
+      "name": "Bank of NT Butterfield & Son Ltd",
+      "sector": "Banking"
+    },
+    {
+      "ticker": "NTR",
+      "name": "Nutrien Ltd",
+      "sector": "Chemicals"
+    },
+    {
+      "ticker": "NU",
+      "name": "Nu Holdings Ltd.",
+      "sector": "Banking"
+    },
+    {
+      "ticker": "NUE",
+      "name": "Nucor Corp",
+      "sector": "Metals & Mining"
+    },
+    {
+      "ticker": "NUVB",
+      "name": "Nuvation Bio Inc",
+      "sector": "Pharmaceuticals"
+    },
+    {
+      "ticker": "NVR",
+      "name": "NVR Inc",
+      "sector": "Consumer products"
+    },
+    {
+      "ticker": "NVST",
+      "name": "Envista Holdings Corp",
+      "sector": "Health Care"
+    },
+    {
+      "ticker": "NVT",
+      "name": "nVent Electric PLC",
+      "sector": "Electrical Equipment"
+    },
+    {
+      "ticker": "NWN",
+      "name": "Northwest Natural Holding Co",
+      "sector": "Utilities"
+    },
+    {
+      "ticker": "NXE",
+      "name": "Nexgen Energy Ltd",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "NYT",
+      "name": "New York Times Co",
+      "sector": "Media"
+    },
+    {
+      "ticker": "OBDC",
+      "name": "Blue Owl Capital Corp",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "OBK",
+      "name": "Origin Bancorp Inc",
+      "sector": "Banking"
+    },
+    {
+      "ticker": "OC",
+      "name": "Owens Corning",
+      "sector": "Building"
+    },
+    {
+      "ticker": "OFG",
+      "name": "OFG Bancorp",
+      "sector": "Banking"
+    },
+    {
+      "ticker": "OGC",
+      "name": "OceanaGold Corp",
+      "sector": "Metals & Mining"
+    },
+    {
+      "ticker": "OGE",
+      "name": "OGE Energy Corp",
+      "sector": "Utilities"
+    },
+    {
+      "ticker": "OGN",
+      "name": "Organon & Co",
+      "sector": "Pharmaceuticals"
+    },
+    {
+      "ticker": "OGS",
+      "name": "ONE Gas Inc",
+      "sector": "Utilities"
+    },
+    {
+      "ticker": "OII",
+      "name": "Oceaneering International Inc",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "OKE",
+      "name": "ONEOK Inc",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "OKLO",
+      "name": "Oklo Inc",
+      "sector": "Utilities"
+    },
+    {
+      "ticker": "OLN",
+      "name": "Olin Corp",
+      "sector": "Chemicals"
+    },
+    {
+      "ticker": "OMC",
+      "name": "Omnicom Group Inc",
+      "sector": "Media"
+    },
+    {
+      "ticker": "OMF",
+      "name": "OneMain Holdings Inc",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "ONON",
+      "name": "On Holding AG",
+      "sector": "Textiles, Apparel & Luxury Goods"
+    },
+    {
+      "ticker": "ONTO",
+      "name": "Onto Innovation Inc",
+      "sector": "Semiconductors"
+    },
+    {
+      "ticker": "OPLN",
+      "name": "Openlane Inc",
+      "sector": "Commercial Services & Supplies"
+    },
+    {
+      "ticker": "OR",
+      "name": "OR Royalties Inc",
+      "sector": "Metals & Mining"
+    },
+    {
+      "ticker": "ORA",
+      "name": "Ormat Technologies Inc",
+      "sector": "Utilities"
+    },
+    {
+      "ticker": "ORCL",
+      "name": "Oracle Corp",
+      "sector": "Technology"
+    },
+    {
+      "ticker": "ORI",
+      "name": "Old Republic International Corp",
+      "sector": "Insurance"
+    },
+    {
+      "ticker": "ORLA",
+      "name": "Orla Mining Ltd",
+      "sector": "Metals & Mining"
+    },
+    {
+      "ticker": "OSCR",
+      "name": "Oscar Health Inc",
+      "sector": "Insurance"
+    },
+    {
+      "ticker": "OSK",
+      "name": "Oshkosh Corp",
+      "sector": "Machinery"
+    },
+    {
+      "ticker": "OTF",
+      "name": "Blue Owl Technology Finance Corp",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "OTIS",
+      "name": "Otis Worldwide Corp",
+      "sector": "Machinery"
+    },
+    {
+      "ticker": "OVV",
+      "name": "Ovintiv Inc",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "OWL",
+      "name": "Blue Owl Capital Inc",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "OXY",
+      "name": "Occidental Petroleum Corp",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "P",
+      "name": "Everpure Inc",
+      "sector": "Technology"
+    },
+    {
+      "ticker": "PAAS",
+      "name": "Pan American Silver Corp",
+      "sector": "Metals & Mining"
+    },
+    {
+      "ticker": "PACS",
+      "name": "Pacs Group Inc",
+      "sector": "Health Care"
+    },
+    {
+      "ticker": "PAG",
+      "name": "Penske Automotive Group Inc",
+      "sector": "Retail"
+    },
+    {
+      "ticker": "PAGS",
+      "name": "PagSeguro Digital Ltd",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "PARR",
+      "name": "Par Pacific Holdings Inc",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "PATH",
+      "name": "UiPath Inc",
+      "sector": "Technology"
+    },
+    {
+      "ticker": "PAY",
+      "name": "Paymentus Holdings Inc",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "PAYC",
+      "name": "Paycom Software Inc",
+      "sector": "Professional Services"
+    },
+    {
+      "ticker": "PB",
+      "name": "Prosperity Bancshares, Inc",
+      "sector": "Banking"
+    },
+    {
+      "ticker": "PBA",
+      "name": "Pembina Pipeline Corp",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "PBF",
+      "name": "PBF Energy Inc",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "PBH",
+      "name": "Prestige Consumer Healthcare Inc",
+      "sector": "Pharmaceuticals"
+    },
+    {
+      "ticker": "PBI",
+      "name": "Pitney Bowes Inc",
+      "sector": "Commercial Services & Supplies"
+    },
+    {
+      "ticker": "PCG",
+      "name": "PG&E Corp",
+      "sector": "Utilities"
+    },
+    {
+      "ticker": "PCOR",
+      "name": "Procore Technologies Inc",
+      "sector": "Technology"
+    },
+    {
+      "ticker": "PEG",
+      "name": "Public Service Enterprise Group Inc",
+      "sector": "Utilities"
+    },
+    {
+      "ticker": "PEN",
+      "name": "Penumbra Inc",
+      "sector": "Health Care"
+    },
+    {
+      "ticker": "PFE",
+      "name": "Pfizer Inc",
+      "sector": "Pharmaceuticals"
+    },
+    {
+      "ticker": "PFGC",
+      "name": "Performance Food Group Co",
+      "sector": "Retail"
+    },
+    {
+      "ticker": "PFS",
+      "name": "Provident Financial Services Inc",
+      "sector": "Banking"
+    },
+    {
+      "ticker": "PFSI",
+      "name": "PennyMac Financial Services Inc",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "PG",
+      "name": "Procter & Gamble Co",
+      "sector": "Consumer products"
+    },
+    {
+      "ticker": "PGR",
+      "name": "Progressive Corp",
+      "sector": "Insurance"
+    },
+    {
+      "ticker": "PH",
+      "name": "Parker-Hannifin Corp",
+      "sector": "Machinery"
+    },
+    {
+      "ticker": "PHIN",
+      "name": "Phinia Inc",
+      "sector": "Auto Components"
+    },
+    {
+      "ticker": "PHM",
+      "name": "Pultegroup Inc",
+      "sector": "Consumer products"
+    },
+    {
+      "ticker": "PII",
+      "name": "Polaris Inc",
+      "sector": "Leisure Products"
+    },
+    {
+      "ticker": "PINS",
+      "name": "Pinterest Inc",
+      "sector": "Media"
+    },
+    {
+      "ticker": "PIPR",
+      "name": "Piper Sandler Companies",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "PJT",
+      "name": "PJT Partners Inc",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "PKG",
+      "name": "Packaging Corp of America",
+      "sector": "Packaging"
+    },
+    {
+      "ticker": "PL",
+      "name": "Planet Labs PBC",
+      "sector": "Professional Services"
+    },
+    {
+      "ticker": "PLGO",
+      "name": "Fidelis Insurance Holdings Ltd",
+      "sector": "Insurance"
+    },
+    {
+      "ticker": "PLNT",
+      "name": "Planet Fitness Inc",
+      "sector": "Hotels, Restaurants & Leisure"
+    },
+    {
+      "ticker": "PM",
+      "name": "Philip Morris International Inc",
+      "sector": "Tobacco"
+    },
+    {
+      "ticker": "PNC",
+      "name": "PNC Financial Services Group Inc",
+      "sector": "Banking"
+    },
+    {
+      "ticker": "PNFP",
+      "name": "Pinnacle Financial Partners Inc",
+      "sector": "Banking"
+    },
+    {
+      "ticker": "PNR",
+      "name": "Pentair PLC",
+      "sector": "Machinery"
+    },
+    {
+      "ticker": "PNW",
+      "name": "Pinnacle West Capital Corp",
+      "sector": "Utilities"
+    },
+    {
+      "ticker": "POR",
+      "name": "Portland General Electric Co",
+      "sector": "Utilities"
+    },
+    {
+      "ticker": "POST",
+      "name": "Post Holdings Inc",
+      "sector": "Food Products"
+    },
+    {
+      "ticker": "PPG",
+      "name": "PPG Industries Inc",
+      "sector": "Chemicals"
+    },
+    {
+      "ticker": "PPL",
+      "name": "PPL Corp",
+      "sector": "Utilities"
+    },
+    {
+      "ticker": "PR",
+      "name": "Permian Resources Corp",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "PRG",
+      "name": "PROG Holdings Inc",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "PRI",
+      "name": "Primerica Inc",
+      "sector": "Insurance"
+    },
+    {
+      "ticker": "PRIM",
+      "name": "Primoris Services Corp",
+      "sector": "Construction"
+    },
+    {
+      "ticker": "PRK",
+      "name": "Park National Corp",
+      "sector": "Banking"
+    },
+    {
+      "ticker": "PRKS",
+      "name": "United Parks & Resorts Inc",
+      "sector": "Hotels, Restaurants & Leisure"
+    },
+    {
+      "ticker": "PRLB",
+      "name": "Proto Labs Inc",
+      "sector": "Machinery"
+    },
+    {
+      "ticker": "PRM",
+      "name": "Perimeter Solutions Inc",
+      "sector": "Chemicals"
+    },
+    {
+      "ticker": "PRMB",
+      "name": "Primo Brands Corp",
+      "sector": "Beverages"
+    },
+    {
+      "ticker": "PRU",
+      "name": "Prudential Financial Inc",
+      "sector": "Insurance"
+    },
+    {
+      "ticker": "PS",
+      "name": "Pershing Square Inc",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "PSN",
+      "name": "Parsons Corp",
+      "sector": "Professional Services"
+    },
+    {
+      "ticker": "PSX",
+      "name": "Phillips 66",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "PUMP",
+      "name": "ProPetro Holding Corp",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "PVH",
+      "name": "PVH Corp",
+      "sector": "Textiles, Apparel & Luxury Goods"
+    },
+    {
+      "ticker": "PWR",
+      "name": "Quanta Services Inc",
+      "sector": "Construction"
+    },
+    {
+      "ticker": "Q",
+      "name": "Qnity Electronics Inc",
+      "sector": "Semiconductors"
+    },
+    {
+      "ticker": "QBTS",
+      "name": "D-Wave Quantum Inc",
+      "sector": "Technology"
+    },
+    {
+      "ticker": "QGEN",
+      "name": "Qiagen NV",
+      "sector": "Life Sciences Tools & Services"
+    },
+    {
+      "ticker": "QSR",
+      "name": "Restaurant Brands International Inc",
+      "sector": "Hotels, Restaurants & Leisure"
+    },
+    {
+      "ticker": "QTWO",
+      "name": "Q2 Holdings Inc",
+      "sector": "Technology"
+    },
+    {
+      "ticker": "QXO",
+      "name": "QXO Inc",
+      "sector": "Trading Companies & Distributors"
+    },
+    {
+      "ticker": "R",
+      "name": "Ryder System Inc",
+      "sector": "Road & Rail"
+    },
+    {
+      "ticker": "RACE",
+      "name": "Ferrari NV",
+      "sector": "Automobiles"
+    },
+    {
+      "ticker": "RAL",
+      "name": "Ralliant Corp",
+      "sector": "Electrical Equipment"
+    },
+    {
+      "ticker": "RAMP",
+      "name": "Liveramp Holdings Inc",
+      "sector": "Technology"
+    },
+    {
+      "ticker": "RBA",
+      "name": "RB Global Inc",
+      "sector": "Commercial Services & Supplies"
+    },
+    {
+      "ticker": "RBC",
+      "name": "RBC Bearings Inc",
+      "sector": "Machinery"
+    },
+    {
+      "ticker": "RBLX",
+      "name": "Roblox Corp",
+      "sector": "Media"
+    },
+    {
+      "ticker": "RBRK",
+      "name": "Rubrik Inc",
+      "sector": "Technology"
+    },
+    {
+      "ticker": "RCI",
+      "name": "Rogers Communications Inc",
+      "sector": "Telecommunication"
+    },
+    {
+      "ticker": "RCL",
+      "name": "Royal Caribbean Cruises Ltd",
+      "sector": "Hotels, Restaurants & Leisure"
+    },
+    {
+      "ticker": "RCUS",
+      "name": "Arcus Biosciences Inc",
+      "sector": "Biotechnology"
+    },
+    {
+      "ticker": "RDDT",
+      "name": "Reddit Inc",
+      "sector": "Media"
+    },
+    {
+      "ticker": "RDN",
+      "name": "Radian Group Inc",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "RDW",
+      "name": "Redwire Corp",
+      "sector": "Aerospace & Defense"
+    },
+    {
+      "ticker": "REX",
+      "name": "REX American Resources Corp",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "REZI",
+      "name": "Resideo Technologies Inc",
+      "sector": "Building"
+    },
+    {
+      "ticker": "RF",
+      "name": "Regions Financial Corp",
+      "sector": "Banking"
+    },
+    {
+      "ticker": "RGA",
+      "name": "Reinsurance Group of America Inc",
+      "sector": "Insurance"
+    },
+    {
+      "ticker": "RH",
+      "name": "RH",
+      "sector": "Retail"
+    },
+    {
+      "ticker": "RHI",
+      "name": "Robert Half Inc",
+      "sector": "Professional Services"
+    },
+    {
+      "ticker": "RIG",
+      "name": "Transocean Ltd",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "RJF",
+      "name": "Raymond James Financial Inc",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "RKT",
+      "name": "Rocket Companies Inc",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "RL",
+      "name": "Ralph Lauren Corp",
+      "sector": "Textiles, Apparel & Luxury Goods"
+    },
+    {
+      "ticker": "RLI",
+      "name": "RLI Corp",
+      "sector": "Insurance"
+    },
+    {
+      "ticker": "RMD",
+      "name": "Resmed Inc",
+      "sector": "Health Care"
+    },
+    {
+      "ticker": "RNG",
+      "name": "RingCentral Inc",
+      "sector": "Technology"
+    },
+    {
+      "ticker": "RNR",
+      "name": "Renaissancere Holdings Ltd",
+      "sector": "Insurance"
+    },
+    {
+      "ticker": "RNST",
+      "name": "Renasant Corp",
+      "sector": "Banking"
+    },
+    {
+      "ticker": "ROG",
+      "name": "Rogers Corp",
+      "sector": "Electrical Equipment"
+    },
+    {
+      "ticker": "ROK",
+      "name": "Rockwell Automation Inc",
+      "sector": "Electrical Equipment"
+    },
+    {
+      "ticker": "ROL",
+      "name": "Rollins Inc",
+      "sector": "Commercial Services & Supplies"
+    },
+    {
+      "ticker": "RPM",
+      "name": "RPM International Inc",
+      "sector": "Chemicals"
+    },
+    {
+      "ticker": "RRC",
+      "name": "Range Resources Corp",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "RRX",
+      "name": "Regal Rexnord Corp",
+      "sector": "Electrical Equipment"
+    },
+    {
+      "ticker": "RS",
+      "name": "Reliance Inc",
+      "sector": "Metals & Mining"
+    },
+    {
+      "ticker": "RSG",
+      "name": "Republic Services Inc",
+      "sector": "Commercial Services & Supplies"
+    },
+    {
+      "ticker": "RSI",
+      "name": "Rush Street Interactive Inc",
+      "sector": "Hotels, Restaurants & Leisure"
+    },
+    {
+      "ticker": "RTX",
+      "name": "RTX Corp",
+      "sector": "Aerospace & Defense"
+    },
+    {
+      "ticker": "RVLV",
+      "name": "Revolve Group Inc",
+      "sector": "Retail"
+    },
+    {
+      "ticker": "RVTY",
+      "name": "Revvity Inc",
+      "sector": "Life Sciences Tools & Services"
+    },
+    {
+      "ticker": "RXO",
+      "name": "RXO Inc",
+      "sector": "Road & Rail"
+    },
+    {
+      "ticker": "RY",
+      "name": "Royal Bank of Canada",
+      "sector": "Banking"
+    },
+    {
+      "ticker": "RYAN",
+      "name": "Ryan Specialty Holdings Inc",
+      "sector": "Insurance"
+    },
+    {
+      "ticker": "S",
+      "name": "SentinelOne Inc",
+      "sector": "Technology"
+    },
+    {
+      "ticker": "SA",
+      "name": "Seabridge Gold Inc",
+      "sector": "Metals & Mining"
+    },
+    {
+      "ticker": "SAH",
+      "name": "Sonic Automotive Inc",
+      "sector": "Retail"
+    },
+    {
+      "ticker": "SAM",
+      "name": "Boston Beer Company Inc",
+      "sector": "Beverages"
+    },
+    {
+      "ticker": "SARO",
+      "name": "StandardAero, Inc.",
+      "sector": "Aerospace & Defense"
+    },
+    {
+      "ticker": "SCCO",
+      "name": "Southern Copper Corp",
+      "sector": "Metals & Mining"
+    },
+    {
+      "ticker": "SCHW",
+      "name": "Charles Schwab Corp",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "SCI",
+      "name": "Service Corporation International",
+      "sector": "Diversified Consumer Services"
+    },
+    {
+      "ticker": "SDRL",
+      "name": "Seadrill Ltd",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "SEB",
+      "name": "Seaboard Corp",
+      "sector": "Food Products"
+    },
+    {
+      "ticker": "SEI",
+      "name": "Solaris Energy Infrastructure Inc",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "SF",
+      "name": "Stifel Financial Corp",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "SFBS",
+      "name": "ServisFirst Bancshares Inc",
+      "sector": "Banking"
+    },
+    {
+      "ticker": "SFL",
+      "name": "SFL Corporation Ltd",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "SGHC",
+      "name": "SGHC Ltd",
+      "sector": "Hotels, Restaurants & Leisure"
+    },
+    {
+      "ticker": "SGI",
+      "name": "Somnigroup International Inc",
+      "sector": "Consumer products"
+    },
+    {
+      "ticker": "SHAK",
+      "name": "Shake Shack Inc",
+      "sector": "Hotels, Restaurants & Leisure"
+    },
+    {
+      "ticker": "SHW",
+      "name": "Sherwin-Williams Co",
+      "sector": "Chemicals"
+    },
+    {
+      "ticker": "SIG",
+      "name": "Signet Jewelers Ltd",
+      "sector": "Retail"
+    },
+    {
+      "ticker": "SII",
+      "name": "Sprott Inc",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "SIND",
+      "name": "Sinda Ltd",
+      "sector": "N/A"
+    },
+    {
+      "ticker": "SITE",
+      "name": "SiteOne Landscape Supply Inc",
+      "sector": "Trading Companies & Distributors"
+    },
+    {
+      "ticker": "SJM",
+      "name": "J.M. Smucker Co",
+      "sector": "Food Products"
+    },
+    {
+      "ticker": "SKE",
+      "name": "Skeena Resources Ltd",
+      "sector": "Metals & Mining"
+    },
+    {
+      "ticker": "SKY",
+      "name": "Champion Homes Inc",
+      "sector": "Consumer products"
+    },
+    {
+      "ticker": "SLB",
+      "name": "SLB NV",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "SLF",
+      "name": "Sun Life Financial Inc",
+      "sector": "Insurance"
+    },
+    {
+      "ticker": "SLGN",
+      "name": "Silgan Holdings Inc",
+      "sector": "Packaging"
+    },
+    {
+      "ticker": "SLSR",
+      "name": "Solaris Resources Inc",
+      "sector": "Metals & Mining"
+    },
+    {
+      "ticker": "SLVM",
+      "name": "Sylvamo Corp",
+      "sector": "Paper & Forest"
+    },
+    {
+      "ticker": "SM",
+      "name": "SM Energy Co",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "SMG",
+      "name": "Scotts Miracle-Gro Co",
+      "sector": "Chemicals"
+    },
+    {
+      "ticker": "SMR",
+      "name": "Nuscale Power Corp",
+      "sector": "Electrical Equipment"
+    },
+    {
+      "ticker": "SN",
+      "name": "Sharkninja Inc",
+      "sector": "Consumer products"
+    },
+    {
+      "ticker": "SNA",
+      "name": "Snap-On Inc",
+      "sector": "Machinery"
+    },
+    {
+      "ticker": "SNAP",
+      "name": "Snap Inc",
+      "sector": "Media"
+    },
+    {
+      "ticker": "SNDA",
+      "name": "Sonida Senior Living Inc",
+      "sector": "Health Care"
+    },
+    {
+      "ticker": "SNDR",
+      "name": "Schneider National Inc",
+      "sector": "Road & Rail"
+    },
+    {
+      "ticker": "SNOW",
+      "name": "Snowflake Inc",
+      "sector": "Technology"
+    },
+    {
+      "ticker": "SNX",
+      "name": "TD Synnex Corp",
+      "sector": "Electrical Equipment"
+    },
+    {
+      "ticker": "SO",
+      "name": "Southern Co",
+      "sector": "Utilities"
+    },
+    {
+      "ticker": "SOBO",
+      "name": "South Bow Corp",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "SOLV",
+      "name": "Solventum Corp",
+      "sector": "Health Care"
+    },
+    {
+      "ticker": "SON",
+      "name": "Sonoco Products Co",
+      "sector": "Packaging"
+    },
+    {
+      "ticker": "SPB",
+      "name": "Spectrum Brands Holdings Inc",
+      "sector": "Consumer products"
+    },
+    {
+      "ticker": "SPGI",
+      "name": "S&P Global Inc",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "SPHR",
+      "name": "Sphere Entertainment Co",
+      "sector": "Media"
+    },
+    {
+      "ticker": "SPNT",
+      "name": "Siriuspoint Ltd",
+      "sector": "Insurance"
+    },
+    {
+      "ticker": "SPOT",
+      "name": "Spotify Technology SA",
+      "sector": "Media"
+    },
+    {
+      "ticker": "SPXC",
+      "name": "SPX Technologies Inc",
+      "sector": "Machinery"
+    },
+    {
+      "ticker": "SR",
+      "name": "Spire Inc",
+      "sector": "Utilities"
+    },
+    {
+      "ticker": "SRE",
+      "name": "Sempra",
+      "sector": "Utilities"
+    },
+    {
+      "ticker": "SSB",
+      "name": "SouthState Bank Corp",
+      "sector": "Banking"
+    },
+    {
+      "ticker": "SSD",
+      "name": "Simpson Manufacturing Co Inc",
+      "sector": "Building"
+    },
+    {
+      "ticker": "SSMR",
+      "name": "Sunshine Silver Mining & Refining Co",
+      "sector": "Metals & Mining"
+    },
+    {
+      "ticker": "ST",
+      "name": "Sensata Technologies Holding PLC",
+      "sector": "Electrical Equipment"
+    },
+    {
+      "ticker": "STC",
+      "name": "Stewart Information Services Corp",
+      "sector": "Insurance"
+    },
+    {
+      "ticker": "STE",
+      "name": "STERIS plc",
+      "sector": "Health Care"
+    },
+    {
+      "ticker": "STLA",
+      "name": "Stellantis NV",
+      "sector": "Automobiles"
+    },
+    {
+      "ticker": "STN",
+      "name": "Stantec Inc",
+      "sector": "Construction"
+    },
+    {
+      "ticker": "STNG",
+      "name": "Scorpio Tankers Inc",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "STT",
+      "name": "State Street Corp",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "STUB",
+      "name": "Stubhub Holdings, Inc",
+      "sector": "Media"
+    },
+    {
+      "ticker": "STVN",
+      "name": "Stevanato Group SpA",
+      "sector": "Life Sciences Tools & Services"
+    },
+    {
+      "ticker": "STZ",
+      "name": "Constellation Brands Inc",
+      "sector": "Beverages"
+    },
+    {
+      "ticker": "SU",
+      "name": "Suncor Energy Inc (Canada)",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "SUNB",
+      "name": "Sunbelt Rentals Holdings Inc",
+      "sector": "Trading Companies & Distributors"
+    },
+    {
+      "ticker": "SUNC",
+      "name": "SunocoCorp LLC",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "SVM",
+      "name": "Silvercorp Metals Inc",
+      "sector": "Metals & Mining"
+    },
+    {
+      "ticker": "SVV",
+      "name": "Savers Value Village Inc",
+      "sector": "Retail"
+    },
+    {
+      "ticker": "SW",
+      "name": "Smurfit WestRock PLC",
+      "sector": "Packaging"
+    },
+    {
+      "ticker": "SWK",
+      "name": "Stanley Black & Decker Inc",
+      "sector": "Machinery"
+    },
+    {
+      "ticker": "SWX",
+      "name": "Southwest Gas Holdings Inc",
+      "sector": "Utilities"
+    },
+    {
+      "ticker": "SXI",
+      "name": "Standex International Corp",
+      "sector": "Machinery"
+    },
+    {
+      "ticker": "SXT",
+      "name": "Sensient Technologies Corp",
+      "sector": "Chemicals"
+    },
+    {
+      "ticker": "SYF",
+      "name": "Synchrony Financial",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "SYK",
+      "name": "Stryker Corp",
+      "sector": "Health Care"
+    },
+    {
+      "ticker": "SYY",
+      "name": "Sysco Corp",
+      "sector": "Retail"
+    },
+    {
+      "ticker": "T",
+      "name": "AT&T Inc",
+      "sector": "Telecommunication"
+    },
+    {
+      "ticker": "TAC",
+      "name": "TransAlta Corp",
+      "sector": "Utilities"
+    },
+    {
+      "ticker": "TALO",
+      "name": "Talos Energy Inc",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "TAP",
+      "name": "Molson Coors Beverage Co",
+      "sector": "Beverages"
+    },
+    {
+      "ticker": "TAP.A",
+      "name": "Molson Coors Beverage Co",
+      "sector": "Beverages"
+    },
+    {
+      "ticker": "TBBB",
+      "name": "Bbb Foods Inc",
+      "sector": "Retail"
+    },
+    {
+      "ticker": "TD",
+      "name": "Toronto-Dominion Bank",
+      "sector": "Banking"
+    },
+    {
+      "ticker": "TDC",
+      "name": "Teradata Corp",
+      "sector": "Technology"
+    },
+    {
+      "ticker": "TDG",
+      "name": "TransDigm Group Inc",
+      "sector": "Aerospace & Defense"
+    },
+    {
+      "ticker": "TDOC",
+      "name": "Teladoc Health Inc",
+      "sector": "Health Care"
+    },
+    {
+      "ticker": "TDS",
+      "name": "Telephone and Data Systems Inc",
+      "sector": "Telecommunication"
+    },
+    {
+      "ticker": "TDW",
+      "name": "Tidewater Inc",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "TDY",
+      "name": "Teledyne Technologies Inc",
+      "sector": "Electrical Equipment"
+    },
+    {
+      "ticker": "TE",
+      "name": "T1 Energy Inc",
+      "sector": "Electrical Equipment"
+    },
+    {
+      "ticker": "TECK",
+      "name": "Teck Resources Ltd",
+      "sector": "Metals & Mining"
+    },
+    {
+      "ticker": "TEL",
+      "name": "TE Connectivity PLC",
+      "sector": "Electrical Equipment"
+    },
+    {
+      "ticker": "TEX",
+      "name": "Terex Corp",
+      "sector": "Machinery"
+    },
+    {
+      "ticker": "TFC",
+      "name": "Truist Financial Corp",
+      "sector": "Banking"
+    },
+    {
+      "ticker": "TFII",
+      "name": "TFI International Inc",
+      "sector": "Road & Rail"
+    },
+    {
+      "ticker": "TFIN",
+      "name": "Triumph Financial Inc",
+      "sector": "Banking"
+    },
+    {
+      "ticker": "TFPM",
+      "name": "Triple Flag Precious Metals Corp",
+      "sector": "Metals & Mining"
+    },
+    {
+      "ticker": "TFX",
+      "name": "Teleflex Inc",
+      "sector": "Health Care"
+    },
+    {
+      "ticker": "TGB",
+      "name": "Taseko Mines Ltd",
+      "sector": "Metals & Mining"
+    },
+    {
+      "ticker": "TGLS",
+      "name": "Tecnoglass Inc",
+      "sector": "Building"
+    },
+    {
+      "ticker": "TGT",
+      "name": "Target Corp",
+      "sector": "Retail"
+    },
+    {
+      "ticker": "THC",
+      "name": "Tenet Healthcare Corp",
+      "sector": "Health Care"
+    },
+    {
+      "ticker": "THG",
+      "name": "Hanover Insurance Group Inc",
+      "sector": "Insurance"
+    },
+    {
+      "ticker": "THO",
+      "name": "Thor Industries Inc",
+      "sector": "Automobiles"
+    },
+    {
+      "ticker": "TIC",
+      "name": "TIC Solutions Inc",
+      "sector": "Professional Services"
+    },
+    {
+      "ticker": "TJX",
+      "name": "TJX Companies Inc",
+      "sector": "Retail"
+    },
+    {
+      "ticker": "TKO",
+      "name": "TKO Group Holdings Inc",
+      "sector": "Media"
+    },
+    {
+      "ticker": "TKR",
+      "name": "Timken Co",
+      "sector": "Machinery"
+    },
+    {
+      "ticker": "TMHC",
+      "name": "Taylor Morrison Home Corp",
+      "sector": "Consumer products"
+    },
+    {
+      "ticker": "TMO",
+      "name": "Thermo Fisher Scientific Inc",
+      "sector": "Life Sciences Tools & Services"
+    },
+    {
+      "ticker": "TNET",
+      "name": "TriNet Group Inc",
+      "sector": "Professional Services"
+    },
+    {
+      "ticker": "TNK",
+      "name": "Teekay Tankers Ltd",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "TNL",
+      "name": "Travel + Leisure Co",
+      "sector": "Hotels, Restaurants & Leisure"
+    },
+    {
+      "ticker": "TOL",
+      "name": "Toll Brothers Inc",
+      "sector": "Consumer products"
+    },
+    {
+      "ticker": "TOST",
+      "name": "Toast Inc",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "TPB",
+      "name": "Turning Point Brands Inc",
+      "sector": "Tobacco"
+    },
+    {
+      "ticker": "TPC",
+      "name": "Tutor Perini Corp",
+      "sector": "Construction"
+    },
+    {
+      "ticker": "TPL",
+      "name": "Texas Pacific Land Corp",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "TPR",
+      "name": "Tapestry Inc",
+      "sector": "Textiles, Apparel & Luxury Goods"
+    },
+    {
+      "ticker": "TR",
+      "name": "Tootsie Roll Industries Inc",
+      "sector": "Food Products"
+    },
+    {
+      "ticker": "TREX",
+      "name": "Trex Company Inc",
+      "sector": "Building"
+    },
+    {
+      "ticker": "TRGP",
+      "name": "Targa Resources Corp",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "TRLV",
+      "name": "Trulieve Cannabis Corp",
+      "sector": "Pharmaceuticals"
+    },
+    {
+      "ticker": "TRN",
+      "name": "Trinity Industries Inc",
+      "sector": "Machinery"
+    },
+    {
+      "ticker": "TRP",
+      "name": "TC Energy Corp",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "TRU",
+      "name": "TransUnion",
+      "sector": "Professional Services"
+    },
+    {
+      "ticker": "TRV",
+      "name": "Travelers Companies Inc",
+      "sector": "Insurance"
+    },
+    {
+      "ticker": "TSLX",
+      "name": "Sixth Street Specialty Lending Inc",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "TSN",
+      "name": "Tyson Foods Inc",
+      "sector": "Food Products"
+    },
+    {
+      "ticker": "TT",
+      "name": "Trane Technologies PLC",
+      "sector": "Building"
+    },
+    {
+      "ticker": "TTAM",
+      "name": "Titan America SA",
+      "sector": "Construction"
+    },
+    {
+      "ticker": "TTC",
+      "name": "Toro Co",
+      "sector": "Machinery"
+    },
+    {
+      "ticker": "TTE",
+      "name": "TotalEnergies SE",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "TU",
+      "name": "Telus Corporation",
+      "sector": "Telecommunication"
+    },
+    {
+      "ticker": "TWLO",
+      "name": "Twilio Inc",
+      "sector": "Technology"
+    },
+    {
+      "ticker": "TXNM",
+      "name": "TXNM Energy Inc",
+      "sector": "Utilities"
+    },
+    {
+      "ticker": "TXT",
+      "name": "Textron Inc",
+      "sector": "Aerospace & Defense"
+    },
+    {
+      "ticker": "TYL",
+      "name": "Tyler Technologies Inc",
+      "sector": "Technology"
+    },
+    {
+      "ticker": "U",
+      "name": "Unity Software Inc",
+      "sector": "Technology"
+    },
+    {
+      "ticker": "UA",
+      "name": "Under Armour Inc",
+      "sector": "Textiles, Apparel & Luxury Goods"
+    },
+    {
+      "ticker": "UAA",
+      "name": "Under Armour Inc",
+      "sector": "Textiles, Apparel & Luxury Goods"
+    },
+    {
+      "ticker": "UBER",
+      "name": "Uber Technologies Inc",
+      "sector": "Road & Rail"
+    },
+    {
+      "ticker": "UBS",
+      "name": "UBS Group AG",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "UCB",
+      "name": "United Community Banks Inc",
+      "sector": "Banking"
+    },
+    {
+      "ticker": "UEC",
+      "name": "Uranium Energy Corp",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "UGI",
+      "name": "UGI Corp",
+      "sector": "Utilities"
+    },
+    {
+      "ticker": "UHAL",
+      "name": "U-Haul Holding Co",
+      "sector": "Road & Rail"
+    },
+    {
+      "ticker": "UHS",
+      "name": "Universal Health Services Inc",
+      "sector": "Health Care"
+    },
+    {
+      "ticker": "UI",
+      "name": "Ubiquiti Inc",
+      "sector": "Communications"
+    },
+    {
+      "ticker": "ULS",
+      "name": "UL Solutions Inc",
+      "sector": "Professional Services"
+    },
+    {
+      "ticker": "UNF",
+      "name": "UniFirst Corp",
+      "sector": "Commercial Services & Supplies"
+    },
+    {
+      "ticker": "UNFI",
+      "name": "United Natural Foods Inc",
+      "sector": "Retail"
+    },
+    {
+      "ticker": "UNH",
+      "name": "UnitedHealth Group Inc",
+      "sector": "Health Care"
+    },
+    {
+      "ticker": "UNM",
+      "name": "Unum Group",
+      "sector": "Insurance"
+    },
+    {
+      "ticker": "UNP",
+      "name": "Union Pacific Corp",
+      "sector": "Road & Rail"
+    },
+    {
+      "ticker": "UPS",
+      "name": "United Parcel Service Inc",
+      "sector": "Logistics & Transportation"
+    },
+    {
+      "ticker": "URI",
+      "name": "United Rentals Inc",
+      "sector": "Trading Companies & Distributors"
+    },
+    {
+      "ticker": "USAS",
+      "name": "Americas Gold and Silver Corporation",
+      "sector": "Metals & Mining"
+    },
+    {
+      "ticker": "USB",
+      "name": "US Bancorp",
+      "sector": "Banking"
+    },
+    {
+      "ticker": "USFD",
+      "name": "US Foods Holding Corp",
+      "sector": "Retail"
+    },
+    {
+      "ticker": "UTI",
+      "name": "Universal Technical Institute Inc",
+      "sector": "Diversified Consumer Services"
+    },
+    {
+      "ticker": "UUUU",
+      "name": "Energy Fuels Inc",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "UWMC",
+      "name": "UWM Holdings Corp",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "V",
+      "name": "Visa Inc",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "VAC",
+      "name": "Marriott Vacations Worldwide Corp",
+      "sector": "Hotels, Restaurants & Leisure"
+    },
+    {
+      "ticker": "VAL",
+      "name": "Valaris Ltd",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "VEEV",
+      "name": "Veeva Systems Inc",
+      "sector": "Health Care"
+    },
+    {
+      "ticker": "VET",
+      "name": "Vermilion Energy Inc",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "VFC",
+      "name": "VF Corp",
+      "sector": "Textiles, Apparel & Luxury Goods"
+    },
+    {
+      "ticker": "VG",
+      "name": "Venture Global Inc",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "VGNT",
+      "name": "Versigent PLC",
+      "sector": "Auto Components"
+    },
+    {
+      "ticker": "VIA",
+      "name": "Via Transportation Inc",
+      "sector": "Technology"
+    },
+    {
+      "ticker": "VIK",
+      "name": "Viking Holdings Ltd(Pembroke)",
+      "sector": "Hotels, Restaurants & Leisure"
+    },
+    {
+      "ticker": "VIRT",
+      "name": "Virtu Financial Inc",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "VLO",
+      "name": "Valero Energy Corp",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "VLTO",
+      "name": "Veralto Corp",
+      "sector": "Commercial Services & Supplies"
+    },
+    {
+      "ticker": "VMC",
+      "name": "Vulcan Materials Co",
+      "sector": "Construction"
+    },
+    {
+      "ticker": "VMI",
+      "name": "Valmont Industries Inc",
+      "sector": "Construction"
+    },
+    {
+      "ticker": "VNT",
+      "name": "Vontier Corp",
+      "sector": "Electrical Equipment"
+    },
+    {
+      "ticker": "VOYA",
+      "name": "Voya Financial Inc",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "VOYG",
+      "name": "Voyager Technologies Inc",
+      "sector": "Aerospace & Defense"
+    },
+    {
+      "ticker": "VPG",
+      "name": "Vishay Precision Group Inc",
+      "sector": "Electrical Equipment"
+    },
+    {
+      "ticker": "VRT",
+      "name": "Vertiv Holdings Co",
+      "sector": "Electrical Equipment"
+    },
+    {
+      "ticker": "VSH",
+      "name": "Vishay Intertechnology Inc",
+      "sector": "Electrical Equipment"
+    },
+    {
+      "ticker": "VST",
+      "name": "Vistra Corp",
+      "sector": "Utilities"
+    },
+    {
+      "ticker": "VSTS",
+      "name": "Vestis Corp",
+      "sector": "Commercial Services & Supplies"
+    },
+    {
+      "ticker": "VSXY",
+      "name": "Victoria's Secret & Co",
+      "sector": "Retail"
+    },
+    {
+      "ticker": "VVV",
+      "name": "Valvoline Inc",
+      "sector": "Retail"
+    },
+    {
+      "ticker": "VVX",
+      "name": "V2X Inc",
+      "sector": "Aerospace & Defense"
+    },
+    {
+      "ticker": "VZ",
+      "name": "Verizon Communications Inc",
+      "sector": "Telecommunication"
+    },
+    {
+      "ticker": "VZLA",
+      "name": "Vizsla Silver Corp",
+      "sector": "Metals & Mining"
+    },
+    {
+      "ticker": "W",
+      "name": "Wayfair Inc",
+      "sector": "Retail"
+    },
+    {
+      "ticker": "WAB",
+      "name": "Westinghouse Air Brake Technologies Corp",
+      "sector": "Machinery"
+    },
+    {
+      "ticker": "WAL",
+      "name": "Western Alliance Bancorp",
+      "sector": "Banking"
+    },
+    {
+      "ticker": "WAT",
+      "name": "Waters Corp",
+      "sector": "Life Sciences Tools & Services"
+    },
+    {
+      "ticker": "WBI",
+      "name": "WaterBridge Infrastructure LLC",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "WBS",
+      "name": "Webster Financial Corp",
+      "sector": "Banking"
+    },
+    {
+      "ticker": "WCC",
+      "name": "Wesco International Inc",
+      "sector": "Trading Companies & Distributors"
+    },
+    {
+      "ticker": "WCN",
+      "name": "Waste Connections, Inc",
+      "sector": "Commercial Services & Supplies"
+    },
+    {
+      "ticker": "WD",
+      "name": "Walker & Dunlop Inc",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "WEC",
+      "name": "WEC Energy Group Inc",
+      "sector": "Utilities"
+    },
+    {
+      "ticker": "WEX",
+      "name": "WEX Inc",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "WFC",
+      "name": "Wells Fargo & Co",
+      "sector": "Banking"
+    },
+    {
+      "ticker": "WFG",
+      "name": "West Fraser Timber Co Ltd",
+      "sector": "Paper & Forest"
+    },
+    {
+      "ticker": "WH",
+      "name": "Wyndham Hotels & Resorts Inc",
+      "sector": "Hotels, Restaurants & Leisure"
+    },
+    {
+      "ticker": "WHD",
+      "name": "Cactus Inc",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "WHR",
+      "name": "Whirlpool Corp",
+      "sector": "Consumer products"
+    },
+    {
+      "ticker": "WK",
+      "name": "Workiva Inc",
+      "sector": "Technology"
+    },
+    {
+      "ticker": "WKC",
+      "name": "World Kinect Corp",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "WLK",
+      "name": "Westlake Corp",
+      "sector": "Chemicals"
+    },
+    {
+      "ticker": "WLY",
+      "name": "John Wiley & Sons Inc",
+      "sector": "Media"
+    },
+    {
+      "ticker": "WLYB",
+      "name": "John Wiley & Sons Inc",
+      "sector": "Media"
+    },
+    {
+      "ticker": "WM",
+      "name": "Waste Management Inc",
+      "sector": "Commercial Services & Supplies"
+    },
+    {
+      "ticker": "WMB",
+      "name": "Williams Companies Inc",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "WMK",
+      "name": "Weis Markets Inc",
+      "sector": "Retail"
+    },
+    {
+      "ticker": "WMS",
+      "name": "Advanced Drainage Systems Inc",
+      "sector": "Building"
+    },
+    {
+      "ticker": "WOLF",
+      "name": "Wolfspeed Inc",
+      "sector": "Semiconductors"
+    },
+    {
+      "ticker": "WOR",
+      "name": "Worthington Enterprises, Inc",
+      "sector": "Machinery"
+    },
+    {
+      "ticker": "WPM",
+      "name": "Wheaton Precious Metals Corp",
+      "sector": "Metals & Mining"
+    },
+    {
+      "ticker": "WRB",
+      "name": "W. R. Berkley Corp",
+      "sector": "Insurance"
+    },
+    {
+      "ticker": "WRBY",
+      "name": "Warby Parker Inc",
+      "sector": "Retail"
+    },
+    {
+      "ticker": "WS",
+      "name": "Worthington Steel Inc",
+      "sector": "Metals & Mining"
+    },
+    {
+      "ticker": "WSM",
+      "name": "Williams-Sonoma Inc",
+      "sector": "Retail"
+    },
+    {
+      "ticker": "WSO",
+      "name": "Watsco Inc",
+      "sector": "Trading Companies & Distributors"
+    },
+    {
+      "ticker": "WSO.B",
+      "name": "Watsco Inc",
+      "sector": "Trading Companies & Distributors"
+    },
+    {
+      "ticker": "WST",
+      "name": "West Pharmaceutical Services Inc",
+      "sector": "Life Sciences Tools & Services"
+    },
+    {
+      "ticker": "WT",
+      "name": "WisdomTree Inc",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "WTM",
+      "name": "White Mountains Insurance Group Ltd",
+      "sector": "Insurance"
+    },
+    {
+      "ticker": "WTRG",
+      "name": "Essential Utilities Inc",
+      "sector": "Utilities"
+    },
+    {
+      "ticker": "WTS",
+      "name": "Watts Water Technologies Inc",
+      "sector": "Machinery"
+    },
+    {
+      "ticker": "WTTR",
+      "name": "Select Water Solutions Inc",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "WU",
+      "name": "Western Union Co",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "XOM",
+      "name": "Exxon Mobil Corp",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "XPO",
+      "name": "XPO Inc",
+      "sector": "Road & Rail"
+    },
+    {
+      "ticker": "XPRO",
+      "name": "Expro Group Holdings NV",
+      "sector": "Energy"
+    },
+    {
+      "ticker": "XXI",
+      "name": "Twenty One Capital Inc",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "XYL",
+      "name": "Xylem Inc",
+      "sector": "Machinery"
+    },
+    {
+      "ticker": "XYZ",
+      "name": "Block Inc",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "YETI",
+      "name": "Yeti Holdings Inc",
+      "sector": "Leisure Products"
+    },
+    {
+      "ticker": "YOU",
+      "name": "Clear Secure Inc",
+      "sector": "Technology"
+    },
+    {
+      "ticker": "YSS",
+      "name": "York Space Systems Inc",
+      "sector": "Aerospace & Defense"
+    },
+    {
+      "ticker": "YUM",
+      "name": "Yum! Brands Inc",
+      "sector": "Hotels, Restaurants & Leisure"
+    },
+    {
+      "ticker": "YUMC",
+      "name": "Yum China Holdings Inc",
+      "sector": "Hotels, Restaurants & Leisure"
+    },
+    {
+      "ticker": "ZBH",
+      "name": "Zimmer Biomet Holdings, Inc",
+      "sector": "Health Care"
+    },
+    {
+      "ticker": "ZETA",
+      "name": "Zeta Global Holdings Corp",
+      "sector": "Technology"
+    },
+    {
+      "ticker": "ZGN",
+      "name": "Ermenegildo Zegna NV",
+      "sector": "Textiles, Apparel & Luxury Goods"
+    },
+    {
+      "ticker": "ZIM",
+      "name": "ZIM Integrated Shipping Services Ltd",
+      "sector": "Marine"
+    },
+    {
+      "ticker": "ZTS",
+      "name": "Zoetis Inc",
+      "sector": "Pharmaceuticals"
+    },
+    {
+      "ticker": "ZWS",
+      "name": "Zurn Elkay Water Solutions Corp",
+      "sector": "Building"
+    }
+  ]
+}

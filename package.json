@@ -8,7 +8,8 @@
     "start": "next start",
     "scan": "tsx scripts/scan.ts",
     "analyze": "tsx scripts/analyze.ts",
-    "universe": "tsx scripts/universe.ts"
+    "universe": "tsx scripts/universe.ts",
+    "backtest": "tsx scripts/backtest.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.111.0",

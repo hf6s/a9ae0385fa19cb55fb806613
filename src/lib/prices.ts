@@ -12,10 +12,10 @@ function yahooSymbol(ticker: string): string {
   return ticker.replace(/\./g, "-");
 }
 
-async function fetchChart(symbol: string, keep: number): Promise<Candle[] | null> {
+async function fetchChart(symbol: string, keep: number, range = "2y"): Promise<Candle[] | null> {
   const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(
     symbol,
-  )}?range=2y&interval=1d`;
+  )}?range=${range}&interval=1d`;
 
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
@@ -62,11 +62,15 @@ async function fetchChart(symbol: string, keep: number): Promise<Candle[] | null
   return null;
 }
 
-export async function dailyHistory(ticker: string, keep = 420): Promise<Candle[] | null> {
-  return fetchChart(yahooSymbol(ticker), keep);
+export async function dailyHistory(
+  ticker: string,
+  keep = 420,
+  range = "2y",
+): Promise<Candle[] | null> {
+  return fetchChart(yahooSymbol(ticker), keep, range);
 }
 
-/** S&P 500 daily candles (^GSPC) for relative-strength. */
-export async function sp500History(keep = 420): Promise<Candle[] | null> {
-  return fetchChart("^GSPC", keep);
+/** S&P 500 daily candles (^GSPC) for relative-strength / benchmarking. */
+export async function sp500History(keep = 420, range = "2y"): Promise<Candle[] | null> {
+  return fetchChart("^GSPC", keep, range);
 }

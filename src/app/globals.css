@@ -44,6 +44,8 @@ main {
 .site-header {
   border-bottom: 1px solid var(--border);
   margin-bottom: 32px;
+  background: linear-gradient(180deg, rgba(79, 209, 165, 0.05), transparent);
+  border-top: 2px solid var(--accent);
 }
 
 .site-header .inner {
@@ -306,6 +308,95 @@ table.rankings tr.row:hover td {
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 14px 16px;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.card:hover {
+  border-color: #2f3a4d;
+}
+
+/* score color coding */
+.sc-lo {
+  color: var(--red);
+}
+
+.sc-mid {
+  color: var(--amber);
+}
+
+.sc-hi {
+  color: var(--accent);
+}
+
+/* dashboard histogram */
+.histo {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 70px;
+  margin-top: 6px;
+}
+
+.histo-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  height: 100%;
+  gap: 3px;
+}
+
+.histo-bar {
+  width: 100%;
+  min-height: 2px;
+  background: var(--accent-dim);
+  border-radius: 2px 2px 0 0;
+}
+
+.histo-col:hover .histo-bar {
+  background: var(--accent);
+}
+
+.histo-label {
+  font-size: 9px;
+  color: var(--text-dim);
+}
+
+/* sector rows */
+.sector-row {
+  display: grid;
+  grid-template-columns: minmax(90px, 1fr) 2fr auto;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.sector-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text-dim);
+}
+
+.sector-track {
+  height: 6px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.sector-fill {
+  height: 100%;
+  background: var(--q);
+  border-radius: 3px;
+}
+
+table.rankings thead th {
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  z-index: 1;
 }
 
 .card .label {

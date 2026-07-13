@@ -7,3 +7,4 @@ node_modules/
 next-env.d.ts
 *.log
 data/scan-status.json
+data/backtest-status.json

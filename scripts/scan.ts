@@ -324,7 +324,12 @@ async function main() {
   };
 
   fs.mkdirSync(HISTORY_DIR, { recursive: true });
-  fs.writeFileSync(path.join(DATA_DIR, "rankings.json"), JSON.stringify(rankings, null, 2));
+  // Keep the previous scan for rank-change display on the dashboard
+  const rankingsPath = path.join(DATA_DIR, "rankings.json");
+  if (fs.existsSync(rankingsPath)) {
+    fs.copyFileSync(rankingsPath, path.join(DATA_DIR, "rankings-prev.json"));
+  }
+  fs.writeFileSync(rankingsPath, JSON.stringify(rankings, null, 2));
   // Price-history files for chart pages — cap at 120 to keep the repo lean
   for (const s of ranked.slice(0, 120)) {
     const h = histories.get(s.ticker);

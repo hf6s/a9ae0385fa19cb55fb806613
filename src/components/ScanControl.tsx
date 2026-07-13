@@ -49,12 +49,20 @@ export default function ScanControl({ universeBuilt }: { universeBuilt: boolean 
   const s = running ? (scanStatus as ScanStatus) : null;
 
   let etaText = "—";
+  let overallText = "—";
   let pct = 0;
   if (s && s.total > 0 && s.done > 0) {
     const elapsed = (Date.now() - Date.parse(s.phaseStartedAt)) / 1000;
     const rate = s.done / Math.max(elapsed, 1);
-    etaText = formatEta((s.total - s.done) / Math.max(rate, 0.001));
+    const phaseEta = (s.total - s.done) / Math.max(rate, 0.001);
+    etaText = formatEta(phaseEta);
     pct = Math.min(100, (s.done / s.total) * 100);
+    // Rough overall estimate: after market data, ~13% of the universe goes
+    // through EDGAR (~1.5s each) and penalties (~1.2s each)
+    let overall = phaseEta;
+    if (s.phase === "market data") overall += s.total * 0.13 * 2.7;
+    else if (s.phase === "SEC EDGAR fundamentals") overall += s.total * 1.2;
+    overallText = formatEta(overall);
   }
 
   return (
@@ -70,8 +78,8 @@ export default function ScanControl({ universeBuilt }: { universeBuilt: boolean 
             <div className="progress-fill" style={{ width: `${pct}%` }} />
           </div>
           <p className="name-dim" style={{ marginTop: 8 }}>
-            {s.done}/{s.total} · ETA for this phase: <strong>{etaText}</strong>
-            {s.phase === "market data" && " (the longest phase — EDGAR + penalties follow)"}
+            {s.done}/{s.total} · phase ETA: <strong>{etaText}</strong> · overall ≈{" "}
+            <strong>{overallText}</strong>
           </p>
         </div>
       ) : (
