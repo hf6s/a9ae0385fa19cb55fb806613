@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import SearchBox from "@/components/SearchBox";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -26,6 +27,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <Link href="/backtest">Backtest</Link>
               <Link href="/dashboard">Dashboard</Link>
             </nav>
+            <SearchBox />
           </div>
         </header>
         {children}

@@ -103,6 +103,7 @@ export default function BacktestPage() {
 
       <section>
         <h2>Recent rebalances</h2>
+        <div className="table-scroll">
         <table className="rankings">
           <thead>
             <tr>
@@ -132,6 +133,7 @@ export default function BacktestPage() {
             ))}
           </tbody>
         </table>
+        </div>
       </section>
 
       <section>

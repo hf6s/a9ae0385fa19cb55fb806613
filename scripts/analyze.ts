@@ -143,7 +143,8 @@ async function main() {
     throw new Error("data/rankings.json not found — run `npm run scan` first");
   }
   const rankings: Rankings = JSON.parse(fs.readFileSync(rankingsPath, "utf8"));
-  const top = Number(argValue("--top")) || 20;
+  // Default 35: covers the top 20 of every holding-period preset, not just 1yr
+  const top = Number(argValue("--top")) || 35;
   const direct = process.argv.includes("--direct");
   const stocks = rankings.stocks.slice(0, top);
 

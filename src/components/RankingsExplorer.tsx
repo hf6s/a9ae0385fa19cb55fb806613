@@ -29,7 +29,64 @@ const DEFAULT_HORIZON = "1y";
 
 const scoreClass = (v: number) => (v >= 60 ? "sc-hi" : v >= 40 ? "sc-mid" : "sc-lo");
 
-export default function RankingsExplorer({ stocks }: { stocks: RankedStock[] }) {
+function Sparkline({ points }: { points: number[] }) {
+  const min = Math.min(...points);
+  const max = Math.max(...points);
+  const range = max - min || 1;
+  const w = 88;
+  const h = 26;
+  const path = points
+    .map((p, i) => `${(i / (points.length - 1)) * w},${h - 2 - ((p - min) / range) * (h - 4)}`)
+    .join(" ");
+  const up = points[points.length - 1] >= points[0];
+  return (
+    <svg width={w} height={h} className="spark" aria-hidden>
+      <polyline
+        points={path}
+        fill="none"
+        stroke={up ? "var(--accent)" : "var(--red)"}
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function exportCsv(
+  rows: (RankedStock & { viewScore: number })[],
+  horizonLabel: string,
+): void {
+  const header = "rank,ticker,name,sector,price,score,quality,value,momentum,growth,penalties";
+  const lines = rows.map((s, i) =>
+    [
+      i + 1,
+      s.ticker,
+      `"${s.name.replace(/"/g, '""')}"`,
+      `"${s.sector}"`,
+      s.price,
+      s.viewScore,
+      s.scores.quality,
+      s.scores.value,
+      s.scores.momentum,
+      s.scores.growth,
+      `"${s.penalties.map((p) => p.reason).join("; ")}"`,
+    ].join(","),
+  );
+  const blob = new Blob([[header, ...lines].join("\n")], { type: "text/csv" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `factor20-${horizonLabel.replace(/\s/g, "")}-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+export default function RankingsExplorer({
+  stocks,
+  sparks = {},
+}: {
+  stocks: RankedStock[];
+  sparks?: Record<string, number[]>;
+}) {
   const [horizonKey, setHorizonKey] = useState<string>(DEFAULT_HORIZON);
   const [capKey, setCapKey] = useState<string>("all");
 
@@ -38,6 +95,11 @@ export default function RankingsExplorer({ stocks }: { stocks: RankedStock[] }) 
 
   const ranked = useMemo(() => {
     return stocks
+      // one slot per company (duplicate share classes like GOOG/GOOGL)
+      .filter(
+        (s, i, arr) =>
+          arr.findIndex((x) => x.name.toLowerCase() === s.name.toLowerCase()) === i,
+      )
       .filter((s) => s.marketCap >= cap.min && s.marketCap < cap.max)
       .map((s) => {
         const base =
@@ -83,19 +145,26 @@ export default function RankingsExplorer({ stocks }: { stocks: RankedStock[] }) 
           </div>
         </div>
       </div>
-      <p className="weights-line">
-        Weights for this horizon: Quality {Math.round(horizon.q * 100)}% · Value{" "}
-        {Math.round(horizon.v * 100)}% · Momentum {Math.round(horizon.m * 100)}% · Growth{" "}
-        {Math.round(horizon.g * 100)}%
-        {horizonKey !== DEFAULT_HORIZON &&
-          " — shorter holds lean on momentum; longer holds lean on quality and value"}
-      </p>
+      <div className="weights-row">
+        <p className="weights-line">
+          Weights for this horizon: Quality {Math.round(horizon.q * 100)}% · Value{" "}
+          {Math.round(horizon.v * 100)}% · Momentum {Math.round(horizon.m * 100)}% · Growth{" "}
+          {Math.round(horizon.g * 100)}%
+          {horizonKey !== DEFAULT_HORIZON &&
+            " — shorter holds lean on momentum; longer holds lean on quality and value"}
+        </p>
+        <button className="csv-btn" onClick={() => exportCsv(ranked, horizon.label)}>
+          ⤓ CSV
+        </button>
+      </div>
 
+      <div className="table-scroll">
       <table className="rankings">
         <thead>
           <tr>
             <th>#</th>
             <th>Company</th>
+            <th className="spark-col"></th>
             <th style={{ textAlign: "right" }}>Price</th>
             <th style={{ textAlign: "right" }}>Score</th>
             <th style={{ textAlign: "right" }}>Q</th>
@@ -105,15 +174,22 @@ export default function RankingsExplorer({ stocks }: { stocks: RankedStock[] }) 
             <th></th>
           </tr>
         </thead>
-        <tbody>
+        <tbody key={`${horizonKey}-${capKey}`}>
           {ranked.map((s, i) => (
-            <tr key={s.ticker} className="row">
+            <tr
+              key={s.ticker}
+              className="row row-in"
+              style={{ animationDelay: `${Math.min(i, 25) * 18}ms` }}
+            >
               <td className="rank-cell">{i + 1}</td>
               <td>
                 <Link href={`/stock/${s.ticker}`}>
                   <span className="ticker">{s.ticker}</span>{" "}
                   <span className="name-dim">{s.name}</span>
                 </Link>
+              </td>
+              <td className="spark-col">
+                {sparks[s.ticker] ? <Sparkline points={sparks[s.ticker]} /> : null}
               </td>
               <td style={{ textAlign: "right" }}>${s.price.toFixed(2)}</td>
               <td style={{ textAlign: "right" }} className="score-strong">
@@ -148,6 +224,7 @@ export default function RankingsExplorer({ stocks }: { stocks: RankedStock[] }) 
           ))}
         </tbody>
       </table>
+      </div>
       {ranked.length === 0 && (
         <p className="name-dim" style={{ padding: "24px 12px" }}>
           No survivors in this market-cap range on the latest scan.

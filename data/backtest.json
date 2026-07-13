@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-13T23:06:56.591Z",
+  "generatedAt": "2026-07-13T23:31:09.633Z",
   "strategy": "Momentum composite (40% 12-1m / 30% 6m / 20% rel. strength / 10% >200MA) + trend filter, top 20 equal-weight, quarterly rebalance",
   "universe": "Current S&P 500 members with 10y Yahoo history (500 tickers)",
   "caveats": [

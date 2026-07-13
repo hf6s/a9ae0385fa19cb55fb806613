@@ -313,6 +313,10 @@ async function main() {
       };
     })
     .sort((a, b) => b.finalScore - a.finalScore)
+    // One slot per company: drop lower-ranked duplicate share classes (GOOG/GOOGL)
+    .filter(
+      (s, i, arr) => arr.findIndex((x) => x.name.toLowerCase() === s.name.toLowerCase()) === i,
+    )
     .map((s, i) => ({ ...s, rank: i + 1, recommended: i < 20 }));
 
   const rankings: Rankings = {

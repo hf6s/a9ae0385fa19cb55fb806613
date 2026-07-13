@@ -85,6 +85,160 @@ main {
   font-size: 13px;
 }
 
+/* search */
+.search {
+  position: relative;
+}
+
+.search input {
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  padding: 7px 12px;
+  font-size: 13px;
+  font-family: inherit;
+  width: 160px;
+  transition: width 0.2s ease, border-color 0.2s ease;
+}
+
+.search input:focus {
+  outline: none;
+  border-color: var(--accent-dim);
+  width: 220px;
+}
+
+.search-results {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  width: 300px;
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  z-index: 50;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+}
+
+.search-results .hit {
+  display: flex;
+  gap: 6px;
+  width: 100%;
+  background: none;
+  border: none;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 13px;
+  text-align: left;
+  padding: 9px 12px;
+  cursor: pointer;
+}
+
+.search-results .hit.active {
+  background: var(--bg-hover);
+}
+
+/* sparklines + table extras */
+.spark {
+  display: block;
+  opacity: 0.9;
+}
+
+.spark-col {
+  width: 96px;
+}
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+.weights-row {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+}
+
+.csv-btn {
+  margin-left: auto;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-dim);
+  font-size: 12px;
+  font-family: inherit;
+  padding: 4px 10px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.csv-btn:hover {
+  color: var(--text);
+  border-color: var(--accent-dim);
+}
+
+/* animations */
+@keyframes rowIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.row-in {
+  animation: rowIn 0.25s ease both;
+}
+
+@keyframes barGrow {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.bar-fill {
+  transform-origin: left;
+  animation: barGrow 0.7s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .row-in,
+  .bar-fill {
+    animation: none;
+  }
+}
+
+/* mobile */
+@media (max-width: 720px) {
+  .site-header .inner {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .tagline {
+    display: none;
+  }
+
+  .search input,
+  .search input:focus {
+    width: 140px;
+  }
+
+  main {
+    padding: 0 14px 60px;
+  }
+
+  .spark-col {
+    display: none;
+  }
+}
+
 .nav a {
   color: var(--text-dim);
 }

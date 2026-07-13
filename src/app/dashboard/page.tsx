@@ -154,6 +154,7 @@ export default function Dashboard() {
           growth percentiles). A mechanical screen — pair with the 3–6 month holding
           presets on the rankings page. Not investment advice.
         </p>
+        <div className="table-scroll">
         <table className="rankings">
           <thead>
             <tr>
@@ -185,6 +186,7 @@ export default function Dashboard() {
             ))}
           </tbody>
         </table>
+        </div>
       </section>
 
       <p className="disclaimer">
