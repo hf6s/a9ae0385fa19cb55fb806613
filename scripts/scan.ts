@@ -273,7 +273,6 @@ async function main() {
       };
     })
     .sort((a, b) => b.finalScore - a.finalScore)
-    .slice(0, 50)
     .map((s, i) => ({ ...s, rank: i + 1, recommended: i < 20 }));
 
   const rankings: Rankings = {
@@ -286,14 +285,15 @@ async function main() {
 
   fs.mkdirSync(HISTORY_DIR, { recursive: true });
   fs.writeFileSync(path.join(DATA_DIR, "rankings.json"), JSON.stringify(rankings, null, 2));
-  for (const s of ranked) {
+  // Price-history files for chart pages — cap at 120 to keep the repo lean
+  for (const s of ranked.slice(0, 120)) {
     const h = histories.get(s.ticker);
     if (h) {
       fs.writeFileSync(path.join(HISTORY_DIR, `${s.ticker}.json`), JSON.stringify(h));
     }
   }
 
-  console.log(`\nWrote data/rankings.json — top ${ranked.length} stocks ranked.`);
+  console.log(`\nWrote data/rankings.json — ${ranked.length} survivors ranked.`);
   console.log("Top 5:");
   for (const s of ranked.slice(0, 5)) {
     console.log(

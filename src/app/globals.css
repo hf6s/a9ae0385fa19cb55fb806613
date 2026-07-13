@@ -76,6 +76,66 @@ main {
   margin-bottom: 24px;
 }
 
+/* controls */
+.controls {
+  display: flex;
+  gap: 28px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.control-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.control-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+}
+
+.seg {
+  display: inline-flex;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.seg button {
+  background: var(--bg-raised);
+  color: var(--text-dim);
+  border: none;
+  padding: 7px 13px;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  border-right: 1px solid var(--border);
+}
+
+.seg button:last-child {
+  border-right: none;
+}
+
+.seg button:hover {
+  color: var(--text);
+  background: var(--bg-hover);
+}
+
+.seg button.active {
+  background: var(--accent-dim);
+  color: #eafff6;
+  font-weight: 600;
+}
+
+.weights-line {
+  color: var(--text-dim);
+  font-size: 13px;
+  margin-bottom: 18px;
+}
+
 /* rankings table */
 table.rankings {
   width: 100%;
