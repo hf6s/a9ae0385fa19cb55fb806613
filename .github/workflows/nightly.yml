@@ -1,0 +1,36 @@
+name: Nightly scan + AI analysis
+
+on:
+  schedule:
+    # 02:30 UTC on weekdays = after US market close + data settle
+    - cron: "30 2 * * 2-6"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Scan universe and compute rankings
+        run: npm run scan
+        env:
+          FINNHUB_API_KEY: ${{ secrets.FINNHUB_API_KEY }}
+      - name: Claude analysis of top 20
+        run: npm run analyze
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      - name: Commit updated data
+        run: |
+          git config user.name "factor20-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/
+          git diff --cached --quiet || git commit -m "data: nightly rankings + analysis"
+          git push

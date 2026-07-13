@@ -1,0 +1,33 @@
+name: Rebuild stock universe (monthly)
+
+on:
+  schedule:
+    # 1st of each month, 06:00 UTC (Sunday-adjacent drift is fine)
+    - cron: "0 6 1 * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  universe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Build full US common-stock universe (>$1.5B)
+        run: npm run universe
+        env:
+          FINNHUB_API_KEY: ${{ secrets.FINNHUB_API_KEY }}
+      - name: Commit updated universe
+        run: |
+          git config user.name "factor20-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/universe.json
+          git diff --cached --quiet || git commit -m "data: monthly universe rebuild"
+          git push
