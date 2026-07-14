@@ -1,7 +1,17 @@
+import fs from "node:fs";
+import path from "node:path";
 import RankingsExplorer from "@/components/RankingsExplorer";
 import { getHistory, getRankings } from "@/lib/data";
+import type { Rankings } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
+
+function prevRanks(): Record<string, number> {
+  const file = path.join(process.cwd(), "data", "rankings-prev.json");
+  if (!fs.existsSync(file)) return {};
+  const prev = JSON.parse(fs.readFileSync(file, "utf8")) as Rankings;
+  return Object.fromEntries(prev.stocks.map((s) => [s.ticker, s.rank]));
+}
 
 /** Last ~90 trading days of closes, downsampled to 30 points, per ticker. */
 function buildSparks(tickers: string[]): Record<string, number[]> {
@@ -50,6 +60,7 @@ export default function Home() {
       <RankingsExplorer
         stocks={rankings.stocks}
         sparks={buildSparks(rankings.stocks.map((s) => s.ticker))}
+        prevRanks={prevRanks()}
       />
       <p className="disclaimer">
         Factor20 ranks stocks with a mechanical, transparent factor model and AI-written

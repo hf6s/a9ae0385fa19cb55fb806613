@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getAnalyses, getHistory, getRankings } from "@/lib/data";
+import AskClaude from "@/components/AskClaude";
 import PriceChart from "@/components/PriceChart";
+import StarButton from "@/components/StarButton";
 
 export const dynamic = "force-dynamic";
 
@@ -41,6 +43,7 @@ export default async function StockPage({
         </h1>
         <span className="price-big">${stock.price.toFixed(2)}</span>
         {stock.recommended && <span className="badge">Top 20 · Rank #{stock.rank}</span>}
+        <StarButton ticker={stock.ticker} />
       </div>
       <p className="meta-line">
         {stock.sector} · Market cap ${Math.round(stock.marketCap / 1000)}B · Final score{" "}
@@ -109,6 +112,13 @@ export default async function StockPage({
             </p>
           </div>
         )}
+      </section>
+
+      <section>
+        <h2>Ask about this stock</h2>
+        <div className="analysis">
+          <AskClaude ticker={stock.ticker} />
+        </div>
       </section>
 
       <section>

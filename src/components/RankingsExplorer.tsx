@@ -1,8 +1,25 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { RankedStock } from "@/lib/types";
+
+const WATCHLIST_KEY = "f20-watchlist";
+
+export function readWatchlist(): string[] {
+  try {
+    return JSON.parse(localStorage.getItem(WATCHLIST_KEY) ?? "[]") as string[];
+  } catch {
+    return [];
+  }
+}
+
+export function toggleWatch(ticker: string): string[] {
+  const list = readWatchlist();
+  const next = list.includes(ticker) ? list.filter((t) => t !== ticker) : [...list, ticker];
+  localStorage.setItem(WATCHLIST_KEY, JSON.stringify(next));
+  return next;
+}
 
 /**
  * Holding-horizon presets. Evidence-based: momentum pays off over 3-12
@@ -83,12 +100,20 @@ function exportCsv(
 export default function RankingsExplorer({
   stocks,
   sparks = {},
+  prevRanks = {},
 }: {
   stocks: RankedStock[];
   sparks?: Record<string, number[]>;
+  prevRanks?: Record<string, number>;
 }) {
   const [horizonKey, setHorizonKey] = useState<string>(DEFAULT_HORIZON);
   const [capKey, setCapKey] = useState<string>("all");
+  const [watchlist, setWatchlist] = useState<string[]>([]);
+  const [watchOnly, setWatchOnly] = useState(false);
+
+  useEffect(() => {
+    setWatchlist(readWatchlist());
+  }, []);
 
   const horizon = HORIZONS.find((h) => h.key === horizonKey) ?? HORIZONS[2];
   const cap = CAPS.find((c) => c.key === capKey) ?? CAPS[0];
@@ -101,6 +126,7 @@ export default function RankingsExplorer({
           arr.findIndex((x) => x.name.toLowerCase() === s.name.toLowerCase()) === i,
       )
       .filter((s) => s.marketCap >= cap.min && s.marketCap < cap.max)
+      .filter((s) => !watchOnly || watchlist.includes(s.ticker))
       .map((s) => {
         const base =
           horizon.q * s.scores.quality +
@@ -111,7 +137,7 @@ export default function RankingsExplorer({
         return { ...s, viewScore: Math.max(0, Math.round((base - penalty) * 10) / 10) };
       })
       .sort((a, b) => b.viewScore - a.viewScore);
-  }, [stocks, horizon, cap]);
+  }, [stocks, horizon, cap, watchOnly, watchlist]);
 
   return (
     <div>
@@ -144,6 +170,17 @@ export default function RankingsExplorer({
             ))}
           </div>
         </div>
+        <div className="control-group">
+          <div className="seg">
+            <button
+              className={watchOnly ? "active" : ""}
+              onClick={() => setWatchOnly((w) => !w)}
+              title="Show only starred stocks"
+            >
+              ★ Watchlist{watchlist.length > 0 ? ` (${watchlist.length})` : ""}
+            </button>
+          </div>
+        </div>
       </div>
       <div className="weights-row">
         <p className="weights-line">
@@ -163,6 +200,7 @@ export default function RankingsExplorer({
         <thead>
           <tr>
             <th>#</th>
+            <th className="star-col"></th>
             <th>Company</th>
             <th className="spark-col"></th>
             <th style={{ textAlign: "right" }}>Price</th>
@@ -181,7 +219,28 @@ export default function RankingsExplorer({
               className="row row-in"
               style={{ animationDelay: `${Math.min(i, 25) * 18}ms` }}
             >
-              <td className="rank-cell">{i + 1}</td>
+              <td className="rank-cell">
+                {i + 1}
+                {(() => {
+                  const p = prevRanks[s.ticker];
+                  if (p === undefined || p === s.rank) return null;
+                  const up = p > s.rank;
+                  return (
+                    <span className={`delta ${up ? "sc-hi" : "sc-lo"}`} title={`was #${p}`}>
+                      {up ? "▲" : "▼"}
+                    </span>
+                  );
+                })()}
+              </td>
+              <td>
+                <button
+                  className={`star ${watchlist.includes(s.ticker) ? "on" : ""}`}
+                  title={watchlist.includes(s.ticker) ? "Remove from watchlist" : "Add to watchlist"}
+                  onClick={() => setWatchlist(toggleWatch(s.ticker))}
+                >
+                  ★
+                </button>
+              </td>
               <td>
                 <Link href={`/stock/${s.ticker}`}>
                   <span className="ticker">{s.ticker}</span>{" "}

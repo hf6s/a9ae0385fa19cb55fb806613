@@ -177,6 +177,77 @@ main {
   border-color: var(--accent-dim);
 }
 
+/* watchlist stars + rank deltas */
+.star {
+  background: none;
+  border: none;
+  color: var(--border);
+  font-size: 15px;
+  cursor: pointer;
+  padding: 2px 4px;
+  transition: color 0.15s ease, transform 0.15s ease;
+}
+
+.star:hover {
+  color: var(--amber);
+  transform: scale(1.2);
+}
+
+.star.on {
+  color: var(--amber);
+}
+
+.star-lg {
+  font-size: 22px;
+}
+
+.star-col {
+  width: 30px;
+}
+
+.delta {
+  font-size: 10px;
+  margin-left: 4px;
+}
+
+/* ask claude */
+.ask-row {
+  display: flex;
+  gap: 10px;
+}
+
+.ask-row input {
+  flex: 1;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  padding: 10px 14px;
+  font-size: 14px;
+  font-family: inherit;
+}
+
+.ask-row input:focus {
+  outline: none;
+  border-color: var(--accent-dim);
+}
+
+.ask-qa {
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 12px;
+}
+
+.ask-q {
+  color: var(--text-dim);
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+.ask-a + .ask-a {
+  margin-top: 8px;
+}
+
 /* animations */
 @keyframes rowIn {
   from {

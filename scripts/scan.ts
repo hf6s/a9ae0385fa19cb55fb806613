@@ -334,6 +334,15 @@ async function main() {
     fs.copyFileSync(rankingsPath, path.join(DATA_DIR, "rankings-prev.json"));
   }
   fs.writeFileSync(rankingsPath, JSON.stringify(rankings, null, 2));
+
+  // Append compact per-scan snapshot for score/rank history (last 90 scans)
+  const historyPath = path.join(DATA_DIR, "score-history.json");
+  const history: { date: string; entries: Record<string, { r: number; s: number }> }[] =
+    fs.existsSync(historyPath) ? JSON.parse(fs.readFileSync(historyPath, "utf8")) : [];
+  const entries: Record<string, { r: number; s: number }> = {};
+  for (const s of ranked) entries[s.ticker] = { r: s.rank, s: s.finalScore };
+  history.push({ date: rankings.generatedAt.slice(0, 10), entries });
+  fs.writeFileSync(historyPath, JSON.stringify(history.slice(-90)));
   // Price-history files for chart pages — cap at 120 to keep the repo lean
   for (const s of ranked.slice(0, 120)) {
     const h = histories.get(s.ticker);

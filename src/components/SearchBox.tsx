@@ -22,7 +22,19 @@ export default function SearchBox() {
       if (boxRef.current && !boxRef.current.contains(e.target as Node)) setOpen(false);
     };
     document.addEventListener("mousedown", close);
-    return () => document.removeEventListener("mousedown", close);
+    // "/" focuses search from anywhere (unless already typing somewhere)
+    const slash = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement;
+      if (e.key === "/" && t.tagName !== "INPUT" && t.tagName !== "TEXTAREA") {
+        e.preventDefault();
+        boxRef.current?.querySelector("input")?.focus();
+      }
+    };
+    document.addEventListener("keydown", slash);
+    return () => {
+      document.removeEventListener("mousedown", close);
+      document.removeEventListener("keydown", slash);
+    };
   }, []);
 
   async function ensureItems() {

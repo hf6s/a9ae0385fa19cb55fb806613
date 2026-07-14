@@ -98,9 +98,12 @@ async function runDirect(client: Anthropic, stocks: RankedStock[]): Promise<Stoc
 
 async function runBatch(client: Anthropic, stocks: RankedStock[]): Promise<StockAnalysis[]> {
   console.log(`Creating batch of ${stocks.length} analysis requests...`);
+  // custom_id must match ^[a-zA-Z0-9_-]{1,64}$ — tickers like BRK.B need sanitizing
+  const toId = (ticker: string) => ticker.replace(/[^a-zA-Z0-9_-]/g, "_");
+  const fromId = new Map(stocks.map((s) => [toId(s.ticker), s.ticker]));
   const batch = await client.messages.batches.create({
     requests: stocks.map((s) => ({
-      custom_id: s.ticker,
+      custom_id: toId(s.ticker),
       params: {
         model: MODEL,
         max_tokens: 3000,
@@ -125,7 +128,7 @@ async function runBatch(client: Anthropic, stocks: RankedStock[]): Promise<Stock
   for await (const result of await client.messages.batches.results(batch.id)) {
     if (result.result.type === "succeeded") {
       out.push({
-        ticker: result.custom_id,
+        ticker: fromId.get(result.custom_id) ?? result.custom_id,
         text: extractText(result.result.message.content),
         model: MODEL,
         generatedAt: new Date().toISOString(),
