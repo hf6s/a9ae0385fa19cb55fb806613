@@ -1,8 +1,12 @@
 import type { Metadata } from "next";
+import Link from "next/link";
+import CommandPalette from "@/components/CommandPalette";
+import Logo from "@/components/Logo";
 import ScrollProgress from "@/components/ScrollProgress";
 import SearchBox from "@/components/SearchBox";
 import Sidebar from "@/components/Sidebar";
 import "./globals.css";
+import "./anim.css";
 
 export const metadata: Metadata = {
   title: "Factor20 — evidence-based stock rankings",
@@ -18,11 +22,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <div className="aurora" aria-hidden>
+          <span className="aurora-blob a1" />
+          <span className="aurora-blob a2" />
+          <span className="aurora-blob a3" />
+        </div>
         <ScrollProgress />
         <div className="app-shell">
           <Sidebar />
           <div className="app-content">
             <header className="topbar">
+              <Link href="/" className="topbar-logo">
+                <Logo size={24} />
+              </Link>
               <span className="topbar-tag">
                 Quality · Value · Momentum · Growth <span className="badge">beta</span>
               </span>
@@ -31,6 +43,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             {children}
           </div>
         </div>
+        <CommandPalette />
       </body>
     </html>
   );

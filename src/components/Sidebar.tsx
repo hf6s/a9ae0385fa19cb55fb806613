@@ -3,11 +3,13 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import Logo from "./Logo";
 import ThemeToggle from "./ThemeToggle";
 
 const LINKS = [
   { href: "/", icon: "▤", label: "Rankings" },
   { href: "/lab", icon: "⚗", label: "Factor Lab" },
+  { href: "/universe", icon: "✦", label: "Universe" },
   { href: "/exits", icon: "▼", label: "Exits" },
   { href: "/portfolio", icon: "◆", label: "Portfolio" },
   { href: "/backtest", icon: "◷", label: "Backtest" },
@@ -53,12 +55,7 @@ export default function Sidebar() {
         className={`sidebar${collapsed ? " collapsed" : ""}${mobileOpen ? " mobile-open" : ""}`}
       >
         <Link href="/" className="sidebar-logo">
-          <span className="logo-mark">F</span>
-          {!collapsed && (
-            <span className="logo-full">
-              Factor<span>20</span>
-            </span>
-          )}
+          <Logo markOnly={collapsed} />
         </Link>
 
         <nav className="sidebar-nav">

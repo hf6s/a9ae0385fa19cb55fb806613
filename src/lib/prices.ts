@@ -12,19 +12,25 @@ function yahooSymbol(ticker: string): string {
   return ticker.replace(/\./g, "-");
 }
 
-async function fetchChart(symbol: string, keep: number, range = "2y"): Promise<Candle[] | null> {
-  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(
-    symbol,
-  )}?range=${range}&interval=1d`;
+const HOSTS = ["query1.finance.yahoo.com", "query2.finance.yahoo.com"];
 
-  for (let attempt = 0; attempt < 3; attempt++) {
+async function fetchChart(symbol: string, keep: number, range = "2y"): Promise<Candle[] | null> {
+  for (let attempt = 0; attempt < 4; attempt++) {
+    const host = HOSTS[attempt % HOSTS.length]; // alternate hosts across retries
+    const url = `https://${host}/v8/finance/chart/${encodeURIComponent(symbol)}?range=${range}&interval=1d`;
     try {
-      const res = await fetch(url, { headers: { "User-Agent": UA } });
-      if (res.status === 429) {
-        await new Promise((r) => setTimeout(r, 10_000 * (attempt + 1)));
+      const res = await fetch(url, { headers: { "User-Agent": UA, Accept: "application/json" } });
+      if (res.status === 429 || res.status === 999) {
+        await new Promise((r) => setTimeout(r, 8_000 * (attempt + 1)));
         continue;
       }
-      if (!res.ok) return null;
+      if (!res.ok) {
+        if (attempt < 3) {
+          await new Promise((r) => setTimeout(r, 1_500 * (attempt + 1)));
+          continue;
+        }
+        return null;
+      }
       const json = (await res.json()) as {
         chart?: {
           result?: {
@@ -55,7 +61,7 @@ async function fetchChart(symbol: string, keep: number, range = "2y"): Promise<C
       if (candles.length < 60) return null;
       return candles.slice(-keep);
     } catch {
-      if (attempt === 2) return null;
+      if (attempt >= 3) return null;
       await new Promise((r) => setTimeout(r, 3_000));
     }
   }

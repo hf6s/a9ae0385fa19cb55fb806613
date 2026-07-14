@@ -30,6 +30,22 @@ export default async function StockPage({
   const history = getHistory(stock.ticker);
   const analysis = getAnalyses()?.analyses[stock.ticker];
   const m = stock.metrics;
+
+  // Nearest neighbors by factor-vector (Q,V,M,G) Euclidean distance
+  const similar = rankings.stocks
+    .filter((o) => o.ticker !== stock.ticker && o.name.toLowerCase() !== stock.name.toLowerCase())
+    .map((o) => ({
+      o,
+      d: Math.hypot(
+        o.scores.quality - stock.scores.quality,
+        o.scores.value - stock.scores.value,
+        o.scores.momentum - stock.scores.momentum,
+        o.scores.growth - stock.scores.growth,
+      ),
+    }))
+    .sort((a, b) => a.d - b.d)
+    .slice(0, 4)
+    .map((x) => x.o);
   const fmt = (v: number | null | undefined, suffix = "") =>
     v === null || v === undefined ? "—" : `${Math.round(v * 100) / 100}${suffix}`;
 
@@ -162,6 +178,43 @@ export default async function StockPage({
           </div>
         </div>
       </section>
+
+      {similar.length > 0 && (
+        <section>
+          <h2>Similar stocks</h2>
+          <p className="name-dim" style={{ marginBottom: 14 }}>
+            Closest factor profiles to {stock.ticker} across Quality, Value, Momentum and Growth.
+          </p>
+          <div className="sim-grid">
+            {similar.map((o, i) => (
+              <Link
+                key={o.ticker}
+                href={`/stock/${o.ticker}`}
+                className="sim-card reveal"
+                style={{ animationDelay: `${i * 70}ms` }}
+              >
+                <div className="sim-head">
+                  <span className="ticker">{o.ticker}</span>
+                  <span className="score-strong">{o.finalScore.toFixed(1)}</span>
+                </div>
+                <p className="name-dim" style={{ fontSize: 12 }}>{o.name}</p>
+                <div className="sim-bars">
+                  {([["Q", o.scores.quality, "var(--q)"], ["V", o.scores.value, "var(--v)"], ["M", o.scores.momentum, "var(--m)"], ["G", o.scores.growth, "var(--g)"]] as const).map(
+                    ([k, v, c]) => (
+                      <div key={k} className="sim-bar">
+                        <span className="sim-bar-k">{k}</span>
+                        <div className="sim-bar-track">
+                          <div className="sim-bar-fill" style={{ width: `${v}%`, background: c }} />
+                        </div>
+                      </div>
+                    ),
+                  )}
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       <p className="disclaimer">
         Scores are percentile ranks within the surviving universe on the latest scan. Nothing
