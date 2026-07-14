@@ -1,0 +1,87 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+import ThemeToggle from "./ThemeToggle";
+
+const LINKS = [
+  { href: "/", icon: "▤", label: "Rankings" },
+  { href: "/lab", icon: "⚗", label: "Factor Lab" },
+  { href: "/exits", icon: "▼", label: "Exits" },
+  { href: "/portfolio", icon: "◆", label: "Portfolio" },
+  { href: "/backtest", icon: "◷", label: "Backtest" },
+  { href: "/methodology", icon: "☰", label: "Methodology" },
+  { href: "/dashboard", icon: "⣿", label: "Dashboard" },
+];
+
+export default function Sidebar() {
+  const pathname = usePathname();
+  const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  useEffect(() => {
+    setCollapsed(localStorage.getItem("f20-sidebar") === "1");
+  }, []);
+
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
+
+  function toggleCollapse() {
+    setCollapsed((c) => {
+      const next = !c;
+      localStorage.setItem("f20-sidebar", next ? "1" : "0");
+      return next;
+    });
+  }
+
+  const isActive = (href: string) =>
+    href === "/" ? pathname === "/" : pathname.startsWith(href);
+
+  return (
+    <>
+      <button
+        className="mobile-menu-btn"
+        onClick={() => setMobileOpen((o) => !o)}
+        aria-label="Menu"
+      >
+        ☰
+      </button>
+      {mobileOpen && <div className="sidebar-scrim" onClick={() => setMobileOpen(false)} />}
+      <aside
+        className={`sidebar${collapsed ? " collapsed" : ""}${mobileOpen ? " mobile-open" : ""}`}
+      >
+        <Link href="/" className="sidebar-logo">
+          <span className="logo-mark">F</span>
+          {!collapsed && (
+            <span className="logo-full">
+              Factor<span>20</span>
+            </span>
+          )}
+        </Link>
+
+        <nav className="sidebar-nav">
+          {LINKS.map((l) => (
+            <Link
+              key={l.href}
+              href={l.href}
+              className={`side-link${isActive(l.href) ? " active" : ""}`}
+              title={collapsed ? l.label : undefined}
+            >
+              <span className="side-icon">{l.icon}</span>
+              {!collapsed && <span className="side-label">{l.label}</span>}
+            </Link>
+          ))}
+        </nav>
+
+        <div className="sidebar-footer">
+          <ThemeToggle />
+          <button className="collapse-btn" onClick={toggleCollapse} title="Collapse sidebar">
+            {collapsed ? "»" : "«"}
+          </button>
+        </div>
+      </aside>
+    </>
+  );
+}

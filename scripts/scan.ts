@@ -337,6 +337,17 @@ async function main() {
     stocks: ranked,
   };
 
+  // Guard: a near-empty result means the price source blocked us (Yahoo blocks
+  // datacenter IPs, so CI runners often get zero history). Never overwrite good
+  // data with an empty scan — abort with a non-zero exit instead.
+  const MIN_SURVIVORS = 5;
+  if (ranked.length < MIN_SURVIVORS) {
+    throw new Error(
+      `Only ${ranked.length} survivors (< ${MIN_SURVIVORS}); likely a data-source block. ` +
+        `Refusing to overwrite existing rankings.json.`,
+    );
+  }
+
   fs.mkdirSync(HISTORY_DIR, { recursive: true });
   // Keep the previous scan for rank-change display on the dashboard
   const rankingsPath = path.join(DATA_DIR, "rankings.json");
