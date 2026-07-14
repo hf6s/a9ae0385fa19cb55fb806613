@@ -250,11 +250,15 @@ async function main() {
   console.log("Fetching earnings surprises + insider transactions for survivors...");
   startPhase("penalty inputs", survivors.length);
   const sixMonthsAgo = new Date(Date.now() - 183 * 24 * 3600 * 1000).toISOString().slice(0, 10);
+  const today = new Date().toISOString().slice(0, 10);
+  const in60Days = new Date(Date.now() + 60 * 24 * 3600 * 1000).toISOString().slice(0, 10);
+  const nextEarnings = new Map<string, string>();
   for (const s of survivors) {
     writeStatus({ done: status.done + 1 });
-    const [earnings, insider] = await Promise.all([
+    const [earnings, insider, calendar] = await Promise.all([
       finnhub.earnings(s.ticker),
       finnhub.insiderTransactions(s.ticker, sixMonthsAgo),
+      finnhub.earningsCalendar(s.ticker, today, in60Days),
     ]);
     if (earnings && earnings.length > 0 && earnings[0].surprisePercent !== null) {
       s.latestSurprisePct = earnings[0].surprisePercent;
@@ -270,6 +274,11 @@ async function main() {
       s.insiderBought = bought;
       s.insiderSold = sold;
     }
+    const upcoming = calendar?.earningsCalendar
+      ?.map((e) => e.date)
+      .filter((d) => d >= today)
+      .sort()[0];
+    if (upcoming) nextEarnings.set(s.ticker, upcoming);
   }
 
   // Stage 2-5
@@ -289,6 +298,7 @@ async function main() {
         penalties,
         finalScore: score,
         recommended: false,
+        nextEarningsDate: nextEarnings.get(s.ticker) ?? null,
         metrics: {
           pe: s.pe,
           pb: s.pb,

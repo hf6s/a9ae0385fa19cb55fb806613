@@ -29,7 +29,13 @@ export interface RankedStock {
   penalties: Penalty[];
   finalScore: number;
   recommended: boolean; // top 20
+  nextEarningsDate?: string | null; // ISO date of next scheduled earnings, if within ~60d
   metrics: Record<string, number | null>; // key metrics surfaced in the UI / analysis prompt
+}
+
+export interface ScoreHistoryPoint {
+  date: string;
+  entries: Record<string, { r: number; s: number }>; // ticker -> { rank, score }
 }
 
 export interface Rankings {

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getAnalyses, getHistory, getRankings } from "@/lib/data";
+import AddToPortfolio from "@/components/AddToPortfolio";
 import AskClaude from "@/components/AskClaude";
 import PriceChart from "@/components/PriceChart";
 import StarButton from "@/components/StarButton";
@@ -43,7 +44,18 @@ export default async function StockPage({
         </h1>
         <span className="price-big">${stock.price.toFixed(2)}</span>
         {stock.recommended && <span className="badge">Top 20 · Rank #{stock.rank}</span>}
+        {(() => {
+          if (!stock.nextEarningsDate) return null;
+          const days = Math.ceil((Date.parse(stock.nextEarningsDate) - Date.now()) / 86400000);
+          if (days < 0 || days > 14) return null;
+          return (
+            <span className="earn-badge" title={`Earnings ${stock.nextEarningsDate}`}>
+              ⚠ reports in {days}d
+            </span>
+          );
+        })()}
         <StarButton ticker={stock.ticker} />
+        <AddToPortfolio ticker={stock.ticker} name={stock.name} price={stock.price} />
       </div>
       <p className="meta-line">
         {stock.sector} · Market cap ${Math.round(stock.marketCap / 1000)}B · Final score{" "}

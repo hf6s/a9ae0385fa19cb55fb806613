@@ -1,16 +1,38 @@
-import fs from "node:fs";
-import path from "node:path";
 import RankingsExplorer from "@/components/RankingsExplorer";
-import { getHistory, getRankings } from "@/lib/data";
+import StatTiles, { type Stat } from "@/components/StatTiles";
+import { getHistory, getPrevRankings, getRankings } from "@/lib/data";
 import type { Rankings } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
 function prevRanks(): Record<string, number> {
-  const file = path.join(process.cwd(), "data", "rankings-prev.json");
-  if (!fs.existsSync(file)) return {};
-  const prev = JSON.parse(fs.readFileSync(file, "utf8")) as Rankings;
+  const prev = getPrevRankings();
+  if (!prev) return {};
   return Object.fromEntries(prev.stocks.map((s) => [s.ticker, s.rank]));
+}
+
+function buildStats(rankings: Rankings): Stat[] {
+  const top20 = rankings.stocks.slice(0, 20);
+  const avg = (arr: number[]) => (arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0);
+  const avgScore = avg(top20.map((s) => s.finalScore));
+  const factorAvgs = {
+    Quality: avg(top20.map((s) => s.scores.quality)),
+    Value: avg(top20.map((s) => s.scores.value)),
+    Momentum: avg(top20.map((s) => s.scores.momentum)),
+    Growth: avg(top20.map((s) => s.scores.growth)),
+  };
+  const strongest = Object.entries(factorAvgs).sort((a, b) => b[1] - a[1])[0];
+  return [
+    { label: "Universe scanned", value: rankings.universeScanned, sub: "US common stocks" },
+    { label: "Passed all filters", value: rankings.passedFilters, sub: "elimination survivors" },
+    { label: "Avg top-20 score", value: avgScore, sub: "of 100", decimals: 1 },
+    {
+      label: "Strongest factor today",
+      value: strongest[1],
+      sub: strongest[0],
+      decimals: 0,
+    },
+  ];
 }
 
 /** Last ~90 trading days of closes, downsampled to 30 points, per ticker. */
@@ -53,6 +75,7 @@ export default function Home() {
 
   return (
     <main>
+      <StatTiles stats={buildStats(rankings)} />
       <p className="meta-line">
         Scanned {rankings.universeScanned} stocks · {rankings.passedFilters} passed all
         elimination filters · updated {generated}

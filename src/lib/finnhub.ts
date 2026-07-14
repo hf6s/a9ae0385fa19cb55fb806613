@@ -96,6 +96,11 @@ export const finnhub = {
     ),
   /** All US-listed symbols (1 call). Free tier. */
   symbols: () => get<SymbolInfo[]>(`/stock/symbol?exchange=US`),
+  /** Upcoming earnings calendar between two YYYY-MM-DD dates. Free tier. */
+  earningsCalendar: (symbol: string, from: string, to: string) =>
+    get<{ earningsCalendar: { date: string; symbol: string }[] }>(
+      `/calendar/earnings?symbol=${encodeURIComponent(symbol)}&from=${from}&to=${to}`,
+    ),
 };
 
 /**

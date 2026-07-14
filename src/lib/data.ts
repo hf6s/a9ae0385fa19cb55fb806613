@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import type { AnalysisFile, Candle, Rankings } from "./types";
+import type { AnalysisFile, Candle, Rankings, ScoreHistoryPoint } from "./types";
 
 const DATA_DIR = path.join(process.cwd(), "data");
 
@@ -8,6 +8,22 @@ export function getRankings(): Rankings | null {
   const file = path.join(DATA_DIR, "rankings.json");
   if (!fs.existsSync(file)) return null;
   return JSON.parse(fs.readFileSync(file, "utf8")) as Rankings;
+}
+
+export function getPrevRankings(): Rankings | null {
+  const file = path.join(DATA_DIR, "rankings-prev.json");
+  if (!fs.existsSync(file)) return null;
+  return JSON.parse(fs.readFileSync(file, "utf8")) as Rankings;
+}
+
+export function getScoreHistory(): ScoreHistoryPoint[] {
+  const file = path.join(DATA_DIR, "score-history.json");
+  if (!fs.existsSync(file)) return [];
+  try {
+    return JSON.parse(fs.readFileSync(file, "utf8")) as ScoreHistoryPoint[];
+  } catch {
+    return [];
+  }
 }
 
 export function getAnalyses(): AnalysisFile | null {

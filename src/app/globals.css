@@ -13,6 +13,27 @@
   --v: #4fd1a5;
   --m: #d7a24f;
   --g: #c496f0;
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --heat-text: #0c0f14;
+}
+
+:root[data-theme="light"] {
+  --bg: #f6f7f9;
+  --bg-raised: #ffffff;
+  --bg-hover: #eef1f5;
+  --border: #dde2ea;
+  --text: #1a2030;
+  --text-dim: #667085;
+  --accent: #12996f;
+  --accent-dim: #b7e6d5;
+  --red: #d1495b;
+  --amber: #b9822f;
+  --q: #3b6fd4;
+  --v: #12996f;
+  --m: #b9822f;
+  --g: #8b5cc0;
+  --shadow: 0 6px 20px rgba(20, 30, 50, 0.1);
+  --heat-text: #ffffff;
 }
 
 * {
@@ -727,3 +748,254 @@ section h2 {
   padding: 2px 6px;
   font-size: 13px;
 }
+
+/* ============ v0.6 additions ============ */
+
+/* scroll progress bar */
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  width: 0;
+  background: linear-gradient(90deg, var(--accent), var(--q));
+  z-index: 100;
+  transition: width 0.1s linear;
+}
+
+/* theme toggle */
+.theme-toggle {
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 15px;
+  width: 34px;
+  height: 34px;
+  line-height: 1;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.theme-toggle:hover {
+  border-color: var(--accent-dim);
+  background: var(--bg-hover);
+}
+
+/* raised cards get a soft shadow now */
+.card {
+  box-shadow: var(--shadow);
+}
+
+/* stat tiles hero */
+.stat-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin: 4px 0 22px;
+}
+
+.stat-tile {
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-tile::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(79, 209, 165, 0.06), transparent 60%);
+  pointer-events: none;
+}
+
+.stat-tile .stat-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+}
+
+.stat-tile .stat-value {
+  font-size: 26px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.stat-tile .stat-sub {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-top: 6px;
+}
+
+/* factor heatmap cells */
+.heat {
+  display: inline-block;
+  min-width: 30px;
+  padding: 3px 7px;
+  border-radius: 5px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--heat-text);
+}
+
+/* earnings badge */
+.earn-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 999px;
+  border: 1px solid var(--amber);
+  color: var(--amber);
+  margin-left: 6px;
+  white-space: nowrap;
+}
+
+/* compare tray */
+.compare-cell button {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 12px;
+  font-family: inherit;
+  padding: 2px 8px;
+  transition: all 0.12s ease;
+}
+
+.compare-cell button:hover {
+  color: var(--text);
+  border-color: var(--accent-dim);
+}
+
+.compare-cell button.on {
+  background: var(--accent-dim);
+  color: var(--text);
+  border-color: var(--accent-dim);
+}
+
+.compare-tray {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 60;
+  animation: rowIn 0.2s ease;
+}
+
+.compare-tray .chip {
+  background: var(--bg-hover);
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-size: 13px;
+  font-weight: 600;
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.compare-tray .chip button {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 13px;
+}
+
+/* compare page */
+.compare-grid {
+  display: grid;
+  gap: 14px;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(220px, 1fr);
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+
+.compare-col {
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  box-shadow: var(--shadow);
+}
+
+.compare-col h3 {
+  font-size: 17px;
+  margin-bottom: 2px;
+}
+
+.cmp-metric {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  padding: 5px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.cmp-metric .k {
+  color: var(--text-dim);
+}
+
+/* portfolio */
+.pf-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.pos {
+  color: var(--accent);
+}
+
+.neg {
+  color: var(--red);
+}
+
+/* exits */
+.exit-rule {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 1px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--red);
+  color: var(--red);
+}
+
+/* buttons: add a primary style used across new pages */
+.btn-outline {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 13px;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.btn-outline:hover {
+  border-color: var(--accent-dim);
+  background: var(--bg-hover);
+}
+
+/* sector-relative pill reuses .seg */
