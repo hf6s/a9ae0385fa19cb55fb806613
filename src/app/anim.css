@@ -540,3 +540,12 @@
     transform: none;
   }
 }
+
+/* chart toolbar (v0.7) */
+.chart-toolbar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.chart-toolbar .seg button{padding:6px 11px;font-size:12px}
+.chart-return{margin-left:auto;font-weight:700;font-variant-numeric:tabular-nums;font-size:14px}
+.chart-host{position:relative}
+.chart-legend{position:absolute;top:8px;left:10px;z-index:4;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:5px 10px;font-size:12px;pointer-events:none;box-shadow:var(--shadow)}
+.chart-legend .pos{color:var(--accent)}
+.chart-legend .neg{color:var(--red)}
