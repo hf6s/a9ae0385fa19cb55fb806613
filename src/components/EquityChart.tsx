@@ -14,6 +14,20 @@ function cssVar(name: string, fb: string): string {
   return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fb;
 }
 
+/**
+ * Thin the series to at most `max` points so lightweight-charts' minimum bar
+ * spacing can't clip a multi-year curve to the last few years on a narrow
+ * viewport. Always keeps the first and last point so the full range shows.
+ */
+function downsample(curve: EquityPoint[], max = 450): EquityPoint[] {
+  if (curve.length <= max) return curve;
+  const step = Math.ceil(curve.length / max);
+  const out: EquityPoint[] = [];
+  for (let i = 0; i < curve.length; i += step) out.push(curve[i]);
+  if (out[out.length - 1] !== curve[curve.length - 1]) out.push(curve[curve.length - 1]);
+  return out;
+}
+
 export default function EquityChart({ curve }: { curve: EquityPoint[] }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [theme, setTheme] = useState(0);
@@ -42,11 +56,12 @@ export default function EquityChart({ curve }: { curve: EquityPoint[] }) {
       autoSize: true,
     });
 
+    const data = downsample(curve);
     const strat = chart.addLineSeries({ color: green, lineWidth: 2, priceLineVisible: false, title: "Strategy" });
-    strat.setData(curve.map((p) => ({ time: p.t, value: p.strat })));
+    strat.setData(data.map((p) => ({ time: p.t, value: p.strat })));
 
     const bench = chart.addLineSeries({ color: blue, lineWidth: 1, priceLineVisible: false, title: "S&P 500" });
-    bench.setData(curve.map((p) => ({ time: p.t, value: p.bench })));
+    bench.setData(data.map((p) => ({ time: p.t, value: p.bench })));
 
     chart.timeScale().fitContent();
     return () => chart.remove();

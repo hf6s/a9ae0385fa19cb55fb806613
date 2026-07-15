@@ -7,8 +7,10 @@ export const dynamic = "force-dynamic";
 
 interface BacktestResult {
   generatedAt: string;
+  model?: string;
   strategy: string;
   universe: string;
+  dataSources?: string;
   caveats: string[];
   stats: {
     years: number;
@@ -23,6 +25,12 @@ interface BacktestResult {
     quartersTotal: number;
     quartersBeatingIndex: number;
   };
+  factorProfile?: {
+    quality: number;
+    value: number;
+    momentum: number;
+    growth: number;
+  } | null;
   curve: EquityPoint[];
   periods: {
     start: string;
@@ -51,7 +59,8 @@ export default function BacktestPage() {
         <div className="empty-state">
           <p>
             No backtest yet — run one from the <Link href="/dashboard">dashboard</Link> or
-            with <code>npm run backtest</code> (~4 min, uses only free price data).
+            with <code>npm run backtest</code> (~5-10 min, free Yahoo prices + SEC EDGAR
+            filings, no paid API).
           </p>
         </div>
       </main>
@@ -60,14 +69,30 @@ export default function BacktestPage() {
 
   const s = bt.stats;
   const winRate = Math.round((s.quartersBeatingIndex / s.quartersTotal) * 100);
+  const isFull = bt.model === "full";
+  const factors = bt.factorProfile
+    ? ([
+        { key: "quality", label: "Quality", color: "var(--q)" },
+        { key: "value", label: "Value", color: "var(--v)" },
+        { key: "momentum", label: "Momentum", color: "var(--m)" },
+        { key: "growth", label: "Growth", color: "var(--g)" },
+      ] as const)
+    : null;
 
   return (
     <main>
-      <h1 style={{ fontSize: 22, marginBottom: 6 }}>Backtest — momentum + trend</h1>
+      <h1 style={{ fontSize: 22, marginBottom: 6 }}>
+        {isFull ? "Backtest — full four-factor model" : "Backtest — momentum + trend"}
+      </h1>
       <p className="meta-line">
         {bt.strategy} · {bt.universe} · run{" "}
         {new Date(bt.generatedAt).toLocaleDateString("en-US", { dateStyle: "medium" })}
       </p>
+      {bt.dataSources && (
+        <p className="meta-line" style={{ marginTop: 2 }}>
+          Data: {bt.dataSources} — free, no paid API.
+        </p>
+      )}
 
       <div className="cards">
         <div className="card">
@@ -100,6 +125,32 @@ export default function BacktestPage() {
           <EquityChart curve={bt.curve} />
         </div>
       </section>
+
+      {factors && bt.factorProfile && (
+        <section>
+          <h2>Average factor profile of the picks</h2>
+          <div className="analysis">
+            <p className="name-dim" style={{ marginBottom: 14 }}>
+              Mean percentile score of the 20 holdings across every rebalance. Shows which
+              factors the model actually leaned on to build these portfolios.
+            </p>
+            {factors.map((f) => {
+              const v = bt.factorProfile![f.key];
+              return (
+                <div key={f.key} style={{ marginBottom: 12 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}>
+                    <span>{f.label}</span>
+                    <span className="score-strong">{v.toFixed(0)}</span>
+                  </div>
+                  <div className="bar-track">
+                    <div className="bar-fill" style={{ width: `${v}%`, background: f.color }} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       <section>
         <h2>Recent rebalances</h2>

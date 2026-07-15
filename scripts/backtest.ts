@@ -1,25 +1,48 @@
 /**
- * Factor20 backtest — Momentum composite + trend filter, 10 years.
+ * Factor20 backtest — the FULL four-factor model on free data.
  *
- * WHAT THIS TESTS (honestly): the price-based half of the model — the
- * Stage-1 trend filter (price > 200MA, 50MA > 200MA) and the Momentum
- * factor (40% 12-1m, 30% 6m, 20% relative strength, 10% distance above
- * 200MA) — as a top-20 equal-weight portfolio rebalanced quarterly,
- * against the S&P 500.
+ * WHAT THIS TESTS: the exact live ranking engine (Quality 30 / Value 25 /
+ * Momentum 25 / Growth 20, Stage-1 elimination filters, penalties) replayed
+ * quarterly over ~10 years as a top-20 equal-weight portfolio vs the S&P 500.
+ * It calls the same scoring.ts the live site uses, so there is zero drift
+ * between what you see today and what the backtest measures.
  *
- * WHAT IT CANNOT TEST on free data: the fundamental factors (Quality/
- * Value/Growth) — those need point-in-time historical fundamentals.
- * Known limitations, disclosed in the UI: current S&P 500 membership
- * (survivorship bias), price returns without dividends on both sides,
- * no transaction costs.
+ * WHERE THE DATA COMES FROM (all free, no paid API):
+ *   - Prices/trend/momentum: Yahoo Finance daily history.
+ *   - Fundamentals (Quality/Value/Growth + health filters): SEC EDGAR
+ *     companyfacts, read point-in-time — at each past rebalance only filings
+ *     already public on that date are used, so there is no lookahead bias.
  *
- * Usage: npm run backtest        (~3-5 min, Yahoo data only, no API keys)
+ * HONEST LIMITATIONS (shown in the UI):
+ *   - Universe is today's S&P 500 members across all history (survivorship
+ *     bias — bankruptcies/acquisitions are absent, nudging results optimistic).
+ *   - Price returns only (no dividends, either side); no trading costs/slippage.
+ *   - Three live inputs have no free historical feed and are simply off in the
+ *     backtest: insider-selling penalty, earnings-surprise penalty, forward-EPS
+ *     growth (its weight renormalizes, exactly as the live model already does).
+ *
+ * Usage: npm run backtest   (~5-10 min first run; SEC filings then cached)
  */
 
 import fs from "node:fs";
 import path from "node:path";
 import { loadEnv } from "../src/lib/env";
 import { dailyHistory, sp500History } from "../src/lib/prices";
+import {
+  asOf,
+  edgarHistory,
+  loadHistoryCache,
+  saveHistoryCache,
+  type AnnualRecord,
+} from "../src/lib/edgar-history";
+import {
+  computeFactorScores,
+  computePenalties,
+  edgarFilter,
+  finalScore,
+  stage1Filter,
+  type StockInput,
+} from "../src/lib/scoring";
 
 loadEnv();
 
@@ -27,7 +50,7 @@ const DATA_DIR = path.join(process.cwd(), "data");
 const STATUS_PATH = path.join(DATA_DIR, "backtest-status.json");
 
 const REBALANCE_DAYS = 63; // ~quarterly
-const WARMUP_DAYS = 274; // 252 + 21 + buffer
+const WARMUP_DAYS = 274; // 252 + 21 + buffer, so every momentum window is defined
 const TOP_N = 20;
 
 interface BtStatus {
@@ -53,7 +76,9 @@ const status: BtStatus = {
 };
 
 function writeStatus(patch: Partial<BtStatus>): void {
+  const phaseChanged = patch.phase && patch.phase !== status.phase;
   Object.assign(status, patch, { updatedAt: new Date().toISOString() });
+  if (phaseChanged) status.phaseStartedAt = status.updatedAt;
   try {
     fs.mkdirSync(DATA_DIR, { recursive: true });
     fs.writeFileSync(STATUS_PATH, JSON.stringify(status, null, 2));
@@ -77,38 +102,184 @@ async function fetchTickers(): Promise<{ ticker: string; name: string }[]> {
   return out;
 }
 
-function sma(closes: number[], end: number, period: number): number | null {
-  if (end + 1 < period) return null;
-  let sum = 0;
-  for (let i = end - period + 1; i <= end; i++) {
-    const v = closes[i];
-    if (!Number.isFinite(v)) return null;
-    sum += v;
+// ---------- point-in-time StockInput ----------
+
+const num = (v: number | null | undefined): number | null =>
+  v !== null && v !== undefined && Number.isFinite(v) ? v : null;
+
+/**
+ * Assemble the exact StockInput the live scoring engine expects, from a price
+ * window ending at the rebalance and the fundamentals known on that date.
+ * Returns null when we cannot value the name (no shares / no revenue / no
+ * balance sheet), in which case it simply sits out that quarter.
+ */
+function buildInput(
+  ticker: string,
+  name: string,
+  closes: number[],
+  spxCloses: number[],
+  price: number,
+  fy0: AnnualRecord,
+  fy1: AnnualRecord | null,
+): StockInput | null {
+  const shares = num(fy0.shares);
+  const revenue = num(fy0.revenue);
+  const assets = num(fy0.assets);
+  if (!shares || shares <= 0 || revenue === null || assets === null || assets <= 0) return null;
+
+  const mve = price * shares; // market value of equity, USD
+  const marketCapM = mve / 1e6;
+
+  const ni = num(fy0.netIncome);
+  const equity = num(fy0.equity);
+  const cfo = num(fy0.cfo);
+  const capex = num(fy0.capex) ?? 0;
+  const ebit = num(fy0.ebit);
+  const da = num(fy0.dAndA);
+  const cogs = num(fy0.cogs);
+  const debt = num(fy0.debt);
+  const cash = num(fy0.cash) ?? 0;
+  const ca = num(fy0.currentAssets);
+  const cl = num(fy0.currentLiab);
+  const tl = num(fy0.totalLiab);
+  const re = num(fy0.retained);
+
+  const fcf = cfo !== null ? cfo - capex : null;
+  const ebitda = ebit !== null && da !== null ? ebit + da : null;
+
+  // Valuation ratios. Units cancel in the percentile ranking, so the market cap
+  // being in dollars while some statement items differ is harmless — every
+  // stock uses the same convention.
+  const pe = ni !== null && ni !== 0 ? mve / ni : null;
+  const pb = equity !== null && equity > 0 ? mve / equity : null;
+  const ps = revenue > 0 ? mve / revenue : null;
+  const pfcf = fcf !== null && fcf !== 0 ? mve / fcf : null;
+  const evToEbitda =
+    ebitda !== null && ebitda > 0 && debt !== null ? (mve + debt - cash) / ebitda : null;
+
+  const roe = equity !== null && equity > 0 && ni !== null ? (ni / equity) * 100 : null;
+  const roic =
+    ebit !== null && equity !== null && debt !== null && equity + debt > 0
+      ? (ebit / (equity + debt)) * 100 // pre-tax ROIC proxy
+      : null;
+  const netMargin = revenue > 0 && ni !== null ? (ni / revenue) * 100 : null;
+  const grossMargin = revenue > 0 && cogs !== null ? ((revenue - cogs) / revenue) * 100 : null;
+  const operatingMargin = revenue > 0 && ebit !== null ? (ebit / revenue) * 100 : null;
+  const grossProfitToAssets = cogs !== null ? ((revenue - cogs) / assets) * 100 : null;
+  const debtToEquity = debt !== null && equity !== null && equity > 0 ? debt / equity : null;
+  const accrualRatio = ni !== null && cfo !== null ? (ni - cfo) / assets : null;
+  const currentRatio = ca !== null && cl !== null && cl > 0 ? ca / cl : null;
+  const debtToEbitda = debt !== null && ebitda !== null && ebitda > 0 ? debt / ebitda : null;
+
+  // Growth (year over year), point-in-time
+  const rev1 = fy1 ? num(fy1.revenue) : null;
+  const ni1 = fy1 ? num(fy1.netIncome) : null;
+  const sh1 = fy1 ? num(fy1.shares) : null;
+  const revenueGrowth = rev1 !== null && rev1 > 0 ? (revenue / rev1 - 1) * 100 : null;
+  let epsGrowth: number | null = null;
+  if (ni !== null && ni1 !== null && sh1 !== null && sh1 > 0) {
+    const eps0 = ni / shares;
+    const eps1 = ni1 / sh1;
+    if (eps1 > 0) epsGrowth = (eps0 / eps1 - 1) * 100;
   }
-  return sum / period;
-}
+  let fcfGrowth: number | null = null;
+  if (fy1) {
+    const cfo1 = num(fy1.cfo);
+    const capex1 = num(fy1.capex) ?? 0;
+    if (cfo !== null && cfo1 !== null) {
+      const f0 = cfo1 - capex1;
+      const f1 = cfo - capex;
+      if (f0 !== 0) fcfGrowth = ((f1 - f0) / Math.abs(f0)) * 100;
+    }
+  }
 
-function ret(closes: number[], end: number, days: number, skip = 0): number | null {
-  const e = end - skip;
-  const s = e - days;
-  if (s < 0) return null;
-  const a = closes[s];
-  const b = closes[e];
-  if (!Number.isFinite(a) || !Number.isFinite(b) || a <= 0) return null;
-  return b / a - 1;
-}
+  // Altman Z (manufacturing form; null for names lacking working-capital tags)
+  let altmanZ: number | null = null;
+  if (ca !== null && cl !== null && tl !== null && tl > 0 && re !== null && ebit !== null) {
+    altmanZ =
+      1.2 * ((ca - cl) / assets) +
+      1.4 * (re / assets) +
+      3.3 * (ebit / assets) +
+      0.6 * (mve / tl) +
+      1.0 * (revenue / assets);
+    altmanZ = Math.round(altmanZ * 100) / 100;
+  }
 
-function percentiles(values: (number | null)[]): (number | null)[] {
-  const present = values
-    .map((v, i) => ({ v, i }))
-    .filter((x): x is { v: number; i: number } => x.v !== null);
-  if (present.length < 2) return values.map(() => null);
-  const sorted = [...present].sort((a, b) => a.v - b.v);
-  const out = new Array<number | null>(values.length).fill(null);
-  sorted.forEach((item, idx) => {
-    out[item.i] = (idx / (sorted.length - 1)) * 100;
-  });
-  return out;
+  // Piotroski F (scaled to /9 when >=7 criteria computable)
+  let piotroskiF: number | null = null;
+  {
+    let earned = 0;
+    let possible = 0;
+    const test = (cond: boolean | null) => {
+      if (cond === null) return;
+      possible++;
+      if (cond) earned++;
+    };
+    const ta1 = fy1 ? num(fy1.assets) : null;
+    const ca1 = fy1 ? num(fy1.currentAssets) : null;
+    const cl1 = fy1 ? num(fy1.currentLiab) : null;
+    const cogs1 = fy1 ? num(fy1.cogs) : null;
+    const debt1 = fy1 ? num(fy1.debt) : null;
+
+    test(ni !== null ? ni > 0 : null);
+    test(cfo !== null ? cfo > 0 : null);
+    test(ni !== null && ni1 !== null && ta1 !== null && ta1 > 0 ? ni / assets > ni1 / ta1 : null);
+    test(cfo !== null && ni !== null ? cfo > ni : null);
+    test(
+      debt !== null && debt1 !== null && ta1 !== null && ta1 > 0
+        ? debt / assets <= debt1 / ta1
+        : null,
+    );
+    test(
+      ca !== null && cl !== null && ca1 !== null && cl1 !== null && cl > 0 && cl1 > 0
+        ? ca / cl > ca1 / cl1
+        : null,
+    );
+    test(sh1 !== null ? shares <= sh1 * 1.02 : null);
+    test(
+      cogs !== null && rev1 !== null && cogs1 !== null && rev1 > 0
+        ? (revenue - cogs) / revenue > (rev1 - cogs1) / rev1
+        : null,
+    );
+    test(rev1 !== null && ta1 !== null && ta1 > 0 ? revenue / assets > rev1 / ta1 : null);
+    if (possible >= 7) piotroskiF = Math.round((earned / possible) * 9);
+  }
+
+  return {
+    ticker,
+    name,
+    sector: "",
+    price,
+    marketCap: marketCapM,
+    avgDollarVolume: 1e12, // S&P 500 members are liquid by construction
+    closes,
+    spxCloses,
+    currentRatio,
+    interestCoverage: null, // no free historical interest-expense feed
+    netMargin,
+    grossMargin,
+    operatingMargin,
+    roe,
+    roic,
+    debtToEquity,
+    pe,
+    pb,
+    ps,
+    pfcf,
+    evToEbitda,
+    revenueGrowth,
+    epsGrowth,
+    revenuePerShare: revenue / shares,
+    latestSurprisePct: null, // no free historical surprise feed
+    altmanZ,
+    piotroskiF,
+    accrualRatio,
+    fcfGrowth,
+    grossProfitToAssets,
+    debtToEbitda,
+    insiderBought: null, // no free historical insider feed
+    insiderSold: null,
+  };
 }
 
 async function main() {
@@ -123,17 +294,14 @@ async function main() {
   const spxClose = spx.map((c) => c.c);
   const n = dates.length;
 
-  // ---- fetch 10y history for every ticker, aligned to the benchmark calendar
-  console.log(`Fetching 10y history for ${tickers.length} tickers...`);
+  // ---- 10y price history for every ticker, aligned to the benchmark calendar
+  console.log(`Fetching 10y price history for ${tickers.length} tickers...`);
   writeStatus({ phase: "fetching 10y price history", total: tickers.length, done: 0 });
-
   const aligned = new Map<string, number[]>();
   const CONCURRENCY = 3;
   for (let i = 0; i < tickers.length; i += CONCURRENCY) {
     const chunk = tickers.slice(i, i + CONCURRENCY);
-    const results = await Promise.all(
-      chunk.map((t) => dailyHistory(t.ticker, 1_000_000, "10y")),
-    );
+    const results = await Promise.all(chunk.map((t) => dailyHistory(t.ticker, 1_000_000, "10y")));
     results.forEach((candles, j) => {
       if (!candles || candles.length < 300) return;
       const series = new Array<number>(n).fill(NaN);
@@ -141,7 +309,6 @@ async function main() {
         const idx = dateIndex.get(c.t);
         if (idx !== undefined) series[idx] = c.c;
       }
-      // forward-fill small gaps so daily returns stay defined
       let last = NaN;
       for (let k = 0; k < n; k++) {
         if (Number.isFinite(series[k])) last = series[k];
@@ -152,10 +319,35 @@ async function main() {
     writeStatus({ done: Math.min(i + CONCURRENCY, tickers.length) });
     await new Promise((r) => setTimeout(r, 120));
   }
-  console.log(`Usable history for ${aligned.size} tickers.`);
+  console.log(`Usable price history for ${aligned.size} tickers.`);
+
+  // ---- SEC EDGAR fundamentals history (cached to disk between runs)
+  console.log("Fetching SEC EDGAR fundamentals history...");
+  writeStatus({ phase: "fetching SEC filings", total: tickers.length, done: 0 });
+  const cache = loadHistoryCache();
+  const histories = new Map<string, AnnualRecord[]>();
+  let edgarDone = 0;
+  for (const t of tickers) {
+    if (!aligned.has(t.ticker)) {
+      edgarDone++;
+      continue; // no prices -> can't use it anyway
+    }
+    let recs = cache[t.ticker];
+    if (!recs) {
+      recs = await edgarHistory(t.ticker);
+      cache[t.ticker] = recs;
+    }
+    if (recs.length > 0) histories.set(t.ticker, recs);
+    edgarDone++;
+    if (edgarDone % 10 === 0) writeStatus({ done: edgarDone });
+  }
+  saveHistoryCache(cache);
+  console.log(`Usable fundamentals history for ${histories.size} tickers.`);
+
+  const nameOf = new Map(tickers.map((t) => [t.ticker, t.name]));
 
   // ---- simulate
-  console.log("Simulating...");
+  console.log("Simulating full model...");
   writeStatus({ phase: "simulating", total: n - WARMUP_DAYS, done: 0 });
 
   let strat = 1;
@@ -174,6 +366,9 @@ async function main() {
   let periodStartBench = 1;
   const dailyRets: number[] = [];
 
+  // rolling average factor profile of the picked portfolio
+  const attrib = { quality: 0, value: 0, momentum: 0, growth: 0, count: 0 };
+
   const closePeriod = (endIdx: number) => {
     if (holdings.length === 0 && periods.length === 0) return;
     periods.push({
@@ -186,41 +381,54 @@ async function main() {
   };
 
   for (let i = WARMUP_DAYS; i < n; i++) {
-    // rebalance at the close of every 63rd trading day
     if ((i - WARMUP_DAYS) % REBALANCE_DAYS === 0) {
       if (i > WARMUP_DAYS) closePeriod(i);
-      const tickersArr = [...aligned.keys()];
-      const eligible = tickersArr.filter((t) => {
-        const s = aligned.get(t)!;
-        if (!Number.isFinite(s[i]) || !Number.isFinite(s[i - WARMUP_DAYS + 1])) return false;
-        const ma200 = sma(s, i, 200);
-        const ma50 = sma(s, i, 50);
-        return ma200 !== null && ma50 !== null && s[i] > ma200 && ma50 > ma200;
-      });
-      const m12 = percentiles(eligible.map((t) => ret(aligned.get(t)!, i, 231, 21)));
-      const m6 = percentiles(eligible.map((t) => ret(aligned.get(t)!, i, 126)));
-      const rs = percentiles(
-        eligible.map((t) => {
-          const a = ret(aligned.get(t)!, i, 252);
-          const b = ret(spxClose, i, 252);
-          return a === null || b === null ? null : a - b;
-        }),
-      );
-      const dist = percentiles(
-        eligible.map((t) => {
-          const s = aligned.get(t)!;
-          const ma = sma(s, i, 200);
-          return ma === null ? null : s[i] / ma - 1;
-        }),
-      );
-      const scored = eligible
-        .map((t, k) => ({
-          t,
-          score:
-            0.4 * (m12[k] ?? 50) + 0.3 * (m6[k] ?? 50) + 0.2 * (rs[k] ?? 50) + 0.1 * (dist[k] ?? 50),
-        }))
-        .sort((a, b) => b.score - a.score);
-      holdings = scored.slice(0, TOP_N).map((x) => x.t);
+      const date = dates[i];
+      const spxWindow = spxClose.slice(0, i + 1);
+
+      // Build point-in-time inputs for every name with prices + filed fundamentals
+      const inputs: StockInput[] = [];
+      for (const [ticker, series] of aligned) {
+        if (!Number.isFinite(series[i]) || !Number.isFinite(series[i - WARMUP_DAYS + 1])) continue;
+        const recs = histories.get(ticker);
+        if (!recs) continue;
+        const pit = asOf(recs, date);
+        if (!pit) continue;
+        const input = buildInput(
+          ticker,
+          nameOf.get(ticker) ?? ticker,
+          series.slice(0, i + 1),
+          spxWindow,
+          series[i],
+          pit.fy0,
+          pit.fy1,
+        );
+        if (input) inputs.push(input);
+      }
+
+      // Live pipeline: Stage-1 filters -> EDGAR filters -> factor scores -> penalties
+      const survivors1 = inputs.filter((s) => stage1Filter(s).passed);
+      const survivors = survivors1.filter((s) => edgarFilter(s).passed);
+      if (survivors.length >= TOP_N) {
+        const scores = computeFactorScores(survivors);
+        const ranked = survivors
+          .map((s, k) => ({
+            ticker: s.ticker,
+            scores: scores[k],
+            final: finalScore(scores[k], computePenalties(s)),
+          }))
+          .sort((a, b) => b.final - a.final);
+        holdings = ranked.slice(0, TOP_N).map((x) => x.ticker);
+        for (const h of ranked.slice(0, TOP_N)) {
+          attrib.quality += h.scores.quality;
+          attrib.value += h.scores.value;
+          attrib.momentum += h.scores.momentum;
+          attrib.growth += h.scores.growth;
+          attrib.count++;
+        }
+      }
+      // if too few survivors this quarter, keep prior holdings
+
       periodStartIdx = i;
       periodStartStrat = strat;
       periodStartBench = bench;
@@ -232,13 +440,13 @@ async function main() {
       continue;
     }
 
-    // daily step
     let dayRet = 0;
     if (holdings.length > 0) {
       let sum = 0;
       let count = 0;
       for (const t of holdings) {
-        const s = aligned.get(t)!;
+        const s = aligned.get(t);
+        if (!s) continue;
         const a = s[i - 1];
         const b = s[i];
         if (Number.isFinite(a) && Number.isFinite(b) && a > 0) {
@@ -280,33 +488,46 @@ async function main() {
     benchMaxDD = Math.min(benchMaxDD, p.bench / benchPeak - 1);
   }
   const beatCount = periods.filter((p) => p.stratRet > p.benchRet).length;
+  const r1 = (v: number) => Math.round(v * 10) / 10;
 
   const result = {
     generatedAt: new Date().toISOString(),
+    model: "full",
     strategy:
-      "Momentum composite (40% 12-1m / 30% 6m / 20% rel. strength / 10% >200MA) + trend filter, top 20 equal-weight, quarterly rebalance",
-    universe: `Current S&P 500 members with 10y Yahoo history (${aligned.size} tickers)`,
+      "Full four-factor model (Quality 30 / Value 25 / Momentum 25 / Growth 20) with Stage-1 elimination filters and penalties — the exact live engine, top 20 equal-weight, quarterly rebalance",
+    universe: `Current S&P 500 members with 10y prices + SEC filings (${histories.size} tickers)`,
+    dataSources: "Yahoo Finance (prices) + SEC EDGAR companyfacts (fundamentals, point-in-time)",
     caveats: [
-      "Tests only the price-based half of the model — Quality/Value/Growth need point-in-time fundamentals (paid data)",
-      "Survivorship bias: uses today's index members across all history",
+      "Runs the identical scoring engine as the live site — no separate backtest logic",
+      "Fundamentals read point-in-time: only filings public on each rebalance date are used (no lookahead)",
+      "Survivorship bias: uses today's S&P 500 members across all history, so results skew optimistic",
       "Price returns only (no dividends, either side); no transaction costs or slippage",
+      "Three live inputs have no free history and are off here: insider-selling penalty, earnings-surprise penalty, forward-EPS growth (weight renormalizes, as the live model already does)",
       "Past performance does not predict future results",
     ],
     stats: {
-      years: Math.round(years * 10) / 10,
-      totalReturn: Math.round((strat - 1) * 1000) / 10,
-      benchTotalReturn: Math.round((bench - 1) * 1000) / 10,
-      cagr: Math.round(cagr * 1000) / 10,
-      benchCagr: Math.round(benchCagr * 1000) / 10,
-      maxDrawdown: Math.round(maxDD * 1000) / 10,
-      benchMaxDrawdown: Math.round(benchMaxDD * 1000) / 10,
-      annVol: Math.round(vol * 1000) / 10,
+      years: r1(years),
+      totalReturn: r1((strat - 1) * 100),
+      benchTotalReturn: r1((bench - 1) * 100),
+      cagr: r1(cagr * 100),
+      benchCagr: r1(benchCagr * 100),
+      maxDrawdown: r1(maxDD * 100),
+      benchMaxDrawdown: r1(benchMaxDD * 100),
+      annVol: r1(vol * 100),
       sharpe: Math.round(sharpe * 100) / 100,
       quartersTotal: periods.length,
       quartersBeatingIndex: beatCount,
     },
+    factorProfile: attrib.count
+      ? {
+          quality: r1(attrib.quality / attrib.count),
+          value: r1(attrib.value / attrib.count),
+          momentum: r1(attrib.momentum / attrib.count),
+          growth: r1(attrib.growth / attrib.count),
+        }
+      : null,
     curve,
-    periods: periods.slice(-8).reverse(), // most recent 8 quarters for the UI
+    periods: periods.slice(-8).reverse(),
     currentHoldings: holdings,
   };
 
@@ -314,13 +535,19 @@ async function main() {
   console.log(
     `\nBacktest done: strategy ${result.stats.totalReturn}% vs S&P 500 ${result.stats.benchTotalReturn}% over ${result.stats.years}y`,
   );
-  console.log(`CAGR ${result.stats.cagr}% vs ${result.stats.benchCagr}% | MaxDD ${result.stats.maxDrawdown}% vs ${result.stats.benchMaxDrawdown}%`);
+  console.log(
+    `CAGR ${result.stats.cagr}% vs ${result.stats.benchCagr}% | MaxDD ${result.stats.maxDrawdown}% vs ${result.stats.benchMaxDrawdown}% | Sharpe ${result.stats.sharpe}`,
+  );
 }
 
 main()
   .then(() => writeStatus({ state: "done", phase: "complete", finishedAt: new Date().toISOString() }))
   .catch((err) => {
     console.error(err);
-    writeStatus({ state: "error", error: (err as Error).message, finishedAt: new Date().toISOString() });
+    writeStatus({
+      state: "error",
+      error: (err as Error).message,
+      finishedAt: new Date().toISOString(),
+    });
     process.exit(1);
   });
