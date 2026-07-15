@@ -25,16 +25,43 @@ export default function Portfolio({
 }) {
   const [positions, setPositions] = useState<Position[]>([]);
   const [ready, setReady] = useState(false);
+  const [live, setLive] = useState<Record<string, number>>({});
+  const [updatedAt, setUpdatedAt] = useState<string | null>(null);
 
   useEffect(() => {
     setPositions(readPortfolio());
     setReady(true);
   }, []);
 
+  // Refresh live prices for held tickers now and every 30 minutes
+  const heldKey = positions.map((p) => p.ticker).sort().join(",");
+  useEffect(() => {
+    if (!heldKey) return;
+    let alive = true;
+    const pull = async () => {
+      try {
+        const res = await fetch(`/api/quote?tickers=${encodeURIComponent(heldKey)}`, { cache: "no-store" });
+        if (!res.ok) return;
+        const json = (await res.json()) as { prices: Record<string, number>; at: string };
+        if (!alive) return;
+        setLive((prev) => ({ ...prev, ...json.prices }));
+        setUpdatedAt(json.at);
+      } catch {
+        /* keep last prices */
+      }
+    };
+    pull();
+    const id = setInterval(pull, 30 * 60 * 1000);
+    return () => {
+      alive = false;
+      clearInterval(id);
+    };
+  }, [heldKey]);
+
   if (!ready) return <div className="analysis"><p className="name-dim">Loading portfolio…</p></div>;
 
   const rows = positions.map((p) => {
-    const cur = prices[p.ticker];
+    const cur = live[p.ticker] ?? prices[p.ticker];
     const pnlPct = cur !== undefined ? (cur / p.entryPrice - 1) * 100 : null;
     return { ...p, cur, pnlPct };
   });
@@ -152,9 +179,17 @@ export default function Portfolio({
         </div>
       )}
       <p className="analysis-meta">
-        Current prices come from the latest nightly scan; a position in a stock that has since
-        dropped out of the ranked set shows “no data” until it reappears. Paper only — not a
-        brokerage, not investment advice.
+        {updatedAt ? (
+          <>
+            <span className="live-dot" /> Live prices · updated{" "}
+            {new Date(updatedAt).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })} ·
+            auto-refresh every 30 min.{" "}
+          </>
+        ) : (
+          "Prices from the latest scan. "
+        )}
+        A holding that has dropped out of the ranked set falls back to its last scan price. Paper
+        only, not a brokerage, not investment advice.
       </p>
     </div>
   );

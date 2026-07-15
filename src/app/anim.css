@@ -549,3 +549,7 @@
 .chart-legend{position:absolute;top:8px;left:10px;z-index:4;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:5px 10px;font-size:12px;pointer-events:none;box-shadow:var(--shadow)}
 .chart-legend .pos{color:var(--accent)}
 .chart-legend .neg{color:var(--red)}
+
+/* live dot */
+.live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--accent);margin-right:5px;animation:livePulse 1.6s ease-in-out infinite}
+@keyframes livePulse{0%,100%{opacity:1;box-shadow:0 0 0 0 var(--accent-dim)}50%{opacity:.5;box-shadow:0 0 0 4px transparent}}
