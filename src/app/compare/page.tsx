@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { getRankings } from "@/lib/data";
+import CompareChart from "@/components/CompareChart";
+import { getHistory, getRankings } from "@/lib/data";
 import type { RankedStock } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -63,6 +64,20 @@ export default async function ComparePage({
       <h1 style={{ fontSize: 22, marginBottom: 18 }}>
         Compare · {stocks.map((s) => s.ticker).join(" vs ")}
       </h1>
+
+      {(() => {
+        const series = stocks
+          .map((s) => ({ ticker: s.ticker, candles: getHistory(s.ticker) }))
+          .filter((s): s is { ticker: string; candles: NonNullable<ReturnType<typeof getHistory>> } => !!s.candles);
+        if (series.length < 2) return null;
+        return (
+          <section style={{ marginTop: 0, marginBottom: 24 }}>
+            <div className="chart-box">
+              <CompareChart series={series} />
+            </div>
+          </section>
+        );
+      })()}
 
       <div className="compare-grid">
         {stocks.map((s) => (

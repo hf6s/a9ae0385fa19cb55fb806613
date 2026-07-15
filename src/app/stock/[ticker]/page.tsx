@@ -5,6 +5,7 @@ import AddToPortfolio from "@/components/AddToPortfolio";
 import AskClaude from "@/components/AskClaude";
 import PriceChart from "@/components/PriceChart";
 import StarButton from "@/components/StarButton";
+import { computeRiskStats } from "@/lib/stats";
 
 export const dynamic = "force-dynamic";
 
@@ -117,6 +118,37 @@ export default async function StockPage({
           </div>
         </section>
       )}
+
+      {history && history.length >= 30 && (() => {
+        const rs = computeRiskStats(history);
+        const pn = (v: number | null, s = "%") => (v === null ? "—" : `${v > 0 ? "+" : ""}${v}${s}`);
+        const cls = (v: number | null) => (v === null ? "" : v >= 0 ? "pos" : "neg");
+        return (
+          <section>
+            <h2>Risk &amp; returns</h2>
+            <div className="cards">
+              <div className="card">
+                <div className="label">Returns</div>
+                <p>1M <span className={cls(rs.ret1m)}>{pn(rs.ret1m)}</span> · 6M <span className={cls(rs.ret6m)}>{pn(rs.ret6m)}</span></p>
+                <p>1Y <span className={cls(rs.ret1y)}>{pn(rs.ret1y)}</span></p>
+              </div>
+              <div className="card">
+                <div className="label">52-week range</div>
+                <p>High ${rs.high52 ?? "—"} · Low ${rs.low52 ?? "—"}</p>
+                <p>From high <span className={cls(rs.fromHigh)}>{pn(rs.fromHigh)}</span></p>
+              </div>
+              <div className="card">
+                <div className="label">Volatility (annualized)</div>
+                <div className="big">{rs.annVol ?? "—"}%</div>
+              </div>
+              <div className="card">
+                <div className="label">Max drawdown</div>
+                <div className="big neg">{rs.maxDrawdown ?? "—"}%</div>
+              </div>
+            </div>
+          </section>
+        );
+      })()}
 
       <section>
         <h2>AI analysis</h2>
