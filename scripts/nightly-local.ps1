@@ -23,6 +23,17 @@ if ((Test-Path $log) -and (Get-Item $log).Length -gt 512KB) {
 
 Add-Content $log "`n=== nightly run started $(Get-Date -Format s) ===" -Encoding utf8
 
+# Dependencies are gitignored, so a fresh clone (or a factory reset) leaves
+# node_modules missing and every run dies with "tsx is not recognized".
+if (-not (Test-Path (Join-Path $repo "node_modules\.bin\tsx.cmd"))) {
+    Add-Content $log "node_modules missing - running npm ci first" -Encoding utf8
+    cmd /c "`"$npm`" ci >> `"$log`" 2>&1"
+    if ($LASTEXITCODE -ne 0) {
+        Add-Content $log "npm ci failed (exit $LASTEXITCODE) - aborting, nothing committed" -Encoding utf8
+        exit 1
+    }
+}
+
 cmd /c "`"$npm`" run scan >> `"$log`" 2>&1"
 if ($LASTEXITCODE -ne 0) {
     Add-Content $log "scan failed (exit $LASTEXITCODE) - keeping previous rankings, nothing committed" -Encoding utf8
