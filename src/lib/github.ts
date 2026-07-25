@@ -110,10 +110,20 @@ export interface QuotaState {
   nextAllowedAt?: string;
 }
 
-/** One run per 24h, judged from GitHub's run history. */
+/**
+ * One run per 24h, judged from GitHub's run history.
+ *
+ * Only runs that did work count. A cancelled or failed run produced no data,
+ * so charging it against the quota would lock the button for a day over a run
+ * that achieved nothing.
+ */
 export async function checkDailyQuota(name: WorkflowName): Promise<QuotaState> {
-  const runs = await listRuns(name, 5);
-  const recent = runs.find((r) => Date.now() - Date.parse(r.createdAt) < DAY_MS);
+  const runs = await listRuns(name, 10);
+  const counts = (r: RunInfo) =>
+    r.status !== "completed" || r.conclusion === "success" || r.conclusion === null;
+  const recent = runs.find(
+    (r) => Date.now() - Date.parse(r.createdAt) < DAY_MS && counts(r),
+  );
   if (!recent) return { allowed: true };
   return {
     allowed: false,
