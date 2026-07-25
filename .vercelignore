@@ -1,0 +1,12 @@
+# Runtime status files describe a job on ONE machine. Uploading them makes the
+# deployed dashboard report a scan that is not running there, which is how a
+# dead local scan showed as stuck at 5/1138 on the live site.
+data/scan-status.json
+data/backtest-status.json
+
+# Caches rebuilt on demand; several MB each and never read by the website.
+data/edgar-history-cache.json
+data/sp500-membership.json
+data/delisted-cik-cache.json
+
+*.log

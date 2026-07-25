@@ -5,6 +5,26 @@ import { checkDailyQuota, githubConfigured, latestRun } from "@/lib/github";
 
 export const dynamic = "force-dynamic";
 
+/** A dead run leaves its last heartbeat behind; treat a stale one as failed. */
+const HEARTBEAT_TIMEOUT_MS = 5 * 60 * 1000; // EDGAR phases are slow between writes
+
+function withStaleness(s: Record<string, unknown>): Record<string, unknown> {
+  if (s.state !== "running") return s;
+  const beat = Date.parse(String(s.updatedAt ?? ""));
+  if (Number.isFinite(beat) && Date.now() - beat > HEARTBEAT_TIMEOUT_MS) {
+    return {
+      ...s,
+      state: "error",
+      stale: true,
+      error: `Backtest stopped responding at ${new Date(beat).toLocaleString("en-US", {
+        dateStyle: "medium",
+        timeStyle: "short",
+      })} during "${s.phase ?? "unknown"}".`,
+    };
+  }
+  return s;
+}
+
 /** Same split as the scan status: local file when local, GitHub run when deployed. */
 export async function GET() {
   let local: Record<string, unknown> = { state: "idle" };
@@ -12,7 +32,7 @@ export async function GET() {
   if (fs.existsSync(file)) {
     try {
       const raw = fs.readFileSync(file, "utf8").replace(/^﻿/, "");
-      local = JSON.parse(raw) as Record<string, unknown>;
+      local = withStaleness(JSON.parse(raw) as Record<string, unknown>);
     } catch {
       /* keep idle */
     }

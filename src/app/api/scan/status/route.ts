@@ -13,13 +13,37 @@ export const dynamic = "force-dynamic";
  * Actions and the committed file is a snapshot of the LAST finished run, so
  * the workflow run state is authoritative for "is something running now".
  */
+/**
+ * A running scan rewrites its status every ticker. If the heartbeat stops, the
+ * process died (killed, crashed, machine slept) and the file lies about being
+ * "running" forever. Anything older than this is treated as dead.
+ */
+const HEARTBEAT_TIMEOUT_MS = 3 * 60 * 1000;
+
+function withStaleness(s: Record<string, unknown>): Record<string, unknown> {
+  if (s.state !== "running") return s;
+  const beat = Date.parse(String(s.updatedAt ?? ""));
+  if (Number.isFinite(beat) && Date.now() - beat > HEARTBEAT_TIMEOUT_MS) {
+    return {
+      ...s,
+      state: "error",
+      stale: true,
+      error: `Scan stopped responding at ${new Date(beat).toLocaleString("en-US", {
+        dateStyle: "medium",
+        timeStyle: "short",
+      })} after ${s.done ?? 0}/${s.total ?? 0} tickers.`,
+    };
+  }
+  return s;
+}
+
 export async function GET() {
   let local: Record<string, unknown> = { state: "idle" };
   const file = path.join(process.cwd(), "data", "scan-status.json");
   if (fs.existsSync(file)) {
     try {
       const raw = fs.readFileSync(file, "utf8").replace(/^﻿/, ""); // tolerate BOM
-      local = JSON.parse(raw) as Record<string, unknown>;
+      local = withStaleness(JSON.parse(raw) as Record<string, unknown>);
     } catch {
       /* keep idle */
     }
