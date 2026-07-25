@@ -514,6 +514,7 @@ async function main() {
   let totalCostDrag = 0;
   let turnoverSum = 0;
   let turnoverCount = 0;
+  const rebalanceStats = { candidates: 0, afterStage1: 0, survivors: 0, count: 0 };
 
   const closePeriod = (endIdx: number) => {
     if (holdings.length === 0 && periods.length === 0) return;
@@ -583,6 +584,17 @@ async function main() {
       // Live pipeline: Stage-1 filters -> EDGAR filters -> factor scores -> penalties
       const survivors1 = inputs.filter((s) => stage1Filter(s).passed);
       const survivors = survivors1.filter((s) => edgarFilter(s).passed);
+      // Work actually done per rebalance. If these collapse, the run is
+      // ranking a handful of names and finishing fast for the wrong reason.
+      rebalanceStats.candidates += inputs.length;
+      rebalanceStats.afterStage1 += survivors1.length;
+      rebalanceStats.survivors += survivors.length;
+      rebalanceStats.count++;
+      if (rebalanceStats.count <= 3 || rebalanceStats.count % 20 === 0) {
+        console.log(
+          `  ${date}: ${inputs.length} scored -> ${survivors1.length} past stage 1 -> ${survivors.length} investable`,
+        );
+      }
       if (survivors.length >= TOP_N) {
         const scores = computeFactorScores(survivors);
         const ranked = survivors
@@ -775,6 +787,12 @@ async function main() {
       topN: TOP_N,
       exitRank: EXIT_RANK,
       maxPerSector: MAX_PER_SECTOR,
+      avgCandidatesPerRebalance: rebalanceStats.count
+        ? Math.round(rebalanceStats.candidates / rebalanceStats.count)
+        : 0,
+      avgInvestablePerRebalance: rebalanceStats.count
+        ? Math.round(rebalanceStats.survivors / rebalanceStats.count)
+        : 0,
     },
     subPeriods,
     factorProfile: attrib.count
@@ -796,6 +814,10 @@ async function main() {
   );
   console.log(
     `CAGR ${result.stats.cagr}% vs ${result.stats.benchCagr}% | MaxDD ${result.stats.maxDrawdown}% vs ${result.stats.benchMaxDrawdown}% | Sharpe ${result.stats.sharpe}`,
+  );
+  console.log(
+    `Work done: ${result.stats.avgCandidatesPerRebalance} companies scored per rebalance, ` +
+      `${result.stats.avgInvestablePerRebalance} investable, across ${rebalanceStats.count} rebalances.`,
   );
 }
 

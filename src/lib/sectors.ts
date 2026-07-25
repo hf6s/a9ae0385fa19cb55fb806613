@@ -78,7 +78,10 @@ export class SectorLookup {
       const res = await fetch(`https://data.sec.gov/submissions/CIK${cik}.json`, {
         headers: { "User-Agent": UA },
       });
-      await new Promise((r) => setTimeout(r, 120)); // SEC fair-access pacing
+      // SEC fair-access pacing. Deliberately slower than their 10/s ceiling:
+      // this runs on top of the companyfacts fetches, and sustained volume is
+      // what gets an IP throttled for minutes at a time.
+      await new Promise((r) => setTimeout(r, 250));
       if (!res.ok) return "Unknown";
       const json = (await res.json()) as { sic?: string };
       const sic = Number(json.sic);

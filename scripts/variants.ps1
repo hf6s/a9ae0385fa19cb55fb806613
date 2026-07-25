@@ -16,9 +16,20 @@ $variants = @(
 $out = @()
 foreach ($v in $variants) {
   Write-Host "=== $($v.name) ==="
-  cmd /c "npm run backtest -- $($v.args) > variant-$($v.name).log 2>&1"
+  # SEC throttles for minutes after heavy use. One variant failing that way
+  # should not take the whole sweep down with it.
+  $attempt = 0
+  do {
+    $attempt++
+    if ($attempt -gt 1) {
+      Write-Host "  retry $attempt after SEC backoff..."
+      Start-Sleep -Seconds 300
+    }
+    cmd /c "npm run backtest -- $($v.args) > variant-$($v.name).log 2>&1"
+  } while ($LASTEXITCODE -ne 0 -and $attempt -lt 3)
+
   if ($LASTEXITCODE -ne 0) {
-    Write-Host "  FAILED (exit $LASTEXITCODE)"
+    Write-Host "  FAILED after $attempt attempts (exit $LASTEXITCODE)"
     Get-Content "variant-$($v.name).log" -Tail 3
     continue
   }

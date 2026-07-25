@@ -90,9 +90,20 @@ async function fetchJson<T>(url: string): Promise<T | null> {
  */
 async function loadCikMap(): Promise<Map<string, string>> {
   if (cikMap) return cikMap;
-  const json = await fetchJson<Record<string, { cik_str: number; ticker: string }>>(
-    "https://www.sec.gov/files/company_tickers.json",
-  );
+  // This one file gates every lookup, so it gets a longer, more patient retry
+  // than a normal request. SEC throttles for minutes after heavy use, and
+  // failing here wastes the entire run.
+  let json: Record<string, { cik_str: number; ticker: string }> | null = null;
+  for (let attempt = 0; attempt < 5 && !json; attempt++) {
+    if (attempt > 0) {
+      const wait = 30_000 * attempt;
+      console.log(`  SEC ticker index unavailable, waiting ${wait / 1000}s (attempt ${attempt + 1}/5)...`);
+      await new Promise((r) => setTimeout(r, wait));
+    }
+    json = await fetchJson<Record<string, { cik_str: number; ticker: string }>>(
+      "https://www.sec.gov/files/company_tickers.json",
+    );
+  }
   if (!json || Object.keys(json).length === 0) {
     throw new Error(
       "SEC company_tickers.json unavailable (rate limited?). Refusing to continue, " +
