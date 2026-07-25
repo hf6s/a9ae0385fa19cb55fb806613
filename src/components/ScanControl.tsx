@@ -11,8 +11,44 @@ function formatEta(seconds: number): string {
   return m > 0 ? `${m}m ${s.toString().padStart(2, "0")}s` : `${s}s`;
 }
 
+/** Extra fields the status route adds on the deployed site. */
+interface RemoteBits {
+  remote?: boolean;
+  configured?: boolean;
+  run?: { status: string; conclusion: string | null; startedAt: string; url: string } | null;
+  quota?: { allowed: boolean; nextAllowedAt: string | null };
+}
+
+export function RemoteNotice({
+  remote,
+  quota,
+  run,
+  noun,
+}: RemoteBits & { noun: string }) {
+  if (!remote) return null;
+  const next = quota?.nextAllowedAt ? new Date(quota.nextAllowedAt) : null;
+  return (
+    <p className="name-dim" style={{ marginTop: 10, fontSize: 12 }}>
+      Runs on GitHub Actions · one {noun} per day
+      {quota && !quota.allowed && next
+        ? ` · next available ${next.toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" })}`
+        : ""}
+      {run?.url ? (
+        <>
+          {" · "}
+          <a href={run.url} target="_blank" rel="noreferrer" style={{ color: "var(--accent)" }}>
+            view run log
+          </a>
+        </>
+      ) : null}
+    </p>
+  );
+}
+
 export default function ScanControl({ universeBuilt }: { universeBuilt: boolean }) {
-  const [scanStatus, setScanStatus] = useState<ScanStatus | { state: "idle" } | null>(null);
+  const [scanStatus, setScanStatus] = useState<
+    (ScanStatus & RemoteBits) | ({ state: "idle" } & RemoteBits) | null
+  >(null);
   const [message, setMessage] = useState<string | null>(null);
 
   const poll = useCallback(async () => {
@@ -38,9 +74,13 @@ export default function ScanControl({ universeBuilt }: { universeBuilt: boolean 
       body: JSON.stringify({ mode }),
     });
     const json = await res.json();
-    if (!res.ok) setMessage(json.error ?? "Failed to start scan");
+    if (!res.ok) setMessage(json.message ?? json.error ?? "Failed to start scan");
     else {
-      setMessage(null);
+      setMessage(
+        json.remote
+          ? "Started on GitHub Actions. Progress appears here shortly; the site updates when the run commits its data."
+          : null,
+      );
       poll();
     }
   }
@@ -81,6 +121,12 @@ export default function ScanControl({ universeBuilt }: { universeBuilt: boolean 
             {s.done}/{s.total} · phase ETA: <strong>{etaText}</strong> · overall ≈{" "}
             <strong>{overallText}</strong>
           </p>
+          <RemoteNotice
+            remote={scanStatus?.remote}
+            quota={scanStatus?.quota}
+            run={scanStatus?.run}
+            noun="scan"
+          />
         </div>
       ) : (
         <div>
@@ -114,6 +160,12 @@ export default function ScanControl({ universeBuilt }: { universeBuilt: boolean 
               </span>
             </button>
           </div>
+          <RemoteNotice
+            remote={scanStatus?.remote}
+            quota={scanStatus?.quota}
+            run={scanStatus?.run}
+            noun="scan"
+          />
           {message && <p className="penalty" style={{ marginTop: 10 }}>{message}</p>}
         </div>
       )}

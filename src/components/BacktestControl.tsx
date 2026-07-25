@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { RemoteNotice } from "./ScanControl";
 
 interface BtStatus {
   state: "idle" | "running" | "done" | "error";
@@ -10,6 +11,10 @@ interface BtStatus {
   phaseStartedAt?: string;
   finishedAt?: string;
   error?: string;
+  remote?: boolean;
+  configured?: boolean;
+  run?: { status: string; conclusion: string | null; startedAt: string; url: string } | null;
+  quota?: { allowed: boolean; nextAllowedAt: string | null };
 }
 
 export default function BacktestControl({ hasResult }: { hasResult: boolean }) {
@@ -35,8 +40,15 @@ export default function BacktestControl({ hasResult }: { hasResult: boolean }) {
     setMessage(null);
     const res = await fetch("/api/backtest", { method: "POST" });
     const json = await res.json();
-    if (!res.ok) setMessage(json.error ?? "Failed to start backtest");
-    else poll();
+    if (!res.ok) setMessage(json.message ?? json.error ?? "Failed to start backtest");
+    else {
+      setMessage(
+        json.remote
+          ? "Started on GitHub Actions. The results page updates once the run commits its data."
+          : null,
+      );
+      poll();
+    }
   }
 
   const running = st?.state === "running";
@@ -65,6 +77,7 @@ export default function BacktestControl({ hasResult }: { hasResult: boolean }) {
           <p className="name-dim" style={{ marginTop: 8 }}>
             {st?.done}/{st?.total} · ETA: <strong>{etaText}</strong>
           </p>
+          <RemoteNotice remote={st?.remote} quota={st?.quota} run={st?.run} noun="backtest" />
         </div>
       ) : (
         <div>
@@ -83,7 +96,8 @@ export default function BacktestControl({ hasResult }: { hasResult: boolean }) {
           )}
           <div className="dash-buttons">
             <button className="btn" onClick={trigger}>
-              Run backtest <span className="btn-sub">momentum + trend · 10y · ~4 min</span>
+              Run backtest{" "}
+              <span className="btn-sub">full model · 10y · survivorship-corrected</span>
             </button>
             {hasResult && (
               <a href="/backtest" className="btn" style={{ textDecoration: "none" }}>
@@ -91,6 +105,7 @@ export default function BacktestControl({ hasResult }: { hasResult: boolean }) {
               </a>
             )}
           </div>
+          <RemoteNotice remote={st?.remote} quota={st?.quota} run={st?.run} noun="backtest" />
           {message && <p className="penalty" style={{ marginTop: 10 }}>{message}</p>}
         </div>
       )}

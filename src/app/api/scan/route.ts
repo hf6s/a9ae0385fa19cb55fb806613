@@ -2,27 +2,51 @@ import { spawn } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { NextResponse } from "next/server";
+import { checkDailyQuota, dispatchWorkflow, githubConfigured } from "@/lib/github";
 import type { ScanStatus } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
 /**
- * Trigger a scan as a detached child process. Local-only — on Vercel,
- * scans run via the nightly GitHub Action instead.
+ * Starts a scan.
+ *
+ * Deployed: dispatches the GitHub Actions workflow, capped at one run per day.
+ * A scan runs for ~90 minutes, far past any serverless timeout, so the site
+ * kicks off CI and then reports on its progress.
+ *
+ * Local: spawns the script directly, unmetered.
  */
 export async function POST(req: Request) {
-  if (process.env.VERCEL) {
-    return NextResponse.json(
-      {
-        error:
-          "On the deployed site, scans run automatically each night via GitHub Actions. Run the site locally to trigger scans manually.",
-      },
-      { status: 501 },
-    );
-  }
-
   const body = (await req.json().catch(() => ({}))) as { mode?: string };
   const mode = body.mode === "universe" ? "universe" : "sp500";
+
+  if (process.env.VERCEL) {
+    if (!githubConfigured()) {
+      return NextResponse.json(
+        { error: "Remote runs are not configured yet: GITHUB_TOKEN is missing." },
+        { status: 503 },
+      );
+    }
+    const quota = await checkDailyQuota("scan");
+    if (!quota.allowed) {
+      const next = quota.nextAllowedAt ? new Date(quota.nextAllowedAt) : null;
+      return NextResponse.json(
+        {
+          error: "Daily limit reached: one scan per 24 hours.",
+          nextAllowedAt: quota.nextAllowedAt,
+          message: next
+            ? `Next scan available ${next.toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" })}.`
+            : undefined,
+        },
+        { status: 429 },
+      );
+    }
+    const result = await dispatchWorkflow("scan", { mode, analyze: "true" });
+    if (!result.ok) {
+      return NextResponse.json({ error: result.error }, { status: 502 });
+    }
+    return NextResponse.json({ ok: true, mode, remote: true });
+  }
 
   const cwd = process.cwd();
   const statusPath = path.join(cwd, "data", "scan-status.json");

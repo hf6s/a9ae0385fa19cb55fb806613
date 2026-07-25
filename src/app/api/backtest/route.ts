@@ -2,16 +2,44 @@ import { spawn } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { NextResponse } from "next/server";
+import { checkDailyQuota, dispatchWorkflow, githubConfigured } from "@/lib/github";
 
 export const dynamic = "force-dynamic";
 
-/** Trigger a backtest as a detached child process (local only). */
+/**
+ * Starts a backtest.
+ *
+ * Deployed: dispatches the GitHub Actions workflow, one run per 24h. The job
+ * replays ~10 years over ~700 companies and runs far longer than a serverless
+ * function is allowed to.
+ *
+ * Local: spawns the script directly, unmetered.
+ */
 export async function POST() {
   if (process.env.VERCEL) {
-    return NextResponse.json(
-      { error: "Backtests run locally or in CI — not on the deployed site." },
-      { status: 501 },
-    );
+    if (!githubConfigured()) {
+      return NextResponse.json(
+        { error: "Remote runs are not configured yet: GITHUB_TOKEN is missing." },
+        { status: 503 },
+      );
+    }
+    const quota = await checkDailyQuota("backtest");
+    if (!quota.allowed) {
+      const next = quota.nextAllowedAt ? new Date(quota.nextAllowedAt) : null;
+      return NextResponse.json(
+        {
+          error: "Daily limit reached: one backtest per 24 hours.",
+          nextAllowedAt: quota.nextAllowedAt,
+          message: next
+            ? `Next backtest available ${next.toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" })}.`
+            : undefined,
+        },
+        { status: 429 },
+      );
+    }
+    const result = await dispatchWorkflow("backtest");
+    if (!result.ok) return NextResponse.json({ error: result.error }, { status: 502 });
+    return NextResponse.json({ ok: true, remote: true });
   }
 
   const cwd = process.cwd();

@@ -35,6 +35,8 @@ import {
   saveHistoryCache,
   type AnnualRecord,
 } from "../src/lib/edgar-history";
+import { everMembers, loadMembership, membersAsOf } from "../src/lib/constituents";
+import { buildDelistedResolver } from "../src/lib/delisted-cik";
 import {
   computeFactorScores,
   computePenalties,
@@ -87,17 +89,22 @@ function writeStatus(patch: Partial<BtStatus>): void {
   }
 }
 
-const CONSTITUENTS_URL =
+const CURRENT_NAMES_URL =
   "https://raw.githubusercontent.com/datasets/s-and-p-500-companies/main/data/constituents.csv";
 
-async function fetchTickers(): Promise<{ ticker: string; name: string }[]> {
-  const res = await fetch(CONSTITUENTS_URL);
-  if (!res.ok) throw new Error(`constituents fetch failed: ${res.status}`);
-  const rows = (await res.text()).trim().split("\n").slice(1);
-  const out: { ticker: string; name: string }[] = [];
-  for (const row of rows) {
-    const cols = row.match(/("[^"]*"|[^,]+)/g)?.map((c) => c.replace(/^"|"$/g, "").trim());
-    if (cols && cols.length >= 2) out.push({ ticker: cols[0], name: cols[1] });
+/** Ticker -> company name for current members; delisted names stay blank. */
+async function fetchCurrentNames(): Promise<Map<string, string>> {
+  const out = new Map<string, string>();
+  try {
+    const res = await fetch(CURRENT_NAMES_URL);
+    if (!res.ok) return out;
+    const rows = (await res.text()).trim().split("\n").slice(1);
+    for (const row of rows) {
+      const cols = row.match(/("[^"]*"|[^,]+)/g)?.map((c) => c.replace(/^"|"$/g, "").trim());
+      if (cols && cols.length >= 2) out.set(cols[0].toUpperCase(), cols[1]);
+    }
+  } catch {
+    /* names are cosmetic; the backtest runs without them */
   }
   return out;
 }
@@ -283,8 +290,7 @@ function buildInput(
 }
 
 async function main() {
-  console.log("Fetching S&P 500 tickers + 10y benchmark...");
-  const tickers = await fetchTickers();
+  console.log("Fetching 10y benchmark + point-in-time S&P 500 membership...");
   const spx = await sp500History(1_000_000, "10y");
   if (!spx || spx.length < WARMUP_DAYS + REBALANCE_DAYS) {
     throw new Error("insufficient benchmark history");
@@ -294,27 +300,48 @@ async function main() {
   const spxClose = spx.map((c) => c.c);
   const n = dates.length;
 
+  // Universe = every company that was an index member at any point in the test
+  // window, INCLUDING ones later delisted. That is the survivorship fix.
+  const membership = await loadMembership();
+  const tickers = everMembers(membership, dates[0]);
+  const nameOf = await fetchCurrentNames();
+  const currentMembers = membersAsOf(membership, dates[n - 1]);
+  const goneCount = tickers.filter((t) => !currentMembers.has(t)).length;
+  console.log(
+    `Universe: ${tickers.length} historical members, of which ${goneCount} are no longer in the index.`,
+  );
+
   // ---- 10y price history for every ticker, aligned to the benchmark calendar
   console.log(`Fetching 10y price history for ${tickers.length} tickers...`);
   writeStatus({ phase: "fetching 10y price history", total: tickers.length, done: 0 });
   const aligned = new Map<string, number[]>();
+  /** Index of the last REAL trade for each ticker; past this it is delisted. */
+  const lastRealIdx = new Map<string, number>();
   const CONCURRENCY = 3;
   for (let i = 0; i < tickers.length; i += CONCURRENCY) {
     const chunk = tickers.slice(i, i + CONCURRENCY);
-    const results = await Promise.all(chunk.map((t) => dailyHistory(t.ticker, 1_000_000, "10y")));
+    const results = await Promise.all(chunk.map((t) => dailyHistory(t, 1_000_000, "10y")));
     results.forEach((candles, j) => {
       if (!candles || candles.length < 300) return;
       const series = new Array<number>(n).fill(NaN);
+      let lastReal = -1;
       for (const c of candles) {
         const idx = dateIndex.get(c.t);
-        if (idx !== undefined) series[idx] = c.c;
+        if (idx !== undefined) {
+          series[idx] = c.c;
+          if (idx > lastReal) lastReal = idx;
+        }
       }
+      if (lastReal < 0) return;
+      // Carry the last price across market holidays and thin days. Anything
+      // after lastReal is padding, never treated as tradeable.
       let last = NaN;
       for (let k = 0; k < n; k++) {
         if (Number.isFinite(series[k])) last = series[k];
         else if (Number.isFinite(last)) series[k] = last;
       }
-      aligned.set(chunk[j].ticker, series);
+      aligned.set(chunk[j], series);
+      lastRealIdx.set(chunk[j], lastReal);
     });
     writeStatus({ done: Math.min(i + CONCURRENCY, tickers.length) });
     await new Promise((r) => setTimeout(r, 120));
@@ -322,29 +349,43 @@ async function main() {
   console.log(`Usable price history for ${aligned.size} tickers.`);
 
   // ---- SEC EDGAR fundamentals history (cached to disk between runs)
+  // Delisted companies are absent from SEC's ticker index, so their CIKs come
+  // from the name-based resolver. Without it they cannot be scored at all, and
+  // the survivorship fix would be cosmetic.
   console.log("Fetching SEC EDGAR fundamentals history...");
   writeStatus({ phase: "fetching SEC filings", total: tickers.length, done: 0 });
+  const resolver = await buildDelistedResolver();
   const cache = loadHistoryCache();
   const histories = new Map<string, AnnualRecord[]>();
   let edgarDone = 0;
+  let viaResolver = 0;
   for (const t of tickers) {
-    if (!aligned.has(t.ticker)) {
+    if (!aligned.has(t)) {
       edgarDone++;
       continue; // no prices -> can't use it anyway
     }
-    let recs = cache[t.ticker];
+    let recs = cache[t];
     if (!recs) {
-      recs = await edgarHistory(t.ticker);
-      cache[t.ticker] = recs;
+      const override = currentMembers.has(t) ? null : resolver.resolve(t);
+      if (override) viaResolver++;
+      recs = await edgarHistory(t, override);
+      cache[t] = recs;
     }
-    if (recs.length > 0) histories.set(t.ticker, recs);
+    if (recs.length > 0) histories.set(t, recs);
     edgarDone++;
-    if (edgarDone % 10 === 0) writeStatus({ done: edgarDone });
+    if (edgarDone % 10 === 0) {
+      writeStatus({ done: edgarDone });
+      // Checkpoint: this phase runs for ~30 minutes over ~700 filings. Saving
+      // only at the end means any interruption throws all of it away.
+      saveHistoryCache(cache);
+    }
   }
   saveHistoryCache(cache);
-  console.log(`Usable fundamentals history for ${histories.size} tickers.`);
-
-  const nameOf = new Map(tickers.map((t) => [t.ticker, t.name]));
+  resolver.persist();
+  console.log(
+    `Usable fundamentals history for ${histories.size} tickers ` +
+      `(${viaResolver} delisted names resolved by name lookup).`,
+  );
 
   // ---- simulate
   console.log("Simulating full model...");
@@ -386,9 +427,15 @@ async function main() {
       const date = dates[i];
       const spxWindow = spxClose.slice(0, i + 1);
 
+      // Only companies actually in the index on this date are investable.
+      const eligible = membersAsOf(membership, date);
+
       // Build point-in-time inputs for every name with prices + filed fundamentals
       const inputs: StockInput[] = [];
       for (const [ticker, series] of aligned) {
+        if (!eligible.has(ticker)) continue;
+        // Past its final trade the series is padding, so the name is untradeable.
+        if ((lastRealIdx.get(ticker) ?? -1) < i) continue;
         if (!Number.isFinite(series[i]) || !Number.isFinite(series[i - WARMUP_DAYS + 1])) continue;
         const recs = histories.get(ticker);
         if (!recs) continue;
@@ -447,6 +494,10 @@ async function main() {
       for (const t of holdings) {
         const s = aligned.get(t);
         if (!s) continue;
+        // A holding that stops trading is liquidated at its last real price;
+        // it contributes no return afterwards. Without this, the forward-filled
+        // series makes a failed company look like it simply went flat.
+        if ((lastRealIdx.get(t) ?? -1) < i) continue;
         const a = s[i - 1];
         const b = s[i];
         if (Number.isFinite(a) && Number.isFinite(b) && a > 0) {
@@ -495,12 +546,17 @@ async function main() {
     model: "full",
     strategy:
       "Full four-factor model (Quality 30 / Value 25 / Momentum 25 / Growth 20) with Stage-1 elimination filters and penalties — the exact live engine, top 20 equal-weight, quarterly rebalance",
-    universe: `Current S&P 500 members with 10y prices + SEC filings (${histories.size} tickers)`,
-    dataSources: "Yahoo Finance (prices) + SEC EDGAR companyfacts (fundamentals, point-in-time)",
+    universe:
+      `Point-in-time S&P 500 membership: ${tickers.length} companies that were index ` +
+      `members at any time in the window, of which ${goneCount} have since left. ` +
+      `${histories.size} had both 10y prices and SEC filings and could be scored.`,
+    dataSources:
+      "EODHD (prices, incl. delisted tickers) + SEC EDGAR companyfacts (fundamentals, point-in-time) + fja05680/sp500 (historical index membership)",
     caveats: [
       "Runs the identical scoring engine as the live site — no separate backtest logic",
       "Fundamentals read point-in-time: only filings public on each rebalance date are used (no lookahead)",
-      "Survivorship bias: uses today's S&P 500 members across all history, so results skew optimistic",
+      "Only companies actually in the index on each rebalance date are investable, and delisted companies are included, so neither survivorship nor index-addition lookahead inflates these numbers",
+      "A holding that stops trading is liquidated at its last quoted price. For a company that collapsed before delisting, most of the loss is captured; residual recovery value is not modelled",
       "Price returns only (no dividends, either side); no transaction costs or slippage",
       "Three live inputs have no free history and are off here: insider-selling penalty, earnings-surprise penalty, forward-EPS growth (weight renormalizes, as the live model already does)",
       "Past performance does not predict future results",

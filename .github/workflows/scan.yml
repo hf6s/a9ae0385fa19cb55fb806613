@@ -1,0 +1,69 @@
+name: Scan (site-triggered)
+
+# Triggered from the site's dashboard via the GitHub API, or by hand here.
+# CI works now that prices come from EODHD; Yahoo and Finnhub's free tier both
+# refuse GitHub's datacenter IPs, which is what broke the old nightly job.
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "sp500 (~500 tickers, ~35 min) or universe (~1100, ~90 min)"
+        required: false
+        default: "sp500"
+        type: choice
+        options:
+          - sp500
+          - universe
+      analyze:
+        description: "Run the Claude write-ups after the scan"
+        required: false
+        default: true
+        type: boolean
+
+permissions:
+  contents: write
+
+concurrency:
+  group: factor20-data
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      - name: Scan
+        run: npm run scan -- ${{ inputs.mode == 'sp500' && '--sp500' || '' }}
+        env:
+          EODHD_API_KEY: ${{ secrets.EODHD_API_KEY }}
+          FINNHUB_API_KEY: ${{ secrets.FINNHUB_API_KEY }}
+
+      - name: Claude analysis of top 20
+        if: ${{ inputs.analyze }}
+        run: npm run analyze
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+      - name: Commit updated data
+        run: |
+          git config user.name "factor20-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/
+          git diff --cached --quiet || git commit -m "data: scan (${{ inputs.mode }})"
+          git pull --rebase --autostash
+          git push
+
+      # The site is a static read of data/*.json, so it only shows the new
+      # numbers once Vercel rebuilds. Skipped when no hook is configured.
+      - name: Trigger Vercel rebuild
+        if: ${{ env.VERCEL_DEPLOY_HOOK != '' }}
+        env:
+          VERCEL_DEPLOY_HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
+        run: curl -sS -X POST "$VERCEL_DEPLOY_HOOK" -o /dev/null

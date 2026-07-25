@@ -1,0 +1,57 @@
+name: Backtest (site-triggered)
+
+# Replays the live scoring engine over ~10 years on point-in-time SEC data and
+# EODHD prices, including companies that later delisted.
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: factor20-data
+  cancel-in-progress: false
+
+jobs:
+  backtest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      # The SEC filing cache is gitignored and costs ~30 min to rebuild, so it
+      # is restored between runs rather than refetched every time.
+      - name: Restore SEC filings cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            data/edgar-history-cache.json
+            data/sp500-membership.json
+            data/delisted-cik-cache.json
+          key: factor20-edgar-${{ github.run_id }}
+          restore-keys: factor20-edgar-
+
+      - name: Backtest
+        run: npm run backtest
+        env:
+          EODHD_API_KEY: ${{ secrets.EODHD_API_KEY }}
+
+      - name: Commit updated backtest
+        run: |
+          git config user.name "factor20-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/backtest.json
+          git diff --cached --quiet || git commit -m "data: backtest"
+          git pull --rebase --autostash
+          git push
+
+      - name: Trigger Vercel rebuild
+        if: ${{ env.VERCEL_DEPLOY_HOOK != '' }}
+        env:
+          VERCEL_DEPLOY_HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
+        run: curl -sS -X POST "$VERCEL_DEPLOY_HOOK" -o /dev/null

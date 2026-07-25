@@ -285,10 +285,21 @@ function deriveHistory(facts: CompanyFacts): AnnualRecord[] {
 }
 
 /** Fetch full annual history for one ticker. Returns [] if EDGAR has nothing. */
-export async function edgarHistory(ticker: string): Promise<AnnualRecord[]> {
+/**
+ * @param cikOverride CIK to use when SEC's ticker index does not list the
+ * company. That index covers current filers only, so delisted names (SIVB,
+ * FRC, TWTR) need one supplied by the caller — see src/lib/delisted-cik.ts.
+ */
+export async function edgarHistory(
+  ticker: string,
+  cikOverride?: string | null,
+): Promise<AnnualRecord[]> {
   const map = await loadCikMap();
   const cik =
-    map.get(ticker.toUpperCase().replace(/\./g, "-")) ?? map.get(ticker.toUpperCase());
+    map.get(ticker.toUpperCase().replace(/\./g, "-")) ??
+    map.get(ticker.toUpperCase()) ??
+    cikOverride ??
+    null;
   if (!cik) return [];
   const facts = await fetchJson<CompanyFacts>(
     `https://data.sec.gov/api/xbrl/companyfacts/CIK${cik}.json`,
