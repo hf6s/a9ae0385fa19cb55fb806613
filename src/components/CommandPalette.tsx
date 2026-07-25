@@ -16,7 +16,6 @@ const PAGES: Item[] = [
   { kind: "page", id: "/lab", label: "Factor Lab", sub: "custom weights", icon: "⚗" },
   { kind: "page", id: "/universe", label: "Factor Universe", sub: "bubble map", icon: "✦" },
   { kind: "page", id: "/exits", label: "Exits", icon: "▼" },
-  { kind: "page", id: "/portfolio", label: "Portfolio", icon: "◆" },
   { kind: "page", id: "/backtest", label: "Backtest", icon: "◷" },
   { kind: "page", id: "/methodology", label: "Methodology", icon: "☰" },
   { kind: "page", id: "/dashboard", label: "Dashboard", icon: "⣿" },

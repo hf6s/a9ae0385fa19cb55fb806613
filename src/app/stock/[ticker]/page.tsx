@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getAnalyses, getHistory, getRankings } from "@/lib/data";
-import AddToPortfolio from "@/components/AddToPortfolio";
 import AskClaude from "@/components/AskClaude";
 import PriceChart from "@/components/PriceChart";
 import StarButton from "@/components/StarButton";
@@ -72,7 +71,6 @@ export default async function StockPage({
           );
         })()}
         <StarButton ticker={stock.ticker} />
-        <AddToPortfolio ticker={stock.ticker} name={stock.name} price={stock.price} />
       </div>
       <p className="meta-line">
         {stock.sector} · Market cap ${Math.round(stock.marketCap / 1000)}B · Final score{" "}

@@ -953,14 +953,6 @@ section h2 {
   color: var(--text-dim);
 }
 
-/* portfolio */
-.pf-summary {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 12px;
-  margin-bottom: 22px;
-}
-
 .pos {
   color: var(--accent);
 }
