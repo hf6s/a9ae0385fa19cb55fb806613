@@ -24,7 +24,9 @@ function matches(a: string, b: string): boolean {
 }
 
 export function middleware(req: NextRequest) {
-  const expected = process.env.DASHBOARD_PASSWORD;
+  // Trimmed: values piped into env stores routinely arrive with a trailing
+  // newline or CR, which silently breaks an exact comparison.
+  const expected = process.env.DASHBOARD_PASSWORD?.trim();
   if (!expected) return NextResponse.next();
 
   // Status polling is read-only and drives the public dashboard's progress
@@ -37,7 +39,7 @@ export function middleware(req: NextRequest) {
   if (header?.startsWith("Basic ")) {
     try {
       const decoded = atob(header.slice(6));
-      const password = decoded.slice(decoded.indexOf(":") + 1);
+      const password = decoded.slice(decoded.indexOf(":") + 1).trim();
       if (matches(password, expected)) return NextResponse.next();
     } catch {
       /* malformed header falls through to the challenge */
