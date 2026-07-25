@@ -30,6 +30,7 @@ import { loadEnv } from "../src/lib/env";
 import { dailyHistory } from "../src/lib/prices";
 import {
   asOf,
+  cikForTicker,
   edgarHistory,
   loadHistoryCache,
   saveHistoryCache,
@@ -37,6 +38,7 @@ import {
 } from "../src/lib/edgar-history";
 import { everMembers, loadMembership, membersAsOf } from "../src/lib/constituents";
 import { buildDelistedResolver } from "../src/lib/delisted-cik";
+import { SectorLookup } from "../src/lib/sectors";
 import {
   computeFactorScores,
   computePenalties,
@@ -53,7 +55,21 @@ const STATUS_PATH = path.join(DATA_DIR, "backtest-status.json");
 
 const REBALANCE_DAYS = 63; // ~quarterly
 const WARMUP_DAYS = 274; // 252 + 21 + buffer, so every momentum window is defined
-const TOP_N = 20;
+const TOP_N = Number(argValue("--top")) || 20;
+/**
+ * A held name is only sold once it falls past this rank, not the moment it
+ * leaves the top N. Without the buffer a stock oscillating around rank 20 is
+ * bought and sold every quarter, which is why turnover ran at 48% and cost
+ * drag at 0.4%/yr. Standard practice in factor portfolios.
+ */
+const EXIT_RANK = Number(argValue("--exit-rank")) || TOP_N;
+/** Max holdings from any one sector. 0 disables the cap. */
+const MAX_PER_SECTOR = Number(argValue("--max-sector")) || 0;
+
+function argValue(flag: string): string | null {
+  const i = process.argv.indexOf(flag);
+  return i >= 0 && process.argv[i + 1] ? process.argv[i + 1] : null;
+}
 /**
  * How far back to test. Capped by SEC XBRL, not by price history: company
  * facts begin around 2009, and only ~550 of the 668 scoreable companies have
@@ -437,6 +453,26 @@ async function main() {
   }
   saveHistoryCache(cache);
   resolver.persist();
+
+  // Sectors, only when the cap is in use. One cached SEC call per company.
+  const sectorByTicker = new Map<string, string>();
+  if (MAX_PER_SECTOR > 0) {
+    console.log("Resolving sectors from SEC SIC codes...");
+    writeStatus({ phase: "sectors", total: histories.size, done: 0 });
+    const sectors = new SectorLookup();
+    let done = 0;
+    for (const t of histories.keys()) {
+      const cik = (await cikForTicker(t)) ?? resolver.resolve(t);
+      sectorByTicker.set(t, await sectors.get(t, cik));
+      if (++done % 25 === 0) {
+        writeStatus({ done });
+        sectors.save();
+      }
+    }
+    sectors.save();
+    const unknown = [...sectorByTicker.values()].filter((s) => s === "Unknown").length;
+    console.log(`  sectors for ${sectorByTicker.size - unknown}/${sectorByTicker.size} companies.`);
+  }
   const priced = aligned.size;
   const coverage = priced > 0 ? (histories.size / priced) * 100 : 0;
   console.log(
@@ -556,7 +592,37 @@ async function main() {
             final: finalScore(scores[k], computePenalties(s)),
           }))
           .sort((a, b) => b.final - a.final);
-        const next = ranked.slice(0, TOP_N).map((x) => x.ticker);
+        // Selection: keep what still ranks inside the exit buffer, then fill
+        // the rest from the top, honouring the per-sector cap.
+        const rankOf = new Map(ranked.map((r, idx) => [r.ticker, idx + 1]));
+        const sectorCount = new Map<string, number>();
+        const sectorOf = (t: string) => sectorByTicker.get(t) ?? "Unknown";
+        const fits = (t: string) => {
+          if (MAX_PER_SECTOR <= 0) return true;
+          const s = sectorOf(t);
+          if (s === "Unknown") return true; // never penalise missing data
+          return (sectorCount.get(s) ?? 0) < MAX_PER_SECTOR;
+        };
+        const take = (t: string) => {
+          const s = sectorOf(t);
+          sectorCount.set(s, (sectorCount.get(s) ?? 0) + 1);
+        };
+
+        const next: string[] = [];
+        for (const t of holdings) {
+          const r = rankOf.get(t);
+          if (r !== undefined && r <= EXIT_RANK && next.length < TOP_N && fits(t)) {
+            next.push(t);
+            take(t);
+          }
+        }
+        for (const r of ranked) {
+          if (next.length >= TOP_N) break;
+          if (next.includes(r.ticker)) continue;
+          if (!fits(r.ticker)) continue;
+          next.push(r.ticker);
+          take(r.ticker);
+        }
         // Charge for the names actually swapped: each costs a sell and a buy
         // on one position's worth of the portfolio.
         const held = new Set(holdings);
@@ -570,7 +636,8 @@ async function main() {
         turnoverSum += turnover;
         turnoverCount++;
         holdings = next;
-        for (const h of ranked.slice(0, TOP_N)) {
+        const chosen = new Set(next);
+        for (const h of ranked.filter((r) => chosen.has(r.ticker))) {
           attrib.quality += h.scores.quality;
           attrib.value += h.scores.value;
           attrib.momentum += h.scores.momentum;
@@ -705,6 +772,9 @@ async function main() {
       costDragTotalPct: r1(totalCostDrag * 100),
       costDragAnnualPct: r1((totalCostDrag / years) * 100),
       oneWayCostBps: COST_ONE_WAY * 10000,
+      topN: TOP_N,
+      exitRank: EXIT_RANK,
+      maxPerSector: MAX_PER_SECTOR,
     },
     subPeriods,
     factorProfile: attrib.count

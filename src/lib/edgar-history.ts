@@ -303,6 +303,14 @@ function deriveHistory(facts: CompanyFacts): AnnualRecord[] {
 }
 
 /** Fetch full annual history for one ticker. Returns [] if EDGAR has nothing. */
+/** CIK for a currently-filing ticker, or null. Delisted names need the resolver. */
+export async function cikForTicker(ticker: string): Promise<string | null> {
+  const map = await loadCikMap();
+  return (
+    map.get(ticker.toUpperCase().replace(/\./g, "-")) ?? map.get(ticker.toUpperCase()) ?? null
+  );
+}
+
 /**
  * @param cikOverride CIK to use when SEC's ticker index does not list the
  * company. That index covers current filers only, so delisted names (SIVB,
