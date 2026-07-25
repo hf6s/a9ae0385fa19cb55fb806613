@@ -10,3 +10,7 @@ data/scan-status.json
 data/backtest-status.json
 data/edgar-history-cache.json
 .claude/
+
+.vercel
+.env*
+!.env.example
