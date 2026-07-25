@@ -160,6 +160,12 @@ export default function ScanControl({ universeBuilt }: { universeBuilt: boolean 
               </span>
             </button>
           </div>
+          {scanStatus?.remote && (
+            <p className="cost-warning">
+              Scans run automatically every 2 days. Each manual scan adds roughly $0.30 in AI
+              write-up costs, so once a week is plenty on top of the schedule.
+            </p>
+          )}
           <RemoteNotice
             remote={scanStatus?.remote}
             quota={scanStatus?.quota}

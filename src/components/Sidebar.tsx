@@ -6,16 +6,16 @@ import { useEffect, useState } from "react";
 import Logo from "./Logo";
 import ThemeToggle from "./ThemeToggle";
 
+// Methodology and Portfolio are still reachable by URL; they are just off the
+// sidebar. Factor Lab sits last as an exploratory tool rather than a daily one.
 const LINKS = [
   { href: "/", icon: "▤", label: "Rankings" },
-  { href: "/lab", icon: "⚗", label: "Factor Lab" },
   { href: "/universe", icon: "✦", label: "Universe" },
   { href: "/exits", icon: "▼", label: "Exits" },
-  { href: "/portfolio", icon: "◆", label: "Portfolio" },
   { href: "/allocate", icon: "◑", label: "Position sizing" },
   { href: "/backtest", icon: "◷", label: "Backtest" },
-  { href: "/methodology", icon: "☰", label: "Methodology" },
   { href: "/dashboard", icon: "⣿", label: "Dashboard" },
+  { href: "/lab", icon: "⚗", label: "Factor Lab" },
 ];
 
 export default function Sidebar() {

@@ -4,6 +4,11 @@ name: Scan (site-triggered)
 # CI works now that prices come from EODHD; Yahoo and Finnhub's free tier both
 # refuse GitHub's datacenter IPs, which is what broke the old nightly job.
 on:
+  # Every 2 days at 06:00 UTC. Roughly 15 runs a month, which keeps the AI
+  # write-up spend near $4.50 while the rankings stay current enough for a
+  # quarterly-rebalance strategy.
+  schedule:
+    - cron: "0 6 */2 * *"
   workflow_dispatch:
     inputs:
       mode:
