@@ -12,6 +12,7 @@ const LINKS = [
   { href: "/universe", icon: "✦", label: "Universe" },
   { href: "/exits", icon: "▼", label: "Exits" },
   { href: "/portfolio", icon: "◆", label: "Portfolio" },
+  { href: "/allocate", icon: "◑", label: "Position sizing" },
   { href: "/backtest", icon: "◷", label: "Backtest" },
   { href: "/methodology", icon: "☰", label: "Methodology" },
   { href: "/dashboard", icon: "⣿", label: "Dashboard" },

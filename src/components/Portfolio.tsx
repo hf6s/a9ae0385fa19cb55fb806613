@@ -44,6 +44,10 @@ export default function Portfolio({
         if (!res.ok) return;
         const json = (await res.json()) as { prices: Record<string, number>; at: string };
         if (!alive) return;
+        // Only claim "live" when quotes actually arrived. The endpoint returns
+        // 200 with an empty set when the upstream provider refuses the request,
+        // which previously lit the live dot while showing stale scan prices.
+        if (Object.keys(json.prices ?? {}).length === 0) return;
         setLive((prev) => ({ ...prev, ...json.prices }));
         setUpdatedAt(json.at);
       } catch {

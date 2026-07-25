@@ -1,6 +1,6 @@
-import RankingsExplorer from "@/components/RankingsExplorer";
-import StatTiles, { type Stat } from "@/components/StatTiles";
-import { getHistory, getPrevRankings, getRankings } from "@/lib/data";
+import HomeView, { type Spotlight } from "@/components/HomeView";
+import { type Stat } from "@/components/StatTiles";
+import { getAnalyses, getHistory, getPrevRankings, getRankings } from "@/lib/data";
 import type { Rankings } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -72,26 +72,33 @@ export default function Home() {
     dateStyle: "medium",
     timeStyle: "short",
   });
+  const metaLine =
+    `Scanned ${rankings.universeScanned} stocks · ${rankings.passedFilters} passed all ` +
+    `elimination filters · updated ${generated}`;
+
+  // The landing view spotlights the top-ranked stock; the full table is one
+  // click away and stays the default once the reader switches to it.
+  const top = rankings.stocks[0];
+  const analysis = top ? getAnalyses()?.analyses[top.ticker] : undefined;
+  const spotlight: Spotlight | null = top
+    ? {
+        stock: top,
+        candles: getHistory(top.ticker) ?? [],
+        analysisText: analysis?.text ?? null,
+        analysisModel: analysis?.model ?? null,
+      }
+    : null;
 
   return (
     <main>
-      <StatTiles stats={buildStats(rankings)} />
-      <p className="meta-line">
-        Scanned {rankings.universeScanned} stocks · {rankings.passedFilters} passed all
-        elimination filters · updated {generated}
-      </p>
-      <RankingsExplorer
+      <HomeView
         stocks={rankings.stocks}
         sparks={buildSparks(rankings.stocks.map((s) => s.ticker))}
         prevRanks={prevRanks()}
+        stats={buildStats(rankings)}
+        metaLine={metaLine}
+        spotlight={spotlight}
       />
-      <p className="disclaimer">
-        Factor20 ranks stocks with a mechanical, transparent factor model and AI-written
-        commentary. Holding-period presets re-weight the same four factor scores — shorter
-        horizons emphasize momentum, longer horizons emphasize quality and value, following
-        the academic evidence on factor decay. Nothing here is investment advice or a
-        recommendation to buy or sell any security. Do your own research.
-      </p>
     </main>
   );
 }
