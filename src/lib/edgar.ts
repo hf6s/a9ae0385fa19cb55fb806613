@@ -8,7 +8,10 @@
  * 10 req/s. We fetch sequentially with a small delay.
  */
 
-const UA = "Factor20/0.1 (contact: factor20-bot@users.noreply.github.com)";
+// SEC fair-access rules want a contact address in the User-Agent. Set
+// SEC_CONTACT in .env.local to your own; the default keeps a personal address
+// out of a public repo.
+const UA = `Factor20/0.1 (contact: ${process.env.SEC_CONTACT ?? "factor20-bot@users.noreply.github.com"})`;
 
 interface FactEntry {
   end: string;

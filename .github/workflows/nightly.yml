@@ -1,11 +1,10 @@
 name: Nightly scan + AI analysis
 
-# NOTE: the scheduled cron was removed — Yahoo Finance blocks GitHub's
-# datacenter IPs, so CI scans always fail the MIN_SURVIVORS guard. The
-# nightly scan now runs locally via Windows Task Scheduler on marky's PC
-# ("Factor20 nightly scan" task -> scripts/nightly-local.ps1, 7:30 PM PT
-# weekdays). This workflow stays for manual runs (workflow_dispatch) in
-# case a datacenter-friendly price source is added later.
+# NOTE: superseded by scan.yml. The scheduled cron was removed back when
+# prices came from Yahoo, which blocks GitHub's datacenter IPs and made every
+# CI scan fail the MIN_SURVIVORS guard. Prices now come from EODHD, which
+# works from CI, so scan.yml is the maintained path. A local Task Scheduler
+# job (scripts/nightly-local.ps1) also runs the scan on a workstation.
 on:
   workflow_dispatch: {}
 

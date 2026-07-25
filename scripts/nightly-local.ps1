@@ -9,7 +9,9 @@
 # 5.1, which reads BOM-less files as ANSI; non-ASCII characters can decode
 # into quote characters and corrupt the script.
 
-$repo = "C:\Users\marky\Desktop\factor20"
+# Derive the repo from this script's own location, so the path is not tied to
+# one machine or user account.
+$repo = Split-Path -Parent $PSScriptRoot
 $npm = "C:\Program Files\nodejs\npm.cmd"
 $log = Join-Path $repo "nightly-task.log"
 
