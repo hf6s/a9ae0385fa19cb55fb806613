@@ -87,7 +87,11 @@ async function fetchEodhd(
           o: Number.isFinite(r.open) ? r.open : r.close,
           h: Number.isFinite(r.high) ? r.high : r.close,
           l: Number.isFinite(r.low) ? r.low : r.close,
+          // Raw close is the price actually traded that day, which is what
+          // market cap and valuation ratios need. It is NOT split-adjusted.
           c: r.close,
+          // Split- and dividend-adjusted. Returns and momentum must use this.
+          a: Number.isFinite(r.adjusted_close) ? r.adjusted_close : r.close,
         });
       }
       // Same floor the Yahoo path uses: too little history means the 50/200-day
@@ -146,6 +150,9 @@ async function fetchChart(symbol: string, keep: number, range = "2y"): Promise<C
           h: q.high?.[i] ?? c,
           l: q.low?.[i] ?? c,
           c,
+          // Yahoo's chart close is already split-adjusted but not dividend
+          // adjusted. Close enough for the fallback; the paid feed is exact.
+          a: c,
         });
       }
       if (candles.length < 60) return null;

@@ -10,7 +10,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { loadEnv } from "../src/lib/env";
 import { finnhub, pickMetric } from "../src/lib/finnhub";
-import { dailyHistory, sp500History } from "../src/lib/prices";
+import { dailyHistory } from "../src/lib/prices";
 import { edgarFundamentals } from "../src/lib/edgar";
 import {
   computeFactorScores,
@@ -116,9 +116,11 @@ async function main() {
   console.log(`Universe: ${universe.length} tickers`);
 
   console.log("Fetching S&P 500 index history (relative strength baseline)...");
-  const spx = await sp500History();
+  // SPY total return, matching the basis of the per-stock adjusted closes, so
+  // relative strength compares like with like.
+  const spx = await dailyHistory("SPY");
   if (!spx) throw new Error("Could not fetch ^SPX history from stooq");
-  const spxCloses = spx.map((c) => c.c);
+  const spxCloses = spx.map((c) => c.a ?? c.c);
 
   const inputs: StockInput[] = [];
   const histories = new Map<string, Candle[]>();
@@ -153,7 +155,9 @@ async function main() {
         price: quote.c,
         marketCap: profile.marketCapitalization ?? 0,
         avgDollarVolume,
-        closes: history.map((x) => x.c),
+        // Momentum and the 50/200-day trend filter run on total-return closes.
+        // Raw closes break across splits: a 4:1 split looks like a 75% drop.
+        closes: history.map((x) => x.a ?? x.c),
         spxCloses,
         currentRatio: pickMetric(m, "currentRatioQuarterly", "currentRatioAnnual"),
         interestCoverage: pickMetric(

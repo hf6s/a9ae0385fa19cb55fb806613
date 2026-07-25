@@ -3,7 +3,13 @@ export interface Candle {
   o: number;
   h: number;
   l: number;
-  c: number;
+  c: number; // as-traded close: correct for valuation and for charts
+  /**
+   * Total-return close, adjusted for splits AND dividends. Use this for
+   * returns, momentum and moving averages. `c` is NOT split-adjusted on the
+   * paid feed, so a 4:1 split reads as a 75% loss if you compute returns on it.
+   */
+  a?: number;
 }
 
 export interface FactorScores {

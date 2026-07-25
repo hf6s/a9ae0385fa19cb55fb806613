@@ -27,7 +27,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { loadEnv } from "../src/lib/env";
-import { dailyHistory, sp500History } from "../src/lib/prices";
+import { dailyHistory } from "../src/lib/prices";
 import {
   asOf,
   edgarHistory,
@@ -54,6 +54,13 @@ const STATUS_PATH = path.join(DATA_DIR, "backtest-status.json");
 const REBALANCE_DAYS = 63; // ~quarterly
 const WARMUP_DAYS = 274; // 252 + 21 + buffer, so every momentum window is defined
 const TOP_N = 20;
+/**
+ * How far back to test. Capped by SEC XBRL, not by price history: company
+ * facts begin around 2009, and only ~550 of the 668 scoreable companies have
+ * filings by 2012. Reaching further back would rank a handful of names against
+ * each other and call it a strategy.
+ */
+const WINDOW = "15y";
 
 interface BtStatus {
   state: "running" | "done" | "error";
@@ -291,13 +298,17 @@ function buildInput(
 
 async function main() {
   console.log("Fetching 10y benchmark + point-in-time S&P 500 membership...");
-  const spx = await sp500History(1_000_000, "10y");
+  // Benchmark is SPY, not the ^GSPC index. The index is price-only: over this
+  // window it returns 481.6% while the same exposure with dividends reinvested
+  // returns 664.3%. Since the strategy now compounds dividends, measuring it
+  // against a price index would hand it a ~180 point head start.
+  const spx = await dailyHistory("SPY", 1_000_000, WINDOW);
   if (!spx || spx.length < WARMUP_DAYS + REBALANCE_DAYS) {
     throw new Error("insufficient benchmark history");
   }
   const dates = spx.map((c) => c.t);
   const dateIndex = new Map(dates.map((d, i) => [d, i]));
-  const spxClose = spx.map((c) => c.c);
+  const spxClose = spx.map((c) => c.a ?? c.c);
   const n = dates.length;
 
   // Universe = every company that was an index member at any point in the test
@@ -314,21 +325,26 @@ async function main() {
   // ---- 10y price history for every ticker, aligned to the benchmark calendar
   console.log(`Fetching 10y price history for ${tickers.length} tickers...`);
   writeStatus({ phase: "fetching 10y price history", total: tickers.length, done: 0 });
+  /** Total-return series: drives returns, momentum and the moving averages. */
   const aligned = new Map<string, number[]>();
+  /** As-traded series: drives market cap and every valuation ratio. */
+  const alignedRaw = new Map<string, number[]>();
   /** Index of the last REAL trade for each ticker; past this it is delisted. */
   const lastRealIdx = new Map<string, number>();
   const CONCURRENCY = 3;
   for (let i = 0; i < tickers.length; i += CONCURRENCY) {
     const chunk = tickers.slice(i, i + CONCURRENCY);
-    const results = await Promise.all(chunk.map((t) => dailyHistory(t, 1_000_000, "10y")));
+    const results = await Promise.all(chunk.map((t) => dailyHistory(t, 1_000_000, WINDOW)));
     results.forEach((candles, j) => {
       if (!candles || candles.length < 300) return;
       const series = new Array<number>(n).fill(NaN);
+      const raw = new Array<number>(n).fill(NaN);
       let lastReal = -1;
       for (const c of candles) {
         const idx = dateIndex.get(c.t);
         if (idx !== undefined) {
-          series[idx] = c.c;
+          series[idx] = c.a ?? c.c;
+          raw[idx] = c.c;
           if (idx > lastReal) lastReal = idx;
         }
       }
@@ -336,11 +352,15 @@ async function main() {
       // Carry the last price across market holidays and thin days. Anything
       // after lastReal is padding, never treated as tradeable.
       let last = NaN;
+      let lastRaw = NaN;
       for (let k = 0; k < n; k++) {
         if (Number.isFinite(series[k])) last = series[k];
         else if (Number.isFinite(last)) series[k] = last;
+        if (Number.isFinite(raw[k])) lastRaw = raw[k];
+        else if (Number.isFinite(lastRaw)) raw[k] = lastRaw;
       }
       aligned.set(chunk[j], series);
+      alignedRaw.set(chunk[j], raw);
       lastRealIdx.set(chunk[j], lastReal);
     });
     writeStatus({ done: Math.min(i + CONCURRENCY, tickers.length) });
@@ -441,12 +461,16 @@ async function main() {
         if (!recs) continue;
         const pit = asOf(recs, date);
         if (!pit) continue;
+        // Signals use the total-return series; valuation uses the as-traded
+        // price, since market cap is price times shares actually outstanding.
+        const tradedPrice = alignedRaw.get(ticker)?.[i];
+        if (!Number.isFinite(tradedPrice)) continue;
         const input = buildInput(
           ticker,
           nameOf.get(ticker) ?? ticker,
           series.slice(0, i + 1),
           spxWindow,
-          series[i],
+          tradedPrice as number,
           pit.fy0,
           pit.fy1,
         );
@@ -551,13 +575,16 @@ async function main() {
       `members at any time in the window, of which ${goneCount} have since left. ` +
       `${histories.size} had both 10y prices and SEC filings and could be scored.`,
     dataSources:
-      "EODHD (prices, incl. delisted tickers) + SEC EDGAR companyfacts (fundamentals, point-in-time) + fja05680/sp500 (historical index membership)",
+      "EODHD (split- and dividend-adjusted prices, incl. delisted tickers; SPY as the total-return benchmark) + SEC EDGAR companyfacts (fundamentals, point-in-time) + fja05680/sp500 (historical index membership)",
     caveats: [
       "Runs the identical scoring engine as the live site — no separate backtest logic",
       "Fundamentals read point-in-time: only filings public on each rebalance date are used (no lookahead)",
       "Only companies actually in the index on each rebalance date are investable, and delisted companies are included, so neither survivorship nor index-addition lookahead inflates these numbers",
       "A holding that stops trading is liquidated at its last quoted price. For a company that collapsed before delisting, most of the loss is captured; residual recovery value is not modelled",
-      "Price returns only (no dividends, either side); no transaction costs or slippage",
+      "Total return on both sides: the strategy and the benchmark both reinvest dividends. The benchmark is SPY rather than the ^GSPC price index, which would otherwise understate the market by roughly 180 points over this window",
+      "Signals and returns use split- and dividend-adjusted prices; valuation ratios use the as-traded price, since market cap is price times shares outstanding",
+      "No transaction costs, slippage or taxes. A quarterly rebalance of 20 names would incur all three",
+      "Window is capped by SEC XBRL coverage (company filings start ~2009), not by available price history",
       "Three live inputs have no free history and are off here: insider-selling penalty, earnings-surprise penalty, forward-EPS growth (weight renormalizes, as the live model already does)",
       "Past performance does not predict future results",
     ],
