@@ -409,17 +409,22 @@ async function main() {
   const histories = new Map<string, AnnualRecord[]>();
   let edgarDone = 0;
   let viaResolver = 0;
+  let missing = 0;
   for (const t of tickers) {
     if (!aligned.has(t)) {
       edgarDone++;
       continue; // no prices -> can't use it anyway
     }
+    // An empty array is a cached MISS, not a cached hit. Treating it as a hit
+    // made one rate-limited run poison the cache permanently: every retry
+    // short-circuited on the empty result and the universe never recovered.
     let recs = cache[t];
-    if (!recs) {
-      const override = currentMembers.has(t) ? null : resolver.resolve(t);
+    if (!recs || recs.length === 0) {
+      const override = resolver.resolve(t);
       if (override) viaResolver++;
       recs = await edgarHistory(t, override);
-      cache[t] = recs;
+      if (recs.length > 0) cache[t] = recs;
+      else missing++;
     }
     if (recs.length > 0) histories.set(t, recs);
     edgarDone++;
@@ -432,10 +437,21 @@ async function main() {
   }
   saveHistoryCache(cache);
   resolver.persist();
+  const priced = aligned.size;
+  const coverage = priced > 0 ? (histories.size / priced) * 100 : 0;
   console.log(
-    `Usable fundamentals history for ${histories.size} tickers ` +
-      `(${viaResolver} delisted names resolved by name lookup).`,
+    `Usable fundamentals history for ${histories.size}/${priced} priced tickers ` +
+      `(${coverage.toFixed(0)}% coverage, ${viaResolver} resolved by name lookup, ${missing} without filings).`,
   );
+  // Below this, the "universe" is whatever happened to resolve, and the result
+  // describes a sample nobody chose. A rate-limited SEC produced exactly that.
+  if (coverage < 40) {
+    throw new Error(
+      `Fundamentals coverage is only ${coverage.toFixed(0)}% of priced tickers. ` +
+        `Refusing to publish a backtest over a universe this incomplete — ` +
+        `SEC was probably rate limiting. Wait and re-run.`,
+    );
+  }
 
   // ---- simulate
   console.log("Simulating full model...");

@@ -79,17 +79,34 @@ async function fetchJson<T>(url: string): Promise<T | null> {
   return null;
 }
 
+/**
+ * Ticker -> CIK for current filers.
+ *
+ * This used to memoize an EMPTY map when the download failed, which is the
+ * worst possible outcome: every later lookup returned "no such company", every
+ * ticker produced zero fundamentals, and the empties were cached to disk. A
+ * whole backtest silently ran on a fraction of its universe. If SEC will not
+ * serve the index, that is fatal and must stop the run.
+ */
 async function loadCikMap(): Promise<Map<string, string>> {
   if (cikMap) return cikMap;
   const json = await fetchJson<Record<string, { cik_str: number; ticker: string }>>(
     "https://www.sec.gov/files/company_tickers.json",
   );
-  cikMap = new Map();
-  if (json) {
-    for (const entry of Object.values(json)) {
-      cikMap.set(entry.ticker.toUpperCase(), String(entry.cik_str).padStart(10, "0"));
-    }
+  if (!json || Object.keys(json).length === 0) {
+    throw new Error(
+      "SEC company_tickers.json unavailable (rate limited?). Refusing to continue, " +
+        "since an empty ticker index silently produces a universe with no fundamentals.",
+    );
   }
+  const map = new Map<string, string>();
+  for (const entry of Object.values(json)) {
+    map.set(entry.ticker.toUpperCase(), String(entry.cik_str).padStart(10, "0"));
+  }
+  if (map.size < 1000) {
+    throw new Error(`SEC ticker index looks truncated (${map.size} entries); aborting.`);
+  }
+  cikMap = map;
   return cikMap;
 }
 
