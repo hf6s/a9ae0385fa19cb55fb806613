@@ -92,6 +92,7 @@ async function fetchEodhd(
           c: r.close,
           // Split- and dividend-adjusted. Returns and momentum must use this.
           a: Number.isFinite(r.adjusted_close) ? r.adjusted_close : r.close,
+          v: Number.isFinite(r.volume) ? r.volume : undefined,
         });
       }
       // Same floor the Yahoo path uses: too little history means the 50/200-day

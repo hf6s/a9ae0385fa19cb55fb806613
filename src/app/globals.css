@@ -1474,3 +1474,195 @@ section h2 {
     gap: 10px;
   }
 }
+
+/* =========================================================================
+   Design normalization pass.
+   The stylesheet grew feature by feature: .card was defined twice, radii
+   drifted between 8px and 10px, and headings had no shared scale. This block
+   is last, so it wins, and unifies the primitives without touching layout.
+   ========================================================================= */
+
+:root {
+  --r-sm: 8px;
+  --r-md: 10px;
+  --r-lg: 14px;
+  --space: 20px;
+}
+
+/* ---- typography scale ---- */
+
+h1,
+.hero-title,
+.stock-head h1 {
+  font-size: 27px;
+  font-weight: 680;
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+}
+
+main > h1 {
+  margin-bottom: 6px;
+}
+
+section h2,
+.hero-left h2,
+.hero-right h2,
+.hero-bottom h2 {
+  font-size: 12px;
+  font-weight: 650;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-dim);
+  margin-bottom: 12px;
+}
+
+section {
+  margin-top: 40px;
+}
+
+/* ---- surfaces: one card treatment everywhere ---- */
+
+.card,
+.stat-tile,
+.analysis,
+.hero-factors,
+.chart-box,
+.alloc-field,
+.sim-card,
+.lab-radar-card,
+.scan-card {
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+  background: var(--bg-raised);
+}
+
+.card,
+.stat-tile {
+  padding: 15px 17px;
+}
+
+/* Hover lift only where the card is a link or control. Static panels sat
+   with a hover state that implied clickability they never had. */
+.card:hover {
+  border-color: var(--border);
+}
+
+.sim-card:hover {
+  border-color: var(--accent-dim);
+  transform: translateY(-2px);
+}
+
+/* ---- tables: quieter grid, clearer rows ---- */
+
+table.rankings th {
+  font-size: 11px;
+  letter-spacing: 0.09em;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+table.rankings td {
+  padding: 11px 12px;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
+}
+
+table.rankings tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.table-scroll {
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  overflow-x: auto;
+  background: var(--bg-raised);
+}
+
+.table-scroll table.rankings th:first-child,
+.table-scroll table.rankings td:first-child {
+  padding-left: 16px;
+}
+
+.table-scroll table.rankings th:last-child,
+.table-scroll table.rankings td:last-child {
+  padding-right: 16px;
+}
+
+.ticker {
+  font-weight: 640;
+  letter-spacing: -0.01em;
+}
+
+/* ---- controls ---- */
+
+.btn,
+.btn-outline,
+.seg button,
+.csv-btn {
+  border-radius: var(--r-sm);
+}
+
+.btn {
+  padding: 11px 17px;
+}
+
+.seg button {
+  font-size: 13px;
+}
+
+/* ---- spacing rhythm ---- */
+
+.controls {
+  margin-bottom: 18px;
+}
+
+.weights-row {
+  margin-bottom: 16px;
+}
+
+.stat-tiles {
+  gap: 14px;
+  margin: 4px 0 24px;
+}
+
+.cards {
+  gap: 14px;
+  margin: 20px 0;
+}
+
+.disclaimer {
+  margin-top: 32px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text-dim);
+  max-width: 760px;
+}
+
+/* ---- focus visibility: keyboard users could not see where they were ---- */
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+@media (max-width: 760px) {
+  h1,
+  .hero-title,
+  .stock-head h1 {
+    font-size: 21px;
+  }
+
+  main {
+    padding: 0 16px 64px;
+  }
+
+  table.rankings th,
+  table.rankings td {
+    padding: 9px 10px;
+  }
+}

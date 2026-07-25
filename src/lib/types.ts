@@ -10,6 +10,8 @@ export interface Candle {
    * paid feed, so a 4:1 split reads as a 75% loss if you compute returns on it.
    */
   a?: number;
+  /** Share volume. Needed for the liquidity filter on a wide universe. */
+  v?: number;
 }
 
 export interface FactorScores {

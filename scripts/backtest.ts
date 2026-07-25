@@ -61,6 +61,13 @@ const TOP_N = 20;
  * each other and call it a strategy.
  */
 const WINDOW = "15y";
+/**
+ * One-way trading cost as a fraction of trade value: commission plus half the
+ * bid/ask spread plus slippage. 10bp is a fair retail estimate for liquid US
+ * large caps. Every replaced holding costs this twice, once to sell and once
+ * to buy, on 1/TOP_N of the portfolio.
+ */
+const COST_ONE_WAY = 0.001;
 
 interface BtStatus {
   state: "running" | "done" | "error";
@@ -135,6 +142,7 @@ function buildInput(
   price: number,
   fy0: AnnualRecord,
   fy1: AnnualRecord | null,
+  avgDollarVolume = 1e12,
 ): StockInput | null {
   const shares = num(fy0.shares);
   const revenue = num(fy0.revenue);
@@ -265,7 +273,7 @@ function buildInput(
     sector: "",
     price,
     marketCap: marketCapM,
-    avgDollarVolume: 1e12, // S&P 500 members are liquid by construction
+    avgDollarVolume, // real 10-day average on the wide universe
     closes,
     spxCloses,
     currentRatio,
@@ -313,14 +321,31 @@ async function main() {
 
   // Universe = every company that was an index member at any point in the test
   // window, INCLUDING ones later delisted. That is the survivorship fix.
+  //
+  // --wide swaps the S&P 500 for the point-in-time liquid universe built by
+  // `npm run universe-pit`, which is what the live site actually ranks. There
+  // membership is not a gate; the model's own size and liquidity filters are.
   const membership = await loadMembership();
-  const tickers = everMembers(membership, dates[0]);
+  const wide = process.argv.includes("--wide");
+  const pitPath = path.join(DATA_DIR, "universe-pit.json");
+  let tickers: string[];
+  if (wide) {
+    if (!fs.existsSync(pitPath)) {
+      throw new Error("data/universe-pit.json missing — run `npm run universe-pit` first");
+    }
+    tickers = (JSON.parse(fs.readFileSync(pitPath, "utf8")) as { tickers: string[] }).tickers;
+    console.log(`Wide universe: ${tickers.length} liquid US common stocks, delisted included.`);
+  } else {
+    tickers = everMembers(membership, dates[0]);
+  }
   const nameOf = await fetchCurrentNames();
   const currentMembers = membersAsOf(membership, dates[n - 1]);
   const goneCount = tickers.filter((t) => !currentMembers.has(t)).length;
-  console.log(
-    `Universe: ${tickers.length} historical members, of which ${goneCount} are no longer in the index.`,
-  );
+  if (!wide) {
+    console.log(
+      `Universe: ${tickers.length} historical members, of which ${goneCount} are no longer in the index.`,
+    );
+  }
 
   // ---- 10y price history for every ticker, aligned to the benchmark calendar
   console.log(`Fetching 10y price history for ${tickers.length} tickers...`);
@@ -329,6 +354,8 @@ async function main() {
   const aligned = new Map<string, number[]>();
   /** As-traded series: drives market cap and every valuation ratio. */
   const alignedRaw = new Map<string, number[]>();
+  /** Daily dollar volume, for the liquidity filter on a wide universe. */
+  const alignedDollarVol = new Map<string, number[]>();
   /** Index of the last REAL trade for each ticker; past this it is delisted. */
   const lastRealIdx = new Map<string, number>();
   const CONCURRENCY = 3;
@@ -339,12 +366,14 @@ async function main() {
       if (!candles || candles.length < 300) return;
       const series = new Array<number>(n).fill(NaN);
       const raw = new Array<number>(n).fill(NaN);
+      const dollarVol = new Array<number>(n).fill(NaN);
       let lastReal = -1;
       for (const c of candles) {
         const idx = dateIndex.get(c.t);
         if (idx !== undefined) {
           series[idx] = c.a ?? c.c;
           raw[idx] = c.c;
+          if (c.v !== undefined) dollarVol[idx] = c.v * c.c;
           if (idx > lastReal) lastReal = idx;
         }
       }
@@ -361,6 +390,7 @@ async function main() {
       }
       aligned.set(chunk[j], series);
       alignedRaw.set(chunk[j], raw);
+      alignedDollarVol.set(chunk[j], dollarVol);
       lastRealIdx.set(chunk[j], lastReal);
     });
     writeStatus({ done: Math.min(i + CONCURRENCY, tickers.length) });
@@ -429,6 +459,9 @@ async function main() {
 
   // rolling average factor profile of the picked portfolio
   const attrib = { quality: 0, value: 0, momentum: 0, growth: 0, count: 0 };
+  let totalCostDrag = 0;
+  let turnoverSum = 0;
+  let turnoverCount = 0;
 
   const closePeriod = (endIdx: number) => {
     if (holdings.length === 0 && periods.length === 0) return;
@@ -453,7 +486,9 @@ async function main() {
       // Build point-in-time inputs for every name with prices + filed fundamentals
       const inputs: StockInput[] = [];
       for (const [ticker, series] of aligned) {
-        if (!eligible.has(ticker)) continue;
+        // Index membership gates the S&P run. On the wide universe the model's
+        // own size and liquidity filters do that job instead.
+        if (!wide && !eligible.has(ticker)) continue;
         // Past its final trade the series is padding, so the name is untradeable.
         if ((lastRealIdx.get(ticker) ?? -1) < i) continue;
         if (!Number.isFinite(series[i]) || !Number.isFinite(series[i - WARMUP_DAYS + 1])) continue;
@@ -465,6 +500,21 @@ async function main() {
         // price, since market cap is price times shares actually outstanding.
         const tradedPrice = alignedRaw.get(ticker)?.[i];
         if (!Number.isFinite(tradedPrice)) continue;
+        // 10-day average dollar volume ending at this rebalance, matching the
+        // live scan's liquidity input.
+        const volSeries = alignedDollarVol.get(ticker);
+        let avgDollarVolume = 1e12; // S&P members are liquid by construction
+        if (wide && volSeries) {
+          let sum = 0;
+          let cnt = 0;
+          for (let k = Math.max(0, i - 9); k <= i; k++) {
+            if (Number.isFinite(volSeries[k])) {
+              sum += volSeries[k];
+              cnt++;
+            }
+          }
+          avgDollarVolume = cnt > 0 ? sum / cnt : 0;
+        }
         const input = buildInput(
           ticker,
           nameOf.get(ticker) ?? ticker,
@@ -473,6 +523,7 @@ async function main() {
           tradedPrice as number,
           pit.fy0,
           pit.fy1,
+          avgDollarVolume,
         );
         if (input) inputs.push(input);
       }
@@ -489,7 +540,20 @@ async function main() {
             final: finalScore(scores[k], computePenalties(s)),
           }))
           .sort((a, b) => b.final - a.final);
-        holdings = ranked.slice(0, TOP_N).map((x) => x.ticker);
+        const next = ranked.slice(0, TOP_N).map((x) => x.ticker);
+        // Charge for the names actually swapped: each costs a sell and a buy
+        // on one position's worth of the portfolio.
+        const held = new Set(holdings);
+        const changed = next.filter((t) => !held.has(t)).length;
+        const turnover = holdings.length === 0 ? next.length / TOP_N : changed / TOP_N;
+        const cost = holdings.length === 0
+          ? turnover * COST_ONE_WAY // initial build: buys only
+          : turnover * COST_ONE_WAY * 2;
+        strat *= 1 - cost;
+        totalCostDrag += cost;
+        turnoverSum += turnover;
+        turnoverCount++;
+        holdings = next;
         for (const h of ranked.slice(0, TOP_N)) {
           attrib.quality += h.scores.quality;
           attrib.value += h.scores.value;
@@ -565,6 +629,27 @@ async function main() {
   const beatCount = periods.filter((p) => p.stratRet > p.benchRet).length;
   const r1 = (v: number) => Math.round(v * 10) / 10;
 
+  // Split the run in half. An edge present in both halves is a finding; one
+  // that lives in a single half is a regime the sample happened to contain.
+  const mid = Math.floor(curve.length / 2);
+  const halfStats = (from: number, to: number) => {
+    const a = curve[from];
+    const b = curve[to];
+    const yrs = (to - from) / 252;
+    const sRet = b.strat / a.strat;
+    const bRet = b.bench / a.bench;
+    return {
+      start: a.t,
+      end: b.t,
+      cagr: r1((Math.pow(sRet, 1 / yrs) - 1) * 100),
+      benchCagr: r1((Math.pow(bRet, 1 / yrs) - 1) * 100),
+      excess: r1(((Math.pow(sRet, 1 / yrs) - 1) - (Math.pow(bRet, 1 / yrs) - 1)) * 100),
+    };
+  };
+  const subPeriods = curve.length > 504
+    ? [halfStats(0, mid), halfStats(mid, curve.length - 1)]
+    : [];
+
   const result = {
     generatedAt: new Date().toISOString(),
     model: "full",
@@ -583,7 +668,7 @@ async function main() {
       "A holding that stops trading is liquidated at its last quoted price. For a company that collapsed before delisting, most of the loss is captured; residual recovery value is not modelled",
       "Total return on both sides: the strategy and the benchmark both reinvest dividends. The benchmark is SPY rather than the ^GSPC price index, which would otherwise understate the market by roughly 180 points over this window",
       "Signals and returns use split- and dividend-adjusted prices; valuation ratios use the as-traded price, since market cap is price times shares outstanding",
-      "No transaction costs, slippage or taxes. A quarterly rebalance of 20 names would incur all three",
+      `Trading costs ARE charged: ${COST_ONE_WAY * 10000}bp one-way on every position swapped at each rebalance, covering commission, half-spread and slippage. Taxes are not modelled and would matter in a taxable account`,
       "Window is capped by SEC XBRL coverage (company filings start ~2009), not by available price history",
       "Three live inputs have no free history and are off here: insider-selling penalty, earnings-surprise penalty, forward-EPS growth (weight renormalizes, as the live model already does)",
       "Past performance does not predict future results",
@@ -600,7 +685,12 @@ async function main() {
       sharpe: Math.round(sharpe * 100) / 100,
       quartersTotal: periods.length,
       quartersBeatingIndex: beatCount,
+      avgTurnoverPct: turnoverCount ? r1((turnoverSum / turnoverCount) * 100) : 0,
+      costDragTotalPct: r1(totalCostDrag * 100),
+      costDragAnnualPct: r1((totalCostDrag / years) * 100),
+      oneWayCostBps: COST_ONE_WAY * 10000,
     },
+    subPeriods,
     factorProfile: attrib.count
       ? {
           quality: r1(attrib.quality / attrib.count),
