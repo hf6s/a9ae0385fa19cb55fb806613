@@ -22,13 +22,26 @@ export const WORKFLOWS = {
 
 export type WorkflowName = keyof typeof WORKFLOWS;
 
+/**
+ * Strips whitespace and a leading byte-order mark.
+ *
+ * Values piped into an env store routinely arrive with a BOM or trailing
+ * newline. A BOM in a header value throws "Cannot convert argument to a
+ * ByteString ... value of 65279", which reads like a code bug and is not.
+ */
+function clean(v: string | undefined): string | null {
+  if (!v) return null;
+  const out = v.replace(/^﻿/, "").trim();
+  return out.length > 0 ? out : null;
+}
+
 function repo(): string {
   // Override with GITHUB_REPO if the repository is ever moved or renamed.
-  return process.env.GITHUB_REPO ?? "hf6s/a9ae0385fa19cb55fb806613";
+  return clean(process.env.GITHUB_REPO) ?? "hf6s/a9ae0385fa19cb55fb806613";
 }
 
 function token(): string | null {
-  return process.env.GITHUB_TOKEN ?? null;
+  return clean(process.env.GITHUB_TOKEN);
 }
 
 export function githubConfigured(): boolean {
