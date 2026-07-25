@@ -49,6 +49,8 @@ jobs:
         env:
           EODHD_API_KEY: ${{ secrets.EODHD_API_KEY }}
           FINNHUB_API_KEY: ${{ secrets.FINNHUB_API_KEY }}
+          # SEC rejects placeholder contacts with a 403. Must be a real address.
+          SEC_CONTACT: ${{ secrets.SEC_CONTACT }}
 
       - name: Claude analysis of top 20
         if: ${{ inputs.analyze }}

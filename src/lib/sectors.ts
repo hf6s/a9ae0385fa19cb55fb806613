@@ -13,7 +13,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const UA = `Factor20/0.1 (contact: ${process.env.SEC_CONTACT ?? "factor20-bot@users.noreply.github.com"})`;
+const UA = `Factor20/0.1 (contact: ${process.env.SEC_CONTACT ?? "set-SEC_CONTACT-to-a-real-email"})`;
 const CACHE = path.join(process.cwd(), "data", "sector-cache.json");
 
 /** SIC major groups -> the sector names the model already uses. */

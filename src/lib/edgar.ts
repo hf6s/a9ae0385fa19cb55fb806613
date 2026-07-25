@@ -11,7 +11,10 @@
 // SEC fair-access rules want a contact address in the User-Agent. Set
 // SEC_CONTACT in .env.local to your own; the default keeps a personal address
 // out of a public repo.
-const UA = `Factor20/0.1 (contact: ${process.env.SEC_CONTACT ?? "factor20-bot@users.noreply.github.com"})`;
+// SEC's fair-access policy requires a REAL contact address. A noreply
+// placeholder is answered with 403 on every request, which silently starves
+// the whole pipeline of fundamentals. Set SEC_CONTACT in .env.local.
+const UA = `Factor20/0.1 (contact: ${process.env.SEC_CONTACT ?? "set-SEC_CONTACT-to-a-real-email"})`;
 
 interface FactEntry {
   end: string;

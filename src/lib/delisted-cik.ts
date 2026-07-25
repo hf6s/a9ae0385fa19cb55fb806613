@@ -21,7 +21,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 // Contact address for SEC fair-access; override with SEC_CONTACT in .env.local.
-const UA = `Factor20/0.1 (contact: ${process.env.SEC_CONTACT ?? "factor20-bot@users.noreply.github.com"})`;
+const UA = `Factor20/0.1 (contact: ${process.env.SEC_CONTACT ?? "set-SEC_CONTACT-to-a-real-email"})`;
 const CACHE = path.join(process.cwd(), "data", "delisted-cik-cache.json");
 
 /** Upper-case, strip punctuation and common suffixes so both sides compare alike. */

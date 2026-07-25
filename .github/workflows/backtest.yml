@@ -40,6 +40,8 @@ jobs:
         run: npm run backtest
         env:
           EODHD_API_KEY: ${{ secrets.EODHD_API_KEY }}
+          # SEC rejects placeholder contacts with a 403. Must be a real address.
+          SEC_CONTACT: ${{ secrets.SEC_CONTACT }}
 
       - name: Commit updated backtest
         run: |
