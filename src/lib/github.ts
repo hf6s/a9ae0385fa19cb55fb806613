@@ -23,7 +23,8 @@ export const WORKFLOWS = {
 export type WorkflowName = keyof typeof WORKFLOWS;
 
 function repo(): string {
-  return process.env.GITHUB_REPO ?? "hf6s/factor20";
+  // Override with GITHUB_REPO if the repository is ever moved or renamed.
+  return process.env.GITHUB_REPO ?? "hf6s/a9ae0385fa19cb55fb806613";
 }
 
 function token(): string | null {
