@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { NextResponse } from "next/server";
-import { checkDailyQuota, githubConfigured, latestRun } from "@/lib/github";
+import { checkDailyQuota, githubConfigured, latestRun, runProgress } from "@/lib/github";
 
 export const dynamic = "force-dynamic";
 
@@ -46,6 +46,7 @@ export async function GET() {
 
   const [run, quota] = await Promise.all([latestRun("backtest"), checkDailyQuota("backtest")]);
   const active = run !== null && run.status !== "completed";
+  const progress = active && run ? await runProgress("backtest", run.createdAt) : null;
 
   return NextResponse.json({
     ...local,
@@ -62,5 +63,6 @@ export async function GET() {
         }
       : null,
     quota: { allowed: quota.allowed, nextAllowedAt: quota.nextAllowedAt ?? null },
+    progress,
   });
 }

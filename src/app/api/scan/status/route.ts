@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { NextResponse } from "next/server";
-import { checkDailyQuota, githubConfigured, latestRun } from "@/lib/github";
+import { checkDailyQuota, githubConfigured, latestRun, runProgress } from "@/lib/github";
 
 export const dynamic = "force-dynamic";
 
@@ -57,6 +57,9 @@ export async function GET() {
 
   const [run, quota] = await Promise.all([latestRun("scan"), checkDailyQuota("scan")]);
   const active = run !== null && run.status !== "completed";
+  // GitHub exposes no per-step progress, so the ETA comes from how long this
+  // workflow's own past runs took.
+  const progress = active && run ? await runProgress("scan", run.createdAt) : null;
 
   return NextResponse.json({
     ...local,
@@ -75,5 +78,6 @@ export async function GET() {
         }
       : null,
     quota: { allowed: quota.allowed, nextAllowedAt: quota.nextAllowedAt ?? null },
+    progress,
   });
 }

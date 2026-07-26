@@ -11,12 +11,45 @@ function formatEta(seconds: number): string {
   return m > 0 ? `${m}m ${s.toString().padStart(2, "0")}s` : `${s}s`;
 }
 
+export interface RunProgress {
+  elapsedMs: number;
+  typicalMs: number;
+  etaMs: number;
+  percent: number;
+  measured: boolean;
+  samples: number;
+}
+
 /** Extra fields the status route adds on the deployed site. */
 interface RemoteBits {
   remote?: boolean;
   configured?: boolean;
   run?: { status: string; conclusion: string | null; startedAt: string; url: string } | null;
   quota?: { allowed: boolean; nextAllowedAt: string | null };
+  progress?: RunProgress | null;
+}
+
+/** Progress bar + ETA for a run happening on GitHub, where no step data exists. */
+export function RemoteProgress({ progress, label }: { progress: RunProgress; label: string }) {
+  return (
+    <div>
+      <p>
+        {label} on GitHub Actions
+      </p>
+      <div className="progress-track">
+        <div className="progress-fill" style={{ width: `${progress.percent}%` }} />
+      </div>
+      <p className="name-dim" style={{ marginTop: 8 }}>
+        {formatEta(progress.elapsedMs / 1000)} elapsed · ETA{" "}
+        <strong>{progress.etaMs > 0 ? formatEta(progress.etaMs / 1000) : "any moment"}</strong>
+        {progress.measured ? (
+          <> · typically {formatEta(progress.typicalMs / 1000)} over {progress.samples} past runs</>
+        ) : (
+          <> · estimate, no completed runs to learn from yet</>
+        )}
+      </p>
+    </div>
+  );
 }
 
 export function RemoteNotice({
@@ -108,7 +141,17 @@ export default function ScanControl({ universeBuilt }: { universeBuilt: boolean 
   return (
     <div className="card scan-card">
       <div className="label">Scanner</div>
-      {running && s ? (
+      {running && scanStatus?.progress ? (
+        <div>
+          <RemoteProgress progress={scanStatus.progress} label="Scanning" />
+          <RemoteNotice
+            remote={scanStatus?.remote}
+            quota={scanStatus?.quota}
+            run={scanStatus?.run}
+            noun="scan"
+          />
+        </div>
+      ) : running && s ? (
         <div>
           <p>
             Scanning <strong>{s.mode === "universe" ? "full universe" : "S&P 500"}</strong> —

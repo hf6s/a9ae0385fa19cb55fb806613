@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { RemoteNotice } from "./ScanControl";
+import { RemoteNotice, RemoteProgress, type RunProgress } from "./ScanControl";
 
 interface BtStatus {
   state: "idle" | "running" | "done" | "error";
@@ -15,6 +15,7 @@ interface BtStatus {
   configured?: boolean;
   run?: { status: string; conclusion: string | null; startedAt: string; url: string } | null;
   quota?: { allowed: boolean; nextAllowedAt: string | null };
+  progress?: RunProgress | null;
 }
 
 export default function BacktestControl({ hasResult }: { hasResult: boolean }) {
@@ -66,7 +67,12 @@ export default function BacktestControl({ hasResult }: { hasResult: boolean }) {
   return (
     <div className="card scan-card">
       <div className="label">Backtest</div>
-      {running ? (
+      {running && st?.progress ? (
+        <div>
+          <RemoteProgress progress={st.progress} label="Backtesting" />
+          <RemoteNotice remote={st?.remote} quota={st?.quota} run={st?.run} noun="backtest" />
+        </div>
+      ) : running ? (
         <div>
           <p>
             Running — phase: {st?.phase}

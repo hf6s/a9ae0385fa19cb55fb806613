@@ -103,6 +103,58 @@ export async function latestRun(name: WorkflowName): Promise<RunInfo | null> {
   return runs[0] ?? null;
 }
 
+/** Fallbacks until this repo has finished runs to learn from. */
+const ASSUMED_MS: Record<WorkflowName, number> = {
+  scan: 35 * 60 * 1000,
+  backtest: 20 * 60 * 1000,
+};
+
+export interface Progress {
+  elapsedMs: number;
+  typicalMs: number;
+  /** Remaining estimate, floored at zero once a run passes its usual length. */
+  etaMs: number;
+  percent: number;
+  /** True when typicalMs came from real history rather than the fallback. */
+  measured: boolean;
+  samples: number;
+}
+
+/**
+ * How long this workflow usually takes, from its own successful runs.
+ *
+ * A GitHub run reports no per-step progress, so the dashboard cannot show
+ * "412 of 503 tickers" the way a local scan does. Median past duration gives
+ * an honest estimate instead of a spinner with no end in sight, and it adapts
+ * as the universe grows rather than hard-coding a number that goes stale.
+ */
+export async function runProgress(
+  name: WorkflowName,
+  startedAt: string,
+): Promise<Progress> {
+  const runs = await listRuns(name, 10);
+  const durations = runs
+    .filter((r) => r.status === "completed" && r.conclusion === "success")
+    .map((r) => Date.parse(r.updatedAt) - Date.parse(r.createdAt))
+    .filter((d) => Number.isFinite(d) && d > 30_000); // ignore instant failures
+
+  let typicalMs = ASSUMED_MS[name];
+  if (durations.length > 0) {
+    durations.sort((a, b) => a - b);
+    typicalMs = durations[Math.floor(durations.length / 2)];
+  }
+
+  const elapsedMs = Math.max(0, Date.now() - Date.parse(startedAt));
+  return {
+    elapsedMs,
+    typicalMs,
+    etaMs: Math.max(0, typicalMs - elapsedMs),
+    percent: Math.min(99, Math.round((elapsedMs / typicalMs) * 100)),
+    measured: durations.length > 0,
+    samples: durations.length,
+  };
+}
+
 export interface QuotaState {
   allowed: boolean;
   /** Set when a run already happened inside the window. */
