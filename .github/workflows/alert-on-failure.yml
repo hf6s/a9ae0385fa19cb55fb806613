@@ -1,0 +1,69 @@
+name: Alert on failed run
+
+# Scans and backtests run unattended on a schedule. Without this, a failure is
+# invisible until someone notices the numbers are stale -- which is exactly how
+# a broken nightly went unnoticed for days.
+#
+# Opens a GitHub issue on failure, which emails the repo owner by default.
+# Existing open alerts are reused so a repeated failure does not spam.
+
+on:
+  workflow_run:
+    workflows: ["Scan (site-triggered)", "Backtest (site-triggered)"]
+    types: [completed]
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  alert:
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Open or update a failure issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const run = context.payload.workflow_run;
+            const title = `${run.name} failed`;
+            const body = [
+              `**${run.name}** failed.`,
+              ``,
+              `- Run: ${run.html_url}`,
+              `- Started: ${run.run_started_at}`,
+              `- Commit: ${run.head_sha.slice(0, 7)}`,
+              ``,
+              `The site keeps serving the last good data, so nothing is broken for`,
+              `visitors, but the rankings stop updating until this is fixed.`,
+              ``,
+              `Common causes seen before:`,
+              `- SEC 403: SEC_CONTACT must be a real email, not a placeholder`,
+              `- Missing secret: EODHD_API_KEY, FINNHUB_API_KEY, ANTHROPIC_API_KEY`,
+              `- Data source refusing datacenter IPs`,
+            ].join("\n");
+
+            const existing = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: "open",
+              labels: "run-failure",
+            });
+            const match = existing.data.find((i) => i.title === title);
+
+            if (match) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: match.number,
+                body: `Failed again: ${run.html_url}`,
+              });
+            } else {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title,
+                body,
+                labels: ["run-failure"],
+              });
+            }

@@ -24,7 +24,17 @@ interface BacktestResult {
     sharpe: number;
     quartersTotal: number;
     quartersBeatingIndex: number;
+    avgTurnoverPct?: number;
+    costDragAnnualPct?: number;
+    oneWayCostBps?: number;
   };
+  subPeriods?: {
+    start: string;
+    end: string;
+    cagr: number;
+    benchCagr: number;
+    excess: number;
+  }[];
   factorProfile?: {
     quality: number;
     value: number;
@@ -118,6 +128,57 @@ export default function BacktestPage() {
           </p>
         </div>
       </div>
+
+      {bt.subPeriods && bt.subPeriods.length === 2 && (
+        <section>
+          <h2>Does the edge hold up across time?</h2>
+          <p className="name-dim" style={{ marginBottom: 14, maxWidth: 760 }}>
+            A headline number can hide an edge that only existed in one stretch of market
+            history. Splitting the test in half shows whether this strategy beat the market
+            consistently, or only in a favourable regime.
+          </p>
+          <div className="cards">
+            {bt.subPeriods.map((p, i) => (
+              <div className="card" key={p.start}>
+                <div className="label">
+                  {i === 0 ? "First half" : "Second half"} · {p.start.slice(0, 4)}–
+                  {p.end.slice(0, 4)}
+                </div>
+                <div
+                  className="big"
+                  style={{ color: p.excess >= 0 ? "var(--accent)" : "var(--red)" }}
+                >
+                  {pct(p.excess)}
+                </div>
+                <p className="name-dim">
+                  strategy {p.cagr.toFixed(1)}% vs market {p.benchCagr.toFixed(1)}% a year
+                </p>
+              </div>
+            ))}
+            {(() => {
+              const bothPositive = bt.subPeriods!.every((p) => p.excess > 0);
+              return (
+                <div className="card" style={{ gridColumn: "span 2" }}>
+                  <div className="label">Read this before trusting the headline</div>
+                  <p>
+                    {bothPositive
+                      ? "The strategy beat the market in both halves. That is a stronger result than a single total return, though still one market history."
+                      : "The strategy did NOT beat the market in both halves. The overall edge comes from one period, not from consistent outperformance, so treat the headline number as regime-dependent rather than reliable."}
+                  </p>
+                  {s.costDragAnnualPct !== undefined && (
+                    <p className="name-dim" style={{ marginTop: 8, fontSize: 12 }}>
+                      Returns are after {s.oneWayCostBps ?? 10}bp one-way trading costs, which
+                      remove about {s.costDragAnnualPct.toFixed(1)}% a year at{" "}
+                      {s.avgTurnoverPct?.toFixed(0) ?? "—"}% average quarterly turnover. Taxes
+                      are not modelled.
+                    </p>
+                  )}
+                </div>
+              );
+            })()}
+          </div>
+        </section>
+      )}
 
       <section>
         <h2>Growth of $1</h2>

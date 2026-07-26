@@ -203,7 +203,13 @@ const GROWTH: MetricSpec[] = [
   { weight: 0.15, extract: () => null }, // forward EPS growth — needs paid analyst estimates
 ];
 
-/** Percentile rank (0–100) of each value within the universe. */
+/**
+ * Percentile rank (0–100) of each value within the universe.
+ *
+ * Equal values receive the SAME percentile, the average of the positions they
+ * span. Ranking them by array position instead would hand one stock 0 and an
+ * identical stock 100 on that metric, purely by accident of ordering.
+ */
 function percentileRanks(values: (number | null)[]): (number | null)[] {
   const present = values
     .map((v, i) => ({ v, i }))
@@ -211,9 +217,15 @@ function percentileRanks(values: (number | null)[]): (number | null)[] {
   if (present.length < 2) return values.map(() => null);
   const sorted = [...present].sort((a, b) => a.v - b.v);
   const ranks = new Array<number | null>(values.length).fill(null);
-  sorted.forEach((item, idx) => {
-    ranks[item.i] = (idx / (sorted.length - 1)) * 100;
-  });
+  const last = sorted.length - 1;
+  let i = 0;
+  while (i < sorted.length) {
+    let j = i;
+    while (j + 1 < sorted.length && sorted[j + 1].v === sorted[i].v) j++;
+    const pct = (((i + j) / 2) / last) * 100;
+    for (let k = i; k <= j; k++) ranks[sorted[k].i] = pct;
+    i = j + 1;
+  }
   return ranks;
 }
 

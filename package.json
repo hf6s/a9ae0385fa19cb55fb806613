@@ -10,7 +10,8 @@
     "analyze": "tsx scripts/analyze.ts",
     "universe": "tsx scripts/universe.ts",
     "backtest": "tsx scripts/backtest.ts",
-    "universe-pit": "tsx scripts/universe-pit.ts"
+    "universe-pit": "tsx scripts/universe-pit.ts",
+    "test": "tsx --test src/lib/*.test.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.111.0",
