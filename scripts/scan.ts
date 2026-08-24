@@ -9,9 +9,10 @@
 import fs from "node:fs";
 import path from "node:path";
 import { loadEnv } from "../src/lib/env";
-import { finnhub, pickMetric } from "../src/lib/finnhub";
+import { finnhub } from "../src/lib/finnhub";
 import { dailyHistory } from "../src/lib/prices";
-import { edgarFundamentals } from "../src/lib/edgar";
+import { asOf, edgarHistory, loadHistoryCache, saveHistoryCache } from "../src/lib/edgar-history";
+import { buildStockInput } from "../src/lib/fundamentals";
 import {
   computeFactorScores,
   computePenalties,
@@ -127,79 +128,81 @@ async function main() {
   let done = 0;
   startPhase("market data", universe.length);
 
+  const today = new Date().toISOString().slice(0, 10);
+  const edgarCache = loadHistoryCache();
+  let noFilings = 0;
+  let noPrices = 0;
+
   for (const c of universe) {
     done++;
     writeStatus({ done });
     const label = `[${done}/${universe.length}] ${c.ticker}`;
     try {
-      const [quote, profile, metricsRes, history] = await Promise.all([
-        finnhub.quote(c.ticker),
-        finnhub.profile(c.ticker),
-        finnhub.metrics(c.ticker),
-        dailyHistory(c.ticker),
-      ]);
-      if (!quote || !quote.c || !profile || !metricsRes || !history) {
-        console.log(`${label} — skipped (missing data)`);
+      // Prices and fundamentals both come from feeds that serve datacenter IPs,
+      // so this loop runs identically on a laptop and in CI.
+      const history = await dailyHistory(c.ticker);
+      if (!history || history.length === 0) {
+        noPrices++;
+        console.log(`${label} — skipped (no price history)`);
         continue;
       }
-      const m = metricsRes.metric ?? {};
-      const avgVolumeMillions = pickMetric(m, "10DayAverageTradingVolume");
-      const avgDollarVolume =
-        avgVolumeMillions !== null ? avgVolumeMillions * 1_000_000 * quote.c : 0;
 
-      histories.set(c.ticker, history);
-      inputs.push({
+      let recs = edgarCache[c.ticker];
+      if (!recs || recs.length === 0) {
+        recs = await edgarHistory(c.ticker);
+        if (recs.length > 0) edgarCache[c.ticker] = recs;
+      }
+      // Only filings already public today, so a scan never uses figures the
+      // market has not seen. Same guarantee the backtest relies on.
+      const pit = asOf(recs, today);
+      if (!pit) {
+        noFilings++;
+        console.log(`${label} — skipped (no SEC filings)`);
+        continue;
+      }
+
+      const last = history[history.length - 1];
+      const recent = history.slice(-10);
+      const volPoints = recent.filter((x) => x.v !== undefined);
+      const avgDollarVolume =
+        volPoints.length > 0
+          ? volPoints.reduce((a, x) => a + (x.v as number) * x.c, 0) / volPoints.length
+          : 0;
+
+      const input = buildStockInput({
         ticker: c.ticker,
-        name: profile.name || c.name,
+        name: c.name,
         sector: c.sector,
-        price: quote.c,
-        marketCap: profile.marketCapitalization ?? 0,
-        avgDollarVolume,
         // Momentum and the 50/200-day trend filter run on total-return closes.
         // Raw closes break across splits: a 4:1 split looks like a 75% drop.
         closes: history.map((x) => x.a ?? x.c),
         spxCloses,
-        currentRatio: pickMetric(m, "currentRatioQuarterly", "currentRatioAnnual"),
-        interestCoverage: pickMetric(
-          m,
-          "netInterestCoverageTTM",
-          "netInterestCoverageAnnual",
-        ),
-        netMargin: pickMetric(m, "netProfitMarginTTM", "netProfitMarginAnnual"),
-        grossMargin: pickMetric(m, "grossMarginTTM", "grossMarginAnnual"),
-        operatingMargin: pickMetric(m, "operatingMarginTTM", "operatingMarginAnnual"),
-        roe: pickMetric(m, "roeTTM", "roeRfy"),
-        roic: pickMetric(m, "roiTTM", "roiAnnual"),
-        debtToEquity: pickMetric(
-          m,
-          "totalDebt/totalEquityQuarterly",
-          "totalDebt/totalEquityAnnual",
-        ),
-        pe: pickMetric(m, "peTTM", "peBasicExclExtraTTM", "peAnnual"),
-        pb: pickMetric(m, "pbQuarterly", "pbAnnual"),
-        ps: pickMetric(m, "psTTM", "psAnnual"),
-        pfcf: pickMetric(m, "pfcfShareTTM", "pfcfShareAnnual"),
-        evToEbitda: pickMetric(m, "evToEbitdaTTM", "currentEv/ebitdaTTM"),
-        revenueGrowth: pickMetric(m, "revenueGrowthTTMYoy", "revenueGrowth3Y"),
-        epsGrowth: pickMetric(m, "epsGrowthTTMYoy", "epsGrowth3Y"),
-        revenuePerShare: pickMetric(m, "revenuePerShareTTM", "revenuePerShareAnnual"),
-        latestSurprisePct: null, // filled below for survivors only (saves API calls)
-        altmanZ: null,
-        piotroskiF: null,
-        accrualRatio: null,
-        fcfGrowth: null,
-        grossProfitToAssets: null,
-        debtToEbitda: null,
-        insiderBought: null,
-        insiderSold: null,
+        price: last.c, // as-traded, so market cap is price x shares
+        fy0: pit.fy0,
+        fy1: pit.fy1,
+        avgDollarVolume,
       });
+      if (!input) {
+        noFilings++;
+        console.log(`${label} — skipped (filings lack shares/revenue/assets)`);
+        continue;
+      }
+
+      histories.set(c.ticker, history);
+      inputs.push(input);
       console.log(`${label} — ok`);
     } catch (err) {
       console.log(`${label} — error: ${(err as Error).message}`);
     }
+    if (done % 25 === 0) saveHistoryCache(edgarCache);
   }
+  saveHistoryCache(edgarCache);
 
-  console.log(`\nFetched data for ${inputs.length} stocks. Applying Stage 1 filters...`);
+  console.log(
+    `\nFetched data for ${inputs.length} stocks ` +
+      `(${noPrices} without prices, ${noFilings} without usable filings). ` +
+      `Applying Stage 1 filters...`,
+  );
 
   // Gross margin vs sector median (computed across everything we scanned)
   const gmMedians = sectorMedianGrossMargins(inputs);
@@ -221,49 +224,41 @@ async function main() {
   }
   console.log(`${provisional.length} stocks passed the market-data filters.`);
 
-  // SEC EDGAR pass: Altman Z, Piotroski, accruals, FCF growth, GP/Assets, Debt/EBITDA
-  console.log("Fetching SEC EDGAR fundamentals for provisional survivors...");
-  startPhase("SEC EDGAR fundamentals", provisional.length);
+  // Debt/EBITDA and Altman Z were already derived from the filings above, so
+  // this stage is a filter now rather than a second round of downloads.
+  startPhase("health filters", provisional.length);
   const survivors: StockInput[] = [];
-  let edgarOk = 0;
   for (const s of provisional) {
     writeStatus({ done: status.done + 1 });
-    const ed = await edgarFundamentals(s.ticker, s.marketCap * 1_000_000);
-    if (ed) {
-      edgarOk++;
-      s.altmanZ = ed.altmanZ;
-      s.piotroskiF = ed.piotroskiF;
-      s.accrualRatio = ed.accrualRatio;
-      s.fcfGrowth = ed.fcfGrowth;
-      s.grossProfitToAssets = ed.grossProfitToAssets;
-      s.debtToEbitda = ed.debtToEbitda;
-    }
     const result = edgarFilter(s);
     if (result.passed) survivors.push(s);
     else console.log(`  ${s.ticker} eliminated: ${result.failures.join(", ")}`);
   }
-  console.log(
-    `EDGAR data for ${edgarOk}/${provisional.length}; ${survivors.length} passed all filters.`,
-  );
+  console.log(`${survivors.length} passed all filters.`);
 
   if (survivors.length < 3) {
     console.log("Too few survivors to rank meaningfully — try a larger --limit or full scan.");
   }
 
-  // Earnings-surprise + insider-transaction penalty inputs, survivors only
+  // Earnings-surprise + insider-transaction penalty inputs, survivors only.
+  // These are Finnhub-only, and Finnhub's free tier answers 401 to datacenter
+  // IPs, so they fill in when run from a workstation and are simply absent in
+  // CI. The scoring engine renormalizes around missing inputs, and the gap is
+  // reported in skippedFilters rather than passed off as a clean scan.
   console.log("Fetching earnings surprises + insider transactions for survivors...");
   startPhase("penalty inputs", survivors.length);
   const sixMonthsAgo = new Date(Date.now() - 183 * 24 * 3600 * 1000).toISOString().slice(0, 10);
-  const today = new Date().toISOString().slice(0, 10);
   const in60Days = new Date(Date.now() + 60 * 24 * 3600 * 1000).toISOString().slice(0, 10);
   const nextEarnings = new Map<string, string>();
+  let penaltyDataOk = 0;
   for (const s of survivors) {
     writeStatus({ done: status.done + 1 });
     const [earnings, insider, calendar] = await Promise.all([
-      finnhub.earnings(s.ticker),
-      finnhub.insiderTransactions(s.ticker, sixMonthsAgo),
-      finnhub.earningsCalendar(s.ticker, today, in60Days),
+      finnhub.earnings(s.ticker).catch(() => null),
+      finnhub.insiderTransactions(s.ticker, sixMonthsAgo).catch(() => null),
+      finnhub.earningsCalendar(s.ticker, today, in60Days).catch(() => null),
     ]);
+    if (earnings || insider || calendar) penaltyDataOk++;
     if (earnings && earnings.length > 0 && earnings[0].surprisePercent !== null) {
       s.latestSurprisePct = earnings[0].surprisePercent;
     }
@@ -337,7 +332,14 @@ async function main() {
     generatedAt: new Date().toISOString(),
     universeScanned: inputs.length,
     passedFilters: survivors.length,
-    skippedFilters: FREE_TIER_GAPS,
+    skippedFilters: [
+      ...FREE_TIER_GAPS,
+      ...(penaltyDataOk === 0 && survivors.length > 0
+        ? [
+            "Insider-selling and earnings-surprise penalties (-15 each) — the provider that supplies them refuses server IPs, so they are unavailable on scheduled runs and only fill in when scanned from a workstation",
+          ]
+        : []),
+    ],
     stocks: ranked,
   };
 

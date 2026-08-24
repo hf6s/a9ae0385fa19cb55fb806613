@@ -302,6 +302,7 @@ function round1(n: number): number {
 }
 
 export const FREE_TIER_GAPS = [
+  "Interest coverage > 4 filter — SEC filings do not expose interest expense as a reliable tag, so this Stage-1 rule is not applied",
   "Forward EPS growth (Growth 15%) — needs paid analyst estimates; weight renormalized",
   "Accounting red flags penalty (-20) — no objective free-data definition",
 ];

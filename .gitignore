@@ -16,3 +16,4 @@ data/edgar-history-cache.json
 !.env.example
 data/sp500-membership.json
 data/delisted-cik-cache.json
+data/sector-cache.json

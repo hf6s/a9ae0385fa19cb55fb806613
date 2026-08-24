@@ -49,6 +49,16 @@ jobs:
           cache: npm
       - run: npm ci
 
+      # SEC filings are the scan's fundamentals source now. Downloading them
+      # for the whole universe takes far longer than the scan itself, and they
+      # barely change between runs, so the cache is restored each time.
+      - name: Restore SEC filings cache
+        uses: actions/cache@v4
+        with:
+          path: data/edgar-history-cache.json
+          key: factor20-edgar-scan-${{ github.run_id }}
+          restore-keys: factor20-edgar-
+
       - name: Scan
         run: npm run scan -- ${{ inputs.mode == 'sp500' && '--sp500' || '' }} ${{ inputs.limit && format('--limit {0}', inputs.limit) || '' }}
         env:
