@@ -24,6 +24,11 @@ on:
         required: false
         default: true
         type: boolean
+      limit:
+        description: "Only scan the first N tickers (smoke test; blank = all)"
+        required: false
+        default: ""
+        type: string
 
 permissions:
   contents: write
@@ -45,7 +50,7 @@ jobs:
       - run: npm ci
 
       - name: Scan
-        run: npm run scan -- ${{ inputs.mode == 'sp500' && '--sp500' || '' }}
+        run: npm run scan -- ${{ inputs.mode == 'sp500' && '--sp500' || '' }} ${{ inputs.limit && format('--limit {0}', inputs.limit) || '' }}
         env:
           EODHD_API_KEY: ${{ secrets.EODHD_API_KEY }}
           FINNHUB_API_KEY: ${{ secrets.FINNHUB_API_KEY }}

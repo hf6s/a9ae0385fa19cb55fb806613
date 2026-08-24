@@ -21,6 +21,27 @@ async function throttle(): Promise<void> {
   }
 }
 
+/**
+ * Reports the first distinct failure status once per process.
+ *
+ * Every failure used to collapse into a silent `null`, so a scan where Finnhub
+ * rejected all 503 tickers looked identical to a scan where the data merely
+ * happened to be missing. Two hours of CI produced "skipped (missing data)"
+ * 503 times and no clue why.
+ */
+const reportedStatuses = new Set<number>();
+function reportOnce(status: number, pathAndQuery: string): void {
+  if (reportedStatuses.has(status)) return;
+  reportedStatuses.add(status);
+  const hint =
+    status === 401 || status === 403
+      ? " — Finnhub's free tier rejects requests from datacenter IPs, so this fails in CI while working from a home connection"
+      : "";
+  console.log(
+    `[finnhub] HTTP ${status} on ${pathAndQuery.split("?")[0]}${hint}`,
+  );
+}
+
 async function get<T>(pathAndQuery: string): Promise<T | null> {
   const key = process.env.FINNHUB_API_KEY;
   if (!key) throw new Error("FINNHUB_API_KEY is not set");
@@ -31,11 +52,16 @@ async function get<T>(pathAndQuery: string): Promise<T | null> {
     await throttle();
     const res = await fetch(url);
     if (res.status === 429) {
+      reportOnce(429, pathAndQuery);
       await new Promise((r) => setTimeout(r, 15_000));
       continue;
     }
-    if (res.status === 403) return null; // endpoint not on free tier
+    if (res.status === 403) {
+      reportOnce(403, pathAndQuery);
+      return null; // endpoint not on free tier
+    }
     if (!res.ok) {
+      reportOnce(res.status, pathAndQuery);
       if (attempt === 3) return null;
       await new Promise((r) => setTimeout(r, 2_000 * (attempt + 1)));
       continue;
