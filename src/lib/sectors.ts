@@ -12,8 +12,14 @@
 
 import fs from "node:fs";
 import path from "node:path";
+import { envValue } from "./env-value";
 
-const UA = `Factor20/0.1 (contact: ${process.env.SEC_CONTACT ?? "set-SEC_CONTACT-to-a-real-email"})`;
+// SEC fair-access requires a REAL contact address, and the value must be read
+// at call time: loadEnv() runs after imports, so a module-level read misses
+// .env.local entirely. envValue also strips the byte-order mark that piped
+// secrets carry, which otherwise makes fetch throw on the header.
+const ua = () =>
+  `Factor20/0.1 (contact: ${envValue("SEC_CONTACT") ?? "set-SEC_CONTACT-to-a-real-email"})`;
 const CACHE = path.join(process.cwd(), "data", "sector-cache.json");
 
 /** SIC major groups -> the sector names the model already uses. */
@@ -76,7 +82,7 @@ export class SectorLookup {
     if (!cik) return "Unknown";
     try {
       const res = await fetch(`https://data.sec.gov/submissions/CIK${cik}.json`, {
-        headers: { "User-Agent": UA },
+        headers: { "User-Agent": ua() },
       });
       // SEC fair-access pacing. Deliberately slower than their 10/s ceiling:
       // this runs on top of the companyfacts fetches, and sustained volume is

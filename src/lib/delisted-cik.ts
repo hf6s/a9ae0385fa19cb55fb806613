@@ -19,9 +19,15 @@
 
 import fs from "node:fs";
 import path from "node:path";
+import { envValue } from "./env-value";
 
 // Contact address for SEC fair-access; override with SEC_CONTACT in .env.local.
-const UA = `Factor20/0.1 (contact: ${process.env.SEC_CONTACT ?? "set-SEC_CONTACT-to-a-real-email"})`;
+// SEC fair-access requires a REAL contact address, and the value must be read
+// at call time: loadEnv() runs after imports, so a module-level read misses
+// .env.local entirely. envValue also strips the byte-order mark that piped
+// secrets carry, which otherwise makes fetch throw on the header.
+const ua = () =>
+  `Factor20/0.1 (contact: ${envValue("SEC_CONTACT") ?? "set-SEC_CONTACT-to-a-real-email"})`;
 const CACHE = path.join(process.cwd(), "data", "delisted-cik-cache.json");
 
 /** Upper-case, strip punctuation and common suffixes so both sides compare alike. */
@@ -89,7 +95,7 @@ async function loadNameToCik(): Promise<Map<string, string>> {
   nameToCik = new Map();
   try {
     const res = await fetch("https://www.sec.gov/Archives/edgar/cik-lookup-data.txt", {
-      headers: { "User-Agent": UA },
+      headers: { "User-Agent": ua() },
     });
     if (!res.ok) return nameToCik;
     const text = await res.text();

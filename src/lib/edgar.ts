@@ -8,13 +8,20 @@
  * 10 req/s. We fetch sequentially with a small delay.
  */
 
+import { envValue } from "./env-value";
+
 // SEC fair-access rules want a contact address in the User-Agent. Set
 // SEC_CONTACT in .env.local to your own; the default keeps a personal address
 // out of a public repo.
 // SEC's fair-access policy requires a REAL contact address. A noreply
 // placeholder is answered with 403 on every request, which silently starves
 // the whole pipeline of fundamentals. Set SEC_CONTACT in .env.local.
-const UA = `Factor20/0.1 (contact: ${process.env.SEC_CONTACT ?? "set-SEC_CONTACT-to-a-real-email"})`;
+// SEC fair-access requires a REAL contact address, and the value must be read
+// at call time: loadEnv() runs after imports, so a module-level read misses
+// .env.local entirely. envValue also strips the byte-order mark that piped
+// secrets carry, which otherwise makes fetch throw on the header.
+const ua = () =>
+  `Factor20/0.1 (contact: ${envValue("SEC_CONTACT") ?? "set-SEC_CONTACT-to-a-real-email"})`;
 
 interface FactEntry {
   end: string;
@@ -46,7 +53,7 @@ let cikMap: Map<string, string> | null = null;
 async function fetchJson<T>(url: string): Promise<T | null> {
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
-      const res = await fetch(url, { headers: { "User-Agent": UA } });
+      const res = await fetch(url, { headers: { "User-Agent": ua() } });
       if (res.status === 429 || res.status === 403) {
         await new Promise((r) => setTimeout(r, 5_000 * (attempt + 1)));
         continue;

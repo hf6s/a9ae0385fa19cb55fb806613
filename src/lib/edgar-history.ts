@@ -14,9 +14,15 @@
 
 import fs from "node:fs";
 import path from "node:path";
+import { envValue } from "./env-value";
 
 // Contact address for SEC fair-access; override with SEC_CONTACT in .env.local.
-const UA = `Factor20/0.1 (contact: ${process.env.SEC_CONTACT ?? "set-SEC_CONTACT-to-a-real-email"})`;
+// SEC fair-access requires a REAL contact address, and the value must be read
+// at call time: loadEnv() runs after imports, so a module-level read misses
+// .env.local entirely. envValue also strips the byte-order mark that piped
+// secrets carry, which otherwise makes fetch throw on the header.
+const ua = () =>
+  `Factor20/0.1 (contact: ${envValue("SEC_CONTACT") ?? "set-SEC_CONTACT-to-a-real-email"})`;
 
 interface FactEntry {
   end: string;
@@ -62,17 +68,37 @@ export interface TickerHistory {
 
 let cikMap: Map<string, string> | null = null;
 
+/**
+ * Reports the first distinct failure once per process.
+ *
+ * Silently swallowing every failure here meant a BOM in SEC_CONTACT — which
+ * makes fetch THROW on the header rather than return a status — looked
+ * identical to SEC being down. A whole CI scan reported "no SEC filings" for
+ * all 40 tickers with nothing to explain why.
+ */
+const secReported = new Set<string>();
+function reportSec(what: string): void {
+  if (secReported.has(what)) return;
+  secReported.add(what);
+  console.log(`  [sec] ${what}`);
+}
+
 async function fetchJson<T>(url: string): Promise<T | null> {
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
-      const res = await fetch(url, { headers: { "User-Agent": UA } });
+      const res = await fetch(url, { headers: { "User-Agent": ua() } });
       if (res.status === 429 || res.status === 403) {
+        reportSec(`HTTP ${res.status} — check SEC_CONTACT is a real address`);
         await new Promise((r) => setTimeout(r, 5_000 * (attempt + 1)));
         continue;
       }
-      if (!res.ok) return null;
+      if (!res.ok) {
+        reportSec(`HTTP ${res.status}`);
+        return null;
+      }
       return (await res.json()) as T;
-    } catch {
+    } catch (err) {
+      reportSec(`request threw: ${(err as Error).message.slice(0, 120)}`);
       await new Promise((r) => setTimeout(r, 2_000));
     }
   }
