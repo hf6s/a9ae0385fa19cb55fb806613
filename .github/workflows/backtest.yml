@@ -3,7 +3,18 @@ name: Backtest (site-triggered)
 # Replays the live scoring engine over ~10 years on point-in-time SEC data and
 # EODHD prices, including companies that later delisted.
 on:
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      wide:
+        description: "Test the full liquid US universe (~4,500 incl. delisted) instead of the S&P 500"
+        required: false
+        default: false
+        type: boolean
+      top:
+        description: "Holdings per rebalance (blank = 20)"
+        required: false
+        default: ""
+        type: string
 
 permissions:
   contents: write
@@ -15,7 +26,7 @@ concurrency:
 jobs:
   backtest:
     runs-on: ubuntu-latest
-    timeout-minutes: 180
+    timeout-minutes: 350
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -31,13 +42,14 @@ jobs:
         with:
           path: |
             data/edgar-history-cache.json
+            data/cik-map.json
             data/sp500-membership.json
             data/delisted-cik-cache.json
           key: factor20-edgar-${{ github.run_id }}
           restore-keys: factor20-edgar-
 
       - name: Backtest
-        run: npm run backtest
+        run: npm run backtest -- ${{ inputs.wide && '--wide' || '' }} ${{ inputs.top && format('--top {0}', inputs.top) || '' }}
         env:
           EODHD_API_KEY: ${{ secrets.EODHD_API_KEY }}
           # SEC rejects placeholder contacts with a 403. Must be a real address.
