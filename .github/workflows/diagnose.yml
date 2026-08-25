@@ -1,0 +1,36 @@
+name: Diagnose data sources
+
+# Which providers actually answer from a GitHub runner? Two separate scans have
+# now died because a source that works from a home connection refuses
+# datacenter IPs, and each time it cost hours to find out. This answers it in
+# under a minute.
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Probe each endpoint
+        env:
+          SEC_CONTACT: ${{ secrets.SEC_CONTACT }}
+          EODHD_API_KEY: ${{ secrets.EODHD_API_KEY }}
+          FINNHUB_API_KEY: ${{ secrets.FINNHUB_API_KEY }}
+        run: |
+          UA="Factor20/0.1 (contact: $SEC_CONTACT)"
+          probe () {
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 30 -A "$UA" "$1")
+            echo "  $2: HTTP $code"
+          }
+          echo "SEC:"
+          probe "https://www.sec.gov/files/company_tickers.json" "www.sec.gov  ticker index"
+          probe "https://data.sec.gov/api/xbrl/companyfacts/CIK0000320193.json" "data.sec.gov companyfacts"
+          probe "https://data.sec.gov/submissions/CIK0000320193.json" "data.sec.gov submissions"
+          probe "https://www.sec.gov/Archives/edgar/cik-lookup-data.txt" "www.sec.gov  cik lookup"
+          echo "EODHD:"
+          probe "https://eodhd.com/api/eod/AAPL.US?api_token=$EODHD_API_KEY&fmt=json&from=2026-01-01" "eod history"
+          probe "https://eodhd.com/api/real-time/AAPL.US?api_token=$EODHD_API_KEY&fmt=json" "real-time quote"
+          echo "Finnhub:"
+          probe "https://finnhub.io/api/v1/quote?symbol=AAPL&token=$FINNHUB_API_KEY" "quote"
