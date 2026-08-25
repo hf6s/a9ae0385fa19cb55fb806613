@@ -82,43 +82,79 @@ async function fetchJson<T>(url: string): Promise<T | null> {
 /**
  * Ticker -> CIK for current filers.
  *
- * This used to memoize an EMPTY map when the download failed, which is the
- * worst possible outcome: every later lookup returned "no such company", every
- * ticker produced zero fundamentals, and the empties were cached to disk. A
- * whole backtest silently ran on a fraction of its universe. If SEC will not
- * serve the index, that is fatal and must stop the run.
+ * Two failure modes have burned us here, so both are guarded:
+ *
+ *   1. Memoizing an EMPTY map on failure. Every lookup then returned "no such
+ *      company", a whole backtest silently ran on a fraction of its universe,
+ *      and the empties were written to the disk cache.
+ *   2. NOT memoizing the failure. Each of 40 tickers re-ran a five-minute
+ *      backoff, and a CI scan burned three hours before timing out.
+ *
+ * So: one attempt per process, a disk copy as fallback, and a hard stop if
+ * neither works. The index is ~1MB and changes slowly, so a cached copy is a
+ * fine substitute for a transient outage.
  */
+function cikMapPath(): string {
+  return path.join(process.cwd(), "data", "cik-map.json");
+}
+
+let cikMapFailed = false;
+
 async function loadCikMap(): Promise<Map<string, string>> {
   if (cikMap) return cikMap;
-  // This one file gates every lookup, so it gets a longer, more patient retry
-  // than a normal request. SEC throttles for minutes after heavy use, and
-  // failing here wastes the entire run.
-  let json: Record<string, { cik_str: number; ticker: string }> | null = null;
-  for (let attempt = 0; attempt < 5 && !json; attempt++) {
-    if (attempt > 0) {
-      const wait = 30_000 * attempt;
-      console.log(`  SEC ticker index unavailable, waiting ${wait / 1000}s (attempt ${attempt + 1}/5)...`);
-      await new Promise((r) => setTimeout(r, wait));
+  if (cikMapFailed) {
+    throw new Error("SEC ticker index unavailable (already failed once this run).");
+  }
+
+  const toMap = (json: Record<string, { cik_str: number; ticker: string }>) => {
+    const m = new Map<string, string>();
+    for (const e of Object.values(json)) {
+      if (e && e.ticker) m.set(e.ticker.toUpperCase(), String(e.cik_str).padStart(10, "0"));
     }
+    return m;
+  };
+
+  // Two quick attempts, not a five-minute vigil: the disk copy covers outages.
+  let json: Record<string, { cik_str: number; ticker: string }> | null = null;
+  for (let attempt = 0; attempt < 2 && !json; attempt++) {
+    if (attempt > 0) await new Promise((r) => setTimeout(r, 5_000));
     json = await fetchJson<Record<string, { cik_str: number; ticker: string }>>(
       "https://www.sec.gov/files/company_tickers.json",
     );
   }
-  if (!json || Object.keys(json).length === 0) {
-    throw new Error(
-      "SEC company_tickers.json unavailable (rate limited?). Refusing to continue, " +
-        "since an empty ticker index silently produces a universe with no fundamentals.",
-    );
+
+  if (json) {
+    const map = toMap(json);
+    if (map.size >= 1000) {
+      cikMap = map;
+      try {
+        fs.mkdirSync(path.dirname(cikMapPath()), { recursive: true });
+        fs.writeFileSync(cikMapPath(), JSON.stringify(json));
+      } catch {
+        /* cache is best effort */
+      }
+      return cikMap;
+    }
   }
-  const map = new Map<string, string>();
-  for (const entry of Object.values(json)) {
-    map.set(entry.ticker.toUpperCase(), String(entry.cik_str).padStart(10, "0"));
+
+  try {
+    const cached = JSON.parse(fs.readFileSync(cikMapPath(), "utf8"));
+    const map = toMap(cached);
+    if (map.size >= 1000) {
+      console.log("  SEC unreachable; using the cached ticker index (" + map.size + " entries).");
+      cikMap = map;
+      return cikMap;
+    }
+  } catch {
+    /* no usable cache */
   }
-  if (map.size < 1000) {
-    throw new Error(`SEC ticker index looks truncated (${map.size} entries); aborting.`);
-  }
-  cikMap = map;
-  return cikMap;
+
+  cikMapFailed = true;
+  throw new Error(
+    "SEC company_tickers.json unavailable and no cached copy in data/cik-map.json. " +
+      "Refusing to continue, since an empty ticker index silently produces a " +
+      "universe with no fundamentals.",
+  );
 }
 
 /** All annual (10-K, full-year) entries across candidate tags, grouped by fiscal-year end. */
