@@ -180,6 +180,7 @@ async function main() {
         price: last.c, // as-traded, so market cap is price x shares
         fy0: pit.fy0,
         fy1: pit.fy1,
+        fy2: pit.fy2,
         avgDollarVolume,
       });
       if (!input) {

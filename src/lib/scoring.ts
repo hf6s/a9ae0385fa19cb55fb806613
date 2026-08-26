@@ -290,9 +290,31 @@ export function computePenalties(s: StockInput): Penalty[] {
 
 // ---------- Stage 4: final score ----------
 
-export function finalScore(scores: FactorScores, penalties: Penalty[]): number {
+/** Factor weights. The spec's defaults; the backtest can override to test tilts. */
+export interface FactorWeights {
+  quality: number;
+  value: number;
+  momentum: number;
+  growth: number;
+}
+
+export const DEFAULT_WEIGHTS: FactorWeights = {
+  quality: 0.3,
+  value: 0.25,
+  momentum: 0.25,
+  growth: 0.2,
+};
+
+export function finalScore(
+  scores: FactorScores,
+  penalties: Penalty[],
+  weights: FactorWeights = DEFAULT_WEIGHTS,
+): number {
   const base =
-    0.3 * scores.quality + 0.25 * scores.value + 0.25 * scores.momentum + 0.2 * scores.growth;
+    weights.quality * scores.quality +
+    weights.value * scores.value +
+    weights.momentum * scores.momentum +
+    weights.growth * scores.growth;
   const penalty = penalties.reduce((a, p) => a + p.points, 0);
   return round1(Math.max(0, base - penalty));
 }

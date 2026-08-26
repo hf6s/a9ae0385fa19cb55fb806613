@@ -46,6 +46,8 @@ import {
   edgarFilter,
   finalScore,
   stage1Filter,
+  DEFAULT_WEIGHTS,
+  type FactorWeights,
   type StockInput,
 } from "../src/lib/scoring";
 
@@ -85,6 +87,33 @@ const WINDOW = "15y";
  * to buy, on 1/TOP_N of the portfolio.
  */
 const COST_ONE_WAY = 0.001;
+
+/**
+ * Factor tilt under test, as "quality,value,momentum,growth".
+ *
+ * The spec's weights are one hypothesis, not a law. The value and quality tilt
+ * they encode was punished hard across this sample, so testing alternatives is
+ * legitimate research — provided the set is decided up front and every result
+ * is reported, not just the winner.
+ */
+function parseWeights(): FactorWeights {
+  const raw = argValue("--weights");
+  if (!raw) return DEFAULT_WEIGHTS;
+  const parts = raw.split(",").map(Number);
+  if (parts.length !== 4 || parts.some((n) => !Number.isFinite(n) || n < 0)) {
+    throw new Error('--weights needs four non-negative numbers: "quality,value,momentum,growth"');
+  }
+  const sum = parts.reduce((a, b) => a + b, 0);
+  if (sum <= 0) throw new Error("--weights must not sum to zero");
+  // Normalize so any set of four numbers is a valid tilt.
+  return {
+    quality: parts[0] / sum,
+    value: parts[1] / sum,
+    momentum: parts[2] / sum,
+    growth: parts[3] / sum,
+  };
+}
+const WEIGHTS = parseWeights();
 
 interface BtStatus {
   state: "running" | "done" | "error";
@@ -397,6 +426,7 @@ async function main() {
           price: tradedPrice as number,
           fy0: pit.fy0,
           fy1: pit.fy1,
+          fy2: pit.fy2,
           avgDollarVolume,
         });
         if (input) inputs.push(input);
@@ -422,7 +452,7 @@ async function main() {
           .map((s, k) => ({
             ticker: s.ticker,
             scores: scores[k],
-            final: finalScore(scores[k], computePenalties(s)),
+            final: finalScore(scores[k], computePenalties(s), WEIGHTS),
           }))
           .sort((a, b) => b.final - a.final);
         // Selection: keep what still ranks inside the exit buffer, then fill
@@ -608,6 +638,12 @@ async function main() {
       topN: TOP_N,
       exitRank: EXIT_RANK,
       maxPerSector: MAX_PER_SECTOR,
+      weights: {
+        quality: Math.round(WEIGHTS.quality * 100),
+        value: Math.round(WEIGHTS.value * 100),
+        momentum: Math.round(WEIGHTS.momentum * 100),
+        growth: Math.round(WEIGHTS.growth * 100),
+      },
       avgCandidatesPerRebalance: rebalanceStats.count
         ? Math.round(rebalanceStats.candidates / rebalanceStats.count)
         : 0,

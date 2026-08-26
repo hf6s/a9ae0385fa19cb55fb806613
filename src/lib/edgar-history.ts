@@ -59,6 +59,12 @@ export interface AnnualRecord {
   dAndA: number | null;
   cash: number | null;
   shares: number | null;
+  /** Interest expense. Without it the spec's coverage filter cannot run. */
+  interestExpense: number | null;
+  /** Income tax expense, for turning EBIT into NOPAT. */
+  taxExpense: number | null;
+  /** Pre-tax income, the denominator of the effective tax rate. */
+  pretaxIncome: number | null;
 }
 
 export interface TickerHistory {
@@ -315,6 +321,30 @@ function deriveHistory(facts: CompanyFacts): AnnualRecord[] {
       "CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalents",
     ]),
   );
+  // Interest expense: the spec's "interest coverage > 4" filter has never run,
+  // because this was not extracted. Companies tag it several ways.
+  const interestExpense = pickLargest(
+    collectAnnual(facts, [
+      "InterestExpense",
+      "InterestExpenseDebt",
+      "InterestAndDebtExpense",
+      "InterestExpenseNonoperating",
+    ]),
+  );
+  // Tax and pre-tax income give a real effective rate, so ROIC can use NOPAT
+  // rather than raw EBIT.
+  const taxExpense = pickEarliest(
+    collectAnnual(facts, [
+      "IncomeTaxExpenseBenefit",
+      "IncomeTaxExpenseBenefitContinuingOperations",
+    ]),
+  );
+  const pretaxIncome = pickEarliest(
+    collectAnnual(facts, [
+      "IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest",
+      "IncomeLossFromContinuingOperationsBeforeIncomeTaxesMinorityInterestAndIncomeLossFromEquityMethodInvestments",
+    ]),
+  );
   const shares = pickEarliest(
     collectAnnual(facts, ["EntityCommonStockSharesOutstanding"], "dei", "shares"),
   );
@@ -368,6 +398,9 @@ function deriveHistory(facts: CompanyFacts): AnnualRecord[] {
       dAndA: dAndA.get(end)?.val ?? null,
       cash: cash.get(end)?.val ?? null,
       shares: sh?.val ?? null,
+      interestExpense: interestExpense.get(end)?.val ?? null,
+      taxExpense: taxExpense.get(end)?.val ?? null,
+      pretaxIncome: pretaxIncome.get(end)?.val ?? null,
     });
   }
 
@@ -415,10 +448,16 @@ export async function edgarHistory(
 export function asOf(
   records: AnnualRecord[],
   dateISO: string,
-): { fy0: AnnualRecord; fy1: AnnualRecord | null } | null {
+): { fy0: AnnualRecord; fy1: AnnualRecord | null; fy2: AnnualRecord | null } | null {
   for (let i = 0; i < records.length; i++) {
     if (records[i].filed <= dateISO) {
-      return { fy0: records[i], fy1: records[i + 1] ?? null };
+      // Three years, so growth can be measured as a trend rather than a single
+      // year-over-year jump, and earnings can be normalized across a cycle.
+      return {
+        fy0: records[i],
+        fy1: records[i + 1] ?? null,
+        fy2: records[i + 2] ?? null,
+      };
     }
   }
   return null;
@@ -432,7 +471,7 @@ interface CacheFile {
   histories: Record<string, AnnualRecord[]>;
 }
 
-const CACHE_VERSION = 1;
+const CACHE_VERSION = 2; // added interestExpense, taxExpense, pretaxIncome
 const CACHE_MAX_AGE_MS = 7 * 24 * 3600 * 1000;
 
 function cachePath(): string {

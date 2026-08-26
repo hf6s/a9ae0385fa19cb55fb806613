@@ -33,6 +33,8 @@ export interface BuildArgs {
   price: number;
   fy0: AnnualRecord;
   fy1: AnnualRecord | null;
+  /** Two years back, for trend growth and normalized earnings. */
+  fy2?: AnnualRecord | null;
   /** Real 10-day average when known; the default assumes an index-level name. */
   avgDollarVolume?: number;
 }
@@ -51,6 +53,7 @@ export function buildStockInput({
   price,
   fy0,
   fy1,
+  fy2 = null,
   avgDollarVolume = 1e12,
 }: BuildArgs): StockInput | null {
   const shares = num(fy0.shares);
@@ -74,6 +77,9 @@ export function buildStockInput({
   const cl = num(fy0.currentLiab);
   const tl = num(fy0.totalLiab);
   const re = num(fy0.retained);
+  const interest = num(fy0.interestExpense);
+  const tax = num(fy0.taxExpense);
+  const pretax = num(fy0.pretaxIncome);
 
   const fcf = cfo !== null ? cfo - capex : null;
   const ebitda = ebit !== null && da !== null ? ebit + da : null;
@@ -81,7 +87,14 @@ export function buildStockInput({
   // Valuation ratios. Units cancel in the percentile ranking, so market cap
   // being in dollars while some statement items differ is harmless — every
   // stock uses the same convention.
-  const pe = ni !== null && ni !== 0 ? mve / ni : null;
+  // Earnings yield on NORMALIZED earnings: a single year's net income swings
+  // with one-off charges and can be negative, which drops a stock out of the
+  // value factor entirely. Averaging the years available is the Graham fix.
+  const niYears = [ni, fy1 ? num(fy1.netIncome) : null, fy2 ? num(fy2.netIncome) : null].filter(
+    (x): x is number => x !== null,
+  );
+  const niNorm = niYears.length > 0 ? niYears.reduce((a, b) => a + b, 0) / niYears.length : null;
+  const pe = niNorm !== null && niNorm !== 0 ? mve / niNorm : null;
   const pb = equity !== null && equity > 0 ? mve / equity : null;
   const ps = revenue > 0 ? mve / revenue : null;
   const pfcf = fcf !== null && fcf !== 0 ? mve / fcf : null;
@@ -89,9 +102,21 @@ export function buildStockInput({
     ebitda !== null && ebitda > 0 && debt !== null ? (mve + debt - cash) / ebitda : null;
 
   const roe = equity !== null && equity > 0 && ni !== null ? (ni / equity) * 100 : null;
+  // ROIC properly: NOPAT over invested capital.
+  //
+  // The old form divided pre-tax EBIT by equity+debt, which overstates return
+  // (no tax) and overstates capital (cash sitting on the balance sheet is not
+  // invested). Both errors are largest for cash-rich, low-tax companies, so the
+  // metric was systematically biased — and it is the highest-weighted input in
+  // the highest-weighted factor.
+  const taxRate =
+    pretax !== null && pretax > 0 && tax !== null ? Math.min(Math.max(tax / pretax, 0), 0.5) : 0.21;
+  const nopat = ebit !== null ? ebit * (1 - taxRate) : null;
+  const investedCapital =
+    equity !== null && debt !== null ? equity + debt - Math.min(cash, debt + equity) : null;
   const roic =
-    ebit !== null && equity !== null && debt !== null && equity + debt > 0
-      ? (ebit / (equity + debt)) * 100 // pre-tax ROIC proxy
+    nopat !== null && investedCapital !== null && investedCapital > 0
+      ? (nopat / investedCapital) * 100
       : null;
   const netMargin = revenue > 0 && ni !== null ? (ni / revenue) * 100 : null;
   const grossMargin = revenue > 0 && cogs !== null ? ((revenue - cogs) / revenue) * 100 : null;
@@ -106,7 +131,16 @@ export function buildStockInput({
   const rev1 = fy1 ? num(fy1.revenue) : null;
   const ni1 = fy1 ? num(fy1.netIncome) : null;
   const sh1 = fy1 ? num(fy1.shares) : null;
-  const revenueGrowth = rev1 !== null && rev1 > 0 ? (revenue / rev1 - 1) * 100 : null;
+  // Prefer a two-year CAGR over a single year-over-year jump: one weak or
+  // strong year (a COVID quarter, an acquisition) otherwise dominates the
+  // growth score entirely.
+  const rev2 = fy2 ? num(fy2.revenue) : null;
+  const revenueGrowth =
+    rev2 !== null && rev2 > 0
+      ? (Math.pow(revenue / rev2, 1 / 2) - 1) * 100
+      : rev1 !== null && rev1 > 0
+        ? (revenue / rev1 - 1) * 100
+        : null;
   let epsGrowth: number | null = null;
   if (ni !== null && ni1 !== null && sh1 !== null && sh1 > 0) {
     const eps0 = ni / shares;
@@ -186,7 +220,10 @@ export function buildStockInput({
     closes,
     spxCloses,
     currentRatio,
-    interestCoverage: null, // interest expense is not a tag EDGAR exposes reliably
+    // The spec's "interest coverage > 4" filter sat inert because this was
+    // always null. EBIT over interest expense, now that the tag is extracted.
+    interestCoverage:
+      ebit !== null && interest !== null && interest > 0 ? ebit / interest : null,
     netMargin,
     grossMargin,
     operatingMargin,
