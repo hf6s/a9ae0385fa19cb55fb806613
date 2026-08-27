@@ -1736,3 +1736,42 @@ input:focus-visible {
   margin-top: 12px;
   max-width: 560px;
 }
+
+/* ---- honest summary: what the tool is, and what it is not ---- */
+
+.honesty {
+  margin-top: 40px;
+}
+
+.honesty-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+}
+
+.honesty-card {
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 16px 18px;
+}
+
+/* The middle card states the measured result, including that the model does
+   not beat the index. It is deliberately the one that draws the eye. */
+.honesty-card:nth-child(2) {
+  border-color: color-mix(in srgb, var(--amber) 40%, var(--border));
+}
+
+.honesty-card .label {
+  font-size: 11px;
+  font-weight: 650;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+}
+
+.honesty-card p {
+  font-size: 13px;
+  line-height: 1.6;
+}

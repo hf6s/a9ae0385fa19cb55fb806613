@@ -1,5 +1,7 @@
 import HomeView, { type Spotlight } from "@/components/HomeView";
 import { type Stat } from "@/components/StatTiles";
+import fs from "node:fs";
+import path from "node:path";
 import { getAnalyses, getHistory, getPrevRankings, getRankings } from "@/lib/data";
 import type { Rankings } from "@/lib/types";
 
@@ -52,6 +54,23 @@ function buildSparks(tickers: string[]): Record<string, number[]> {
   return sparks;
 }
 
+/**
+ * The backtest's own verdict, read from the result file rather than written
+ * into the page. A hardcoded claim about performance goes stale the moment a
+ * backtest re-runs, and a stale performance claim is the kind that misleads.
+ */
+function honestVerdict(): { cagr: number; benchCagr: number; years: number } | null {
+  try {
+    const raw = fs.readFileSync(path.join(process.cwd(), "data", "backtest.json"), "utf8");
+    const bt = JSON.parse(raw) as {
+      stats: { cagr: number; benchCagr: number; years: number };
+    };
+    return { cagr: bt.stats.cagr, benchCagr: bt.stats.benchCagr, years: bt.stats.years };
+  } catch {
+    return null;
+  }
+}
+
 export default function Home() {
   const rankings = getRankings();
 
@@ -98,6 +117,7 @@ export default function Home() {
         stats={buildStats(rankings)}
         metaLine={metaLine}
         spotlight={spotlight}
+        verdict={honestVerdict()}
       />
     </main>
   );
