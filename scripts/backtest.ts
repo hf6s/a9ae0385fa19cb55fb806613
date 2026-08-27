@@ -373,6 +373,8 @@ async function main() {
     benchRet: number;
   }[] = [];
   let holdings: string[] = [];
+  /** Portfolio weights, reset at each rebalance and drifting in between. */
+  let weights: number[] = [];
   let periodStartIdx = WARMUP_DAYS;
   let periodStartStrat = 1;
   let periodStartBench = 1;
@@ -519,6 +521,8 @@ async function main() {
         turnoverSum += turnover;
         turnoverCount++;
         holdings = next;
+        // Fresh equal weights at each rebalance; they drift until the next one.
+        weights = new Array(holdings.length).fill(1 / Math.max(1, holdings.length));
         const chosen = new Set(next);
         for (const h of ranked.filter((r) => chosen.has(r.ticker))) {
           attrib.quality += h.scores.quality;
@@ -543,23 +547,48 @@ async function main() {
 
     let dayRet = 0;
     if (holdings.length > 0) {
-      let sum = 0;
-      let count = 0;
-      for (const t of holdings) {
+      // Positions DRIFT between rebalances.
+      //
+      // Averaging daily returns equally, as this did, silently assumes the
+      // portfolio is rebalanced back to equal weight every single day. That is
+      // not a strategy anyone runs, it pays none of the turnover it would cost,
+      // and on volatile names it manufactures return out of daily noise. A
+      // holding that doubles should become a bigger share of the portfolio
+      // until the next rebalance, which is what actually happens when you own
+      // shares.
+      let weighted = 0;
+      let live = 0;
+      for (let k = 0; k < holdings.length; k++) {
+        const t = holdings[k];
         const s = aligned.get(t);
-        if (!s) continue;
-        // A holding that stops trading is liquidated at its last real price;
-        // it contributes no return afterwards. Without this, the forward-filled
-        // series makes a failed company look like it simply went flat.
-        if ((lastRealIdx.get(t) ?? -1) < i) continue;
+        if (!s || (lastRealIdx.get(t) ?? -1) < i) {
+          weights[k] = 0; // stopped trading: liquidated at its last real price
+          continue;
+        }
         const a = s[i - 1];
         const b = s[i];
-        if (Number.isFinite(a) && Number.isFinite(b) && a > 0) {
-          sum += b / a - 1;
-          count++;
-        }
+        if (!Number.isFinite(a) || !Number.isFinite(b) || a <= 0) continue;
+        const r = b / a - 1;
+        weighted += weights[k] * r;
+        live += weights[k];
       }
-      dayRet = count > 0 ? sum / count : 0;
+      // Cash from dead positions earns nothing rather than being redeployed
+      // for free, so scale by the share still invested.
+      dayRet = live > 0 ? weighted : 0;
+
+      // Carry weights forward by their own growth.
+      let tot = 0;
+      for (let k = 0; k < holdings.length; k++) {
+        const t = holdings[k];
+        const s = aligned.get(t);
+        if (weights[k] === 0 || !s || (lastRealIdx.get(t) ?? -1) < i) continue;
+        const a = s[i - 1];
+        const b = s[i];
+        if (!Number.isFinite(a) || !Number.isFinite(b) || a <= 0) continue;
+        weights[k] *= b / a;
+        tot += weights[k];
+      }
+      if (tot > 0) for (let k = 0; k < weights.length; k++) weights[k] /= tot;
     }
     const benchRet = spxClose[i] / spxClose[i - 1] - 1;
     strat *= 1 + dayRet;
