@@ -69,8 +69,36 @@ export interface FilterResult {
 
 // ---------- Stage 1: elimination filters ----------
 
-export function stage1Filter(s: StockInput): FilterResult {
+/**
+ * Which Stage-1 rules to apply.
+ *
+ * The defaults are the spec exactly. The options exist because measurement
+ * showed these rules eject the companies that drove the index: Apple and
+ * Amazon fail the current-ratio test (they run negative working capital by
+ * design, which is market power, not distress), Microsoft and Meta fail the
+ * trend test on any dip, and JP Morgan fails a free-cash-flow test that means
+ * nothing for a bank.
+ */
+export interface FilterOptions {
+  /** Current ratio > 1.2. Written for 1930s credit analysis. */
+  currentRatio?: boolean;
+  /** Price above the 200-day MA, and 50-day above 200-day. Pro-cyclical. */
+  trend?: boolean;
+  /** Skip working-capital and FCF rules for financials, where they mislead. */
+  exemptFinancials?: boolean;
+}
+
+const ALL_FILTERS: Required<FilterOptions> = {
+  currentRatio: true,
+  trend: true,
+  exemptFinancials: false,
+};
+
+export function stage1Filter(s: StockInput, opts: FilterOptions = {}): FilterResult {
+  const o = { ...ALL_FILTERS, ...opts };
   const failures: string[] = [];
+  const isFinancial = /financ|bank|insur/i.test(s.sector);
+  const skipWorkingCapital = o.exemptFinancials && isFinancial;
 
   // Liquidity / universe
   if (s.marketCap <= 2000) failures.push("market cap ≤ $2B");
@@ -79,21 +107,28 @@ export function stage1Filter(s: StockInput): FilterResult {
   if (s.revenuePerShare !== null && s.revenuePerShare <= 0) failures.push("no revenue");
 
   // Financial health (applied only when data exists — free-tier gaps documented)
-  if (s.currentRatio !== null && s.currentRatio <= 1.2) failures.push("current ratio ≤ 1.2");
+  if (o.currentRatio && !skipWorkingCapital && s.currentRatio !== null && s.currentRatio <= 1.2) {
+    failures.push("current ratio ≤ 1.2");
+  }
   if (s.interestCoverage !== null && s.interestCoverage <= 4)
     failures.push("interest coverage ≤ 4");
 
   // Profitability
   if (s.netMargin !== null && s.netMargin <= 0) failures.push("negative net income");
   const fcfMargin = derivedFcfMargin(s);
-  if (fcfMargin !== null && fcfMargin <= 0) failures.push("negative free cash flow");
+  if (!skipWorkingCapital && fcfMargin !== null && fcfMargin <= 0) {
+    failures.push("negative free cash flow");
+  }
 
   // Trend filter
-  const ma50 = smaOf(s.closes, 50);
-  const ma200 = smaOf(s.closes, 200);
-  const last = s.closes[s.closes.length - 1];
-  if (ma200 !== null && last <= ma200) failures.push("price below 200-day MA");
-  if (ma50 !== null && ma200 !== null && ma50 <= ma200) failures.push("50-day MA below 200-day MA");
+  if (o.trend) {
+    const ma50 = smaOf(s.closes, 50);
+    const ma200 = smaOf(s.closes, 200);
+    const last = s.closes[s.closes.length - 1];
+    if (ma200 !== null && last <= ma200) failures.push("price below 200-day MA");
+    if (ma50 !== null && ma200 !== null && ma50 <= ma200)
+      failures.push("50-day MA below 200-day MA");
+  }
 
   return { passed: failures.length === 0, failures };
 }

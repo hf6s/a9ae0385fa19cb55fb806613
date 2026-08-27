@@ -48,6 +48,7 @@ import {
   stage1Filter,
   DEFAULT_WEIGHTS,
   type FactorWeights,
+  type FilterOptions,
   type StockInput,
 } from "../src/lib/scoring";
 
@@ -56,7 +57,24 @@ loadEnv();
 const DATA_DIR = path.join(process.cwd(), "data");
 const STATUS_PATH = path.join(DATA_DIR, "backtest-status.json");
 
-const REBALANCE_DAYS = 63; // ~quarterly
+/**
+ * Trading days between rebalances. 63 is ~quarterly, per the spec. Shorter
+ * holds ("swing") lean harder on momentum and cost more in turnover, which the
+ * cost model charges honestly: 21 is ~monthly, 42 is ~two months.
+ */
+const REBALANCE_DAYS = Number(argValue("--rebalance")) || 63;
+
+/**
+ * Stage-1 rules to relax. Measured cause for each: the current-ratio rule
+ * ejects Apple and Amazon, the trend rules eject Microsoft and Meta on any
+ * dip, and free-cash-flow rules are meaningless for banks like JP Morgan.
+ * Those are the companies that drove the index this period.
+ */
+const FILTER_OPTS: FilterOptions = {
+  currentRatio: !process.argv.includes("--no-current-ratio"),
+  trend: !process.argv.includes("--no-trend"),
+  exemptFinancials: process.argv.includes("--exempt-financials"),
+};
 const WARMUP_DAYS = 274; // 252 + 21 + buffer, so every momentum window is defined
 const TOP_N = Number(argValue("--top")) || 20;
 /**
@@ -68,6 +86,8 @@ const TOP_N = Number(argValue("--top")) || 20;
 const EXIT_RANK = Number(argValue("--exit-rank")) || TOP_N;
 /** Max holdings from any one sector. 0 disables the cap. */
 const MAX_PER_SECTOR = Number(argValue("--max-sector")) || 0;
+/** Sectors are needed to exempt financials, and for the per-sector cap. */
+const NEEDS_SECTORS = MAX_PER_SECTOR > 0 || FILTER_OPTS.exemptFinancials === true;
 
 function argValue(flag: string): string | null {
   const i = process.argv.indexOf(flag);
@@ -305,7 +325,7 @@ async function main() {
 
   // Sectors, only when the cap is in use. One cached SEC call per company.
   const sectorByTicker = new Map<string, string>();
-  if (MAX_PER_SECTOR > 0) {
+  if (NEEDS_SECTORS) {
     console.log("Resolving sectors from SEC SIC codes...");
     writeStatus({ phase: "sectors", total: histories.size, done: 0 });
     const sectors = new SectorLookup();
@@ -420,7 +440,7 @@ async function main() {
         const input = buildStockInput({
           ticker,
           name: nameOf.get(ticker) ?? ticker,
-          sector: "",
+          sector: sectorByTicker.get(ticker) ?? "", // needed for the financials exemption
           closes: series.slice(0, i + 1),
           spxCloses: spxWindow,
           price: tradedPrice as number,
@@ -433,7 +453,7 @@ async function main() {
       }
 
       // Live pipeline: Stage-1 filters -> EDGAR filters -> factor scores -> penalties
-      const survivors1 = inputs.filter((s) => stage1Filter(s).passed);
+      const survivors1 = inputs.filter((s) => stage1Filter(s, FILTER_OPTS).passed);
       const survivors = survivors1.filter((s) => edgarFilter(s).passed);
       // Work actually done per rebalance. If these collapse, the run is
       // ranking a handful of names and finishing fast for the wrong reason.
@@ -638,6 +658,12 @@ async function main() {
       topN: TOP_N,
       exitRank: EXIT_RANK,
       maxPerSector: MAX_PER_SECTOR,
+      rebalanceDays: REBALANCE_DAYS,
+      filters: {
+        currentRatio: FILTER_OPTS.currentRatio,
+        trend: FILTER_OPTS.trend,
+        exemptFinancials: FILTER_OPTS.exemptFinancials,
+      },
       weights: {
         quality: Math.round(WEIGHTS.quality * 100),
         value: Math.round(WEIGHTS.value * 100),

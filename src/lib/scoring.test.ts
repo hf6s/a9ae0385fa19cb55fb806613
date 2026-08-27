@@ -200,3 +200,46 @@ describe("sectorMedianGrossMargins", () => {
     assert.equal(medians.get("Tech"), 50);
   });
 });
+
+describe("filter options", () => {
+  it("rejects a low current ratio by default, as the spec requires", () => {
+    // Apple and Amazon fail exactly here: negative working capital by design.
+    const apple = stock({ currentRatio: 0.9 });
+    assert.equal(stage1Filter(apple).passed, false);
+    assert.match(stage1Filter(apple).failures.join(), /current ratio/);
+  });
+
+  it("can skip the current-ratio rule without touching the others", () => {
+    const s = stock({ currentRatio: 0.9 });
+    assert.equal(stage1Filter(s, { currentRatio: false }).passed, true);
+    // a genuinely broken company must still fail
+    const broken = stock({ currentRatio: 0.9, netMargin: -10 });
+    assert.equal(stage1Filter(broken, { currentRatio: false }).passed, false);
+  });
+
+  it("can skip the trend rules, which eject good companies on any dip", () => {
+    const falling = Array.from({ length: 300 }, (_, i) => 300 - i * 0.5);
+    const s = stock({ closes: falling });
+    assert.equal(stage1Filter(s).passed, false);
+    assert.equal(stage1Filter(s, { trend: false }).passed, true);
+  });
+
+  it("exempts financials from working-capital and cash-flow rules", () => {
+    // A bank with thin current ratio and no meaningful FCF: both rules mislead.
+    const bank = stock({ sector: "Financials", currentRatio: 0.5, ps: 5, pfcf: -5 });
+    assert.equal(stage1Filter(bank).passed, false);
+    assert.equal(stage1Filter(bank, { exemptFinancials: true }).passed, true);
+  });
+
+  it("does not exempt non-financials", () => {
+    const tech = stock({ sector: "Technology", currentRatio: 0.5 });
+    assert.equal(stage1Filter(tech, { exemptFinancials: true }).passed, false);
+  });
+
+  it("still enforces liquidity and size when filters are relaxed", () => {
+    const tiny = stock({ marketCap: 100, currentRatio: 0.5 });
+    const r = stage1Filter(tiny, { currentRatio: false, trend: false, exemptFinancials: true });
+    assert.equal(r.passed, false);
+    assert.match(r.failures.join(), /market cap/);
+  });
+});
