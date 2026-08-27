@@ -24,6 +24,67 @@ export interface Spotlight {
 const fmt = (v: number | null | undefined, suffix = "") =>
   v === null || v === undefined ? "—" : `${Math.round(v * 100) / 100}${suffix}`;
 
+
+/**
+ * What the tool is and is not, shown on BOTH home views.
+ *
+ * This is the disclosure a buyer needs, so it cannot sit behind a click. The
+ * measured numbers come from the backtest result rather than the source, so a
+ * re-run can never leave a stale performance claim on the page.
+ */
+function HonestSummary({
+  verdict,
+}: {
+  verdict: { cagr: number; benchCagr: number; years: number } | null;
+}) {
+  return (
+    <section className="honesty">
+      <h2>What this is, and what it isn&apos;t</h2>
+      <div className="honesty-grid">
+        <div className="honesty-card">
+          <div className="label">What it does</div>
+          <p>
+            Scans US stocks every two days and ranks them on published academic criteria:
+            quality, value, momentum and growth. Every number traces back to SEC filings and
+            market prices, and the AI write-up explains why a company ranks where it does.
+          </p>
+        </div>
+        <div className="honesty-card">
+          <div className="label">What it does not do</div>
+          {verdict ? (
+            <p>
+              Beat the market. Over {verdict.years} years the model returned{" "}
+              <strong>{verdict.cagr.toFixed(1)}% a year</strong> against the S&amp;P 500&apos;s{" "}
+              <strong>{verdict.benchCagr.toFixed(1)}%</strong>, after trading costs. Six
+              different factor weightings and a 4,500-stock universe were tested. None beat
+              the index either.
+            </p>
+          ) : (
+            <p>
+              Beat the market. The backtest measures this honestly rather than assuming it.
+            </p>
+          )}
+        </div>
+        <div className="honesty-card">
+          <div className="label">Use it for</div>
+          <p>
+            Finding and understanding companies with strong fundamentals, and seeing the
+            reasoning rather than a black-box score. Not as a system that outperforms.
+          </p>
+        </div>
+      </div>
+      <p className="name-dim" style={{ fontSize: 12, marginTop: 12 }}>
+        The backtest is survivorship-corrected, uses point-in-time filings with no lookahead,
+        charges trading costs, and reports both halves of its test period separately.{" "}
+        <Link href="/backtest" style={{ color: "var(--accent)" }}>
+          See the full results
+        </Link>
+        .
+      </p>
+    </section>
+  );
+}
+
 export default function HomeView({
   stocks,
   sparks,
@@ -55,50 +116,7 @@ export default function HomeView({
         <StatTiles stats={stats} />
         <p className="meta-line">{metaLine}</p>
         <RankingsExplorer stocks={stocks} sparks={sparks} prevRanks={prevRanks} />
-        <section className="honesty">
-          <h2>What this is, and what it isn&apos;t</h2>
-          <div className="honesty-grid">
-            <div className="honesty-card">
-              <div className="label">What it does</div>
-              <p>
-                Scans US stocks every two days and ranks them on published academic criteria:
-                quality, value, momentum and growth. Every number traces back to SEC filings and
-                market prices, and the AI write-up explains why a company ranks where it does.
-              </p>
-            </div>
-            <div className="honesty-card">
-              <div className="label">What it does not do</div>
-              {verdict ? (
-                <p>
-                  Beat the market. Over {verdict.years} years the model returned{" "}
-                  <strong>{verdict.cagr.toFixed(1)}% a year</strong> against the S&amp;P 500&apos;s{" "}
-                  <strong>{verdict.benchCagr.toFixed(1)}%</strong>, after trading costs. Six
-                  different factor weightings and a 4,500-stock universe were tested. None beat
-                  the index either.
-                </p>
-              ) : (
-                <p>
-                  Beat the market. The backtest measures this honestly rather than assuming it.
-                </p>
-              )}
-            </div>
-            <div className="honesty-card">
-              <div className="label">Use it for</div>
-              <p>
-                Finding and understanding companies with strong fundamentals, and seeing the
-                reasoning rather than a black-box score. Not as a system that outperforms.
-              </p>
-            </div>
-          </div>
-          <p className="name-dim" style={{ fontSize: 12, marginTop: 12 }}>
-            The backtest is survivorship-corrected, uses point-in-time filings with no lookahead,
-            charges trading costs, and reports both halves of its test period separately.{" "}
-            <Link href="/backtest" style={{ color: "var(--accent)" }}>
-              See the full results
-            </Link>
-            .
-          </p>
-        </section>
+        <HonestSummary verdict={verdict} />
 
         <p className="disclaimer">
           Factor20 ranks stocks with a mechanical, transparent factor model and AI-written
@@ -232,6 +250,8 @@ export default function HomeView({
             View all top 20 →
           </button>
         </div>
+        <HonestSummary verdict={verdict} />
+
         <p className="disclaimer">{metaLine}. Nothing here is investment advice.</p>
       </div>
     </section>
