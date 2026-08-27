@@ -109,6 +109,39 @@ const WINDOW = "15y";
 const COST_ONE_WAY = 0.001;
 
 /**
+ * Market-timing overlay: sit in cash whenever the index itself is below its
+ * own 200-day average at a rebalance.
+ *
+ * A genuinely different strategy family from factor selection — this is Faber's
+ * trend rule. It cannot pick better stocks; it tries to avoid being invested
+ * during drawdowns at all. Cash earns nothing here, which is conservative.
+ */
+const CASH_WHEN_BEAR = process.argv.includes("--cash-when-bear");
+
+/**
+ * Where to write the result.
+ *
+ * Sweeps used to let every run write data/backtest.json and then copy it out,
+ * which meant the published result silently became whatever ran last. A 2x
+ * leveraged run reached the file that way, and the homepage reads it for the
+ * performance claim. Experiments must name their own --out; only an unflagged
+ * run may touch the canonical file.
+ */
+const OUT_PATH = argValue("--out");
+
+/**
+ * Leverage on the whole portfolio, with a borrowing cost on the margin.
+ *
+ * This is the arithmetically honest answer to "I want double the index":
+ * you do not need better stock selection, you need 2x exposure. What it costs
+ * is symmetric — a 43% drawdown becomes 86%, which is a wiped-out account, not
+ * a bad year. Included so that trade-off is measured rather than imagined.
+ */
+const LEVERAGE = Number(argValue("--leverage")) || 1;
+/** Annual margin rate charged on the borrowed portion. */
+const BORROW_RATE = 0.05;
+
+/**
  * Factor tilt under test, as "quality,value,momentum,growth".
  *
  * The spec's weights are one hypothesis, not a law. The value and quality tilt
@@ -404,6 +437,22 @@ async function main() {
       const date = dates[i];
       const spxWindow = spxClose.slice(0, i + 1);
 
+      // Trend overlay: if the index is below its own 200-day average, hold
+      // nothing until the next rebalance.
+      if (CASH_WHEN_BEAR) {
+        const w = spxClose.slice(Math.max(0, i - 199), i + 1);
+        const ma200 = w.length >= 200 ? w.reduce((a, b) => a + b, 0) / w.length : null;
+        if (ma200 !== null && spxClose[i] < ma200) {
+          holdings = [];
+          weights = [];
+          periodStartIdx = i;
+          periodStartStrat = strat;
+          periodStartBench = bench;
+          writeStatus({ done: i - WARMUP_DAYS });
+          continue;
+        }
+      }
+
       // Only companies actually in the index on this date are investable.
       const eligible = membersAsOf(membership, date);
 
@@ -591,9 +640,14 @@ async function main() {
       if (tot > 0) for (let k = 0; k < weights.length; k++) weights[k] /= tot;
     }
     const benchRet = spxClose[i] / spxClose[i - 1] - 1;
-    strat *= 1 + dayRet;
+    // Leverage scales the day's return and charges interest on the borrowed part.
+    const levered =
+      LEVERAGE === 1
+        ? dayRet
+        : dayRet * LEVERAGE - ((LEVERAGE - 1) * BORROW_RATE) / 252;
+    strat *= 1 + levered;
     bench *= 1 + benchRet;
-    dailyRets.push(dayRet);
+    dailyRets.push(LEVERAGE === 1 ? dayRet : dayRet * LEVERAGE - ((LEVERAGE - 1) * BORROW_RATE) / 252);
     curve.push({
       t: dates[i],
       strat: Math.round(strat * 10000) / 10000,
@@ -688,6 +742,8 @@ async function main() {
       exitRank: EXIT_RANK,
       maxPerSector: MAX_PER_SECTOR,
       rebalanceDays: REBALANCE_DAYS,
+      cashWhenBear: CASH_WHEN_BEAR,
+      leverage: LEVERAGE,
       filters: {
         currentRatio: FILTER_OPTS.currentRatio,
         trend: FILTER_OPTS.trend,
@@ -720,7 +776,9 @@ async function main() {
     currentHoldings: holdings,
   };
 
-  fs.writeFileSync(path.join(DATA_DIR, "backtest.json"), JSON.stringify(result, null, 2));
+  const outPath = OUT_PATH ?? path.join(DATA_DIR, "backtest.json");
+  fs.writeFileSync(outPath, JSON.stringify(result, null, 2));
+  if (OUT_PATH) console.log(`(experiment: wrote ${outPath}, published backtest untouched)`);
   console.log(
     `\nBacktest done: strategy ${result.stats.totalReturn}% vs S&P 500 ${result.stats.benchTotalReturn}% over ${result.stats.years}y`,
   );

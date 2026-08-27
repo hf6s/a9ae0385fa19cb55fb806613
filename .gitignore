@@ -17,3 +17,18 @@ data/edgar-history-cache.json
 data/sp500-membership.json
 data/delisted-cik-cache.json
 data/sector-cache.json
+
+# Backtest sweep scratch output. Experiments are reproducible from the scripts
+# and their flags; only data/backtest.json (the published run) is tracked.
+/ns-*.json
+/ns-*.log
+/tilt-*.json
+/filt-*.json
+/variant-*.json
+/drift-*.json
+/verify-*.json
+/verify-*.log
+/newstrat-results.json
+/tilt-results.json
+/filter-results.json
+/data/backtest-wide.json
