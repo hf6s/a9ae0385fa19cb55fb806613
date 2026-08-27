@@ -3,7 +3,7 @@ import { type Stat } from "@/components/StatTiles";
 import fs from "node:fs";
 import path from "node:path";
 import { getAnalyses, getHistory, getPrevRankings, getRankings } from "@/lib/data";
-import type { Rankings } from "@/lib/types";
+import type { Rankings, RollingWindow } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -59,13 +59,24 @@ function buildSparks(tickers: string[]): Record<string, number[]> {
  * into the page. A hardcoded claim about performance goes stale the moment a
  * backtest re-runs, and a stale performance claim is the kind that misleads.
  */
-function honestVerdict(): { cagr: number; benchCagr: number; years: number } | null {
+function honestVerdict(): {
+  cagr: number;
+  benchCagr: number;
+  years: number;
+  rolling: RollingWindow[];
+} | null {
   try {
     const raw = fs.readFileSync(path.join(process.cwd(), "data", "backtest.json"), "utf8");
     const bt = JSON.parse(raw) as {
       stats: { cagr: number; benchCagr: number; years: number };
+      rollingWindows?: RollingWindow[];
     };
-    return { cagr: bt.stats.cagr, benchCagr: bt.stats.benchCagr, years: bt.stats.years };
+    return {
+      cagr: bt.stats.cagr,
+      benchCagr: bt.stats.benchCagr,
+      years: bt.stats.years,
+      rolling: bt.rollingWindows ?? [],
+    };
   } catch {
     return null;
   }

@@ -699,6 +699,46 @@ async function main() {
     ? [halfStats(0, mid), halfStats(mid, curve.length - 1)]
     : [];
 
+/**
+ * Rolling returns over every possible start date, not just the one full run.
+ *
+ * A single headline CAGR hides how much of the result was the start date. The
+ * quarterly model reads 14.3% vs 14.8%, which looks like a near-miss, but held
+ * over any ten-year window inside this period it lost every single time. That
+ * is the number a buyer needs, so it is computed here rather than asserted.
+ */
+  const rollingWindows = [1, 3, 5, 10]
+    .map((yearsHeld) => {
+      const win = Math.round(yearsHeld * 252);
+      if (curve.length <= win) return null;
+      const strat: number[] = [];
+      const bench: number[] = [];
+      let beat = 0;
+      for (let i = win; i < curve.length; i++) {
+        const s = (Math.pow(curve[i].strat / curve[i - win].strat, 1 / yearsHeld) - 1) * 100;
+        const b = (Math.pow(curve[i].bench / curve[i - win].bench, 1 / yearsHeld) - 1) * 100;
+        strat.push(s);
+        bench.push(b);
+        if (s > b) beat++;
+      }
+      const med = (a: number[]) => {
+        const x = [...a].sort((m, n) => m - n);
+        return x[Math.floor((x.length - 1) / 2)];
+      };
+      return {
+        years: yearsHeld,
+        windows: strat.length,
+        stratWorst: r1(Math.min(...strat)),
+        stratMedian: r1(med(strat)),
+        stratBest: r1(Math.max(...strat)),
+        benchWorst: r1(Math.min(...bench)),
+        benchMedian: r1(med(bench)),
+        benchBest: r1(Math.max(...bench)),
+        beatPct: Math.round((beat / strat.length) * 100),
+      };
+    })
+    .filter((x): x is NonNullable<typeof x> => x !== null);
+
   const result = {
     generatedAt: new Date().toISOString(),
     model: "full",
@@ -763,6 +803,7 @@ async function main() {
         : 0,
     },
     subPeriods,
+    rollingWindows,
     factorProfile: attrib.count
       ? {
           quality: r1(attrib.quality / attrib.count),

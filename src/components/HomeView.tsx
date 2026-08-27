@@ -5,7 +5,7 @@ import { useState } from "react";
 import PriceChart from "@/components/PriceChart";
 import RankingsExplorer from "@/components/RankingsExplorer";
 import StatTiles, { type Stat } from "@/components/StatTiles";
-import type { Candle, RankedStock } from "@/lib/types";
+import type { Candle, RankedStock, RollingWindow } from "@/lib/types";
 
 const FACTOR_META = [
   { key: "quality", label: "Quality", weight: "30%", color: "var(--q)" },
@@ -25,6 +25,66 @@ const fmt = (v: number | null | undefined, suffix = "") =>
   v === null || v === undefined ? "—" : `${Math.round(v * 100) / 100}${suffix}`;
 
 
+export interface Verdict {
+  cagr: number;
+  benchCagr: number;
+  years: number;
+  rolling: RollingWindow[];
+}
+
+/**
+ * Returns over every possible start date, not just the single full run.
+ *
+ * One headline CAGR hides how much of a result was the start date. Quarterly
+ * reads 14.3% against 14.8%, which looks like a near-miss, yet held over any
+ * ten-year window inside the period it lost every time. Showing the hit rate
+ * next to the range is the only version of this that is not flattering.
+ */
+function RollingTable({ rows }: { rows: RollingWindow[] }) {
+  if (rows.length === 0) return null;
+  return (
+    <div className="rolling">
+      <div className="label">Held for how long, starting when?</div>
+      <div className="rolling-scroll">
+        <table className="rolling-table">
+          <thead>
+            <tr>
+              <th>Holding period</th>
+              <th>This model</th>
+              <th>S&amp;P 500</th>
+              <th>Model ahead</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((r) => (
+              <tr key={r.years}>
+                <th scope="row">
+                  {r.years} year{r.years > 1 ? "s" : ""}
+                  <span className="name-dim"> · {r.windows.toLocaleString()} windows</span>
+                </th>
+                <td>
+                  {r.stratWorst.toFixed(1)}% to {r.stratBest.toFixed(1)}%
+                  <span className="name-dim"> · mid {r.stratMedian.toFixed(1)}%</span>
+                </td>
+                <td>
+                  {r.benchWorst.toFixed(1)}% to {r.benchBest.toFixed(1)}%
+                  <span className="name-dim"> · mid {r.benchMedian.toFixed(1)}%</span>
+                </td>
+                <td className={r.beatPct >= 50 ? "" : "rolling-bad"}>{r.beatPct}% of the time</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p className="name-dim rolling-note">
+        Annualized return for every possible start date in the test window. The last column is
+        how often the model finished ahead of the index. Longer holding periods are the honest
+        test, and that is where it does worst.
+      </p>
+    </div>
+  );
+}
+
 /**
  * What the tool is and is not, shown on BOTH home views.
  *
@@ -35,7 +95,7 @@ const fmt = (v: number | null | undefined, suffix = "") =>
 function HonestSummary({
   verdict,
 }: {
-  verdict: { cagr: number; benchCagr: number; years: number } | null;
+  verdict: Verdict | null;
 }) {
   return (
     <section className="honesty">
@@ -73,6 +133,7 @@ function HonestSummary({
           </p>
         </div>
       </div>
+      {verdict && <RollingTable rows={verdict.rolling} />}
       <p className="name-dim" style={{ fontSize: 12, marginTop: 12 }}>
         The backtest is survivorship-corrected, uses point-in-time filings with no lookahead,
         charges trading costs, and reports both halves of its test period separately.{" "}
@@ -101,7 +162,7 @@ export default function HomeView({
   metaLine: string;
   spotlight: Spotlight | null;
   /** Measured performance, straight from the backtest result. */
-  verdict: { cagr: number; benchCagr: number; years: number } | null;
+  verdict: Verdict | null;
 }) {
   const [view, setView] = useState<"spotlight" | "list">(spotlight ? "spotlight" : "list");
 

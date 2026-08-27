@@ -1775,3 +1775,75 @@ input:focus-visible {
   font-size: 13px;
   line-height: 1.6;
 }
+
+/* Rolling-window table in the honesty section.
+   Matches the rankings table's tabular-nums and border rhythm. The "model
+   ahead" column is amber whenever the hit rate is under half, which on the
+   longer holding periods it always is. */
+.rolling {
+  margin-top: 18px;
+  background: var(--bg-raised);
+  border: 1px solid color-mix(in srgb, var(--amber) 40%, var(--border));
+  border-radius: var(--r-md);
+  padding: 16px 18px;
+}
+
+.rolling .label {
+  font-size: 11px;
+  font-weight: 650;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+  margin-bottom: 10px;
+}
+
+.rolling-scroll {
+  overflow-x: auto;
+}
+
+table.rolling-table {
+  width: 100%;
+  min-width: 460px;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+}
+
+table.rolling-table thead th {
+  text-align: left;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+  font-weight: 600;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+table.rolling-table tbody th {
+  text-align: left;
+  font-weight: 550;
+  white-space: nowrap;
+}
+
+table.rolling-table th,
+table.rolling-table td {
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+table.rolling-table tbody tr:last-child th,
+table.rolling-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.rolling-bad {
+  color: var(--amber);
+  font-weight: 600;
+}
+
+.rolling-note {
+  font-size: 12px;
+  margin-top: 10px;
+}

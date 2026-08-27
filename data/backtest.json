@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-27T01:39:53.526Z",
+  "generatedAt": "2026-08-27T21:50:45.035Z",
   "model": "full",
   "strategy": "Full four-factor model (Quality 30 / Value 25 / Momentum 25 / Growth 20) with Stage-1 elimination filters and penalties — the exact live engine, top 20 equal-weight, quarterly rebalance",
   "universe": "Point-in-time S&P 500 membership: 820 companies that were index members at any time in the window, of which 317 have since left. 746 had both 10y prices and SEC filings and could be scored.",
@@ -18,9 +18,9 @@
   ],
   "stats": {
     "years": 13.9,
-    "totalReturn": 536,
-    "benchTotalReturn": 574.8,
-    "cagr": 14.3,
+    "totalReturn": 532.9,
+    "benchTotalReturn": 579.2,
+    "cagr": 14.2,
     "benchCagr": 14.8,
     "maxDrawdown": -43.5,
     "benchMaxDrawdown": -33.7,
@@ -36,6 +36,8 @@
     "exitRank": 20,
     "maxPerSector": 0,
     "rebalanceDays": 63,
+    "cashWhenBear": false,
+    "leverage": 1,
     "filters": {
       "currentRatio": true,
       "trend": true,
@@ -60,10 +62,56 @@
     },
     {
       "start": "2019-09-12",
-      "end": "2026-08-26",
-      "cagr": 14.5,
-      "benchCagr": 16.1,
-      "excess": -1.6
+      "end": "2026-08-27",
+      "cagr": 14.4,
+      "benchCagr": 16.2,
+      "excess": -1.8
+    }
+  ],
+  "rollingWindows": [
+    {
+      "years": 1,
+      "windows": 3245,
+      "stratWorst": -30.5,
+      "stratMedian": 13.7,
+      "stratBest": 74.7,
+      "benchWorst": -19.7,
+      "benchMedian": 16.2,
+      "benchBest": 77.5,
+      "beatPct": 51
+    },
+    {
+      "years": 3,
+      "windows": 2741,
+      "stratWorst": -6.9,
+      "stratMedian": 10.9,
+      "stratBest": 31.7,
+      "benchWorst": 0.4,
+      "benchMedian": 12.2,
+      "benchBest": 28.3,
+      "beatPct": 35
+    },
+    {
+      "years": 5,
+      "windows": 2237,
+      "stratWorst": -1.1,
+      "stratMedian": 10.3,
+      "stratBest": 20.8,
+      "benchWorst": 3.2,
+      "benchMedian": 13.6,
+      "benchBest": 22.3,
+      "beatPct": 20
+    },
+    {
+      "years": 10,
+      "windows": 977,
+      "stratWorst": 7.5,
+      "stratMedian": 9.8,
+      "stratBest": 14.5,
+      "benchWorst": 10.9,
+      "benchMedian": 12.9,
+      "benchBest": 16.1,
+      "beatPct": 0
     }
   ],
   "factorProfile": {
@@ -17552,12 +17600,17 @@
       "t": "2026-08-26",
       "strat": 6.3604,
       "bench": 6.7481
+    },
+    {
+      "t": "2026-08-27",
+      "strat": 6.3287,
+      "bench": 6.7923
     }
   ],
   "periods": [
     {
       "start": "2026-07-15",
-      "end": "2026-08-26",
+      "end": "2026-08-27",
       "holdings": [
         "ALL",
         "TRV",
@@ -17580,8 +17633,8 @@
         "DECK",
         "PFG"
       ],
-      "stratRet": 0.0001994056187588633,
-      "benchRet": 0.018953752843063443
+      "stratRet": -0.004794082181812653,
+      "benchRet": 0.025630794195496742
     },
     {
       "start": "2026-04-14",

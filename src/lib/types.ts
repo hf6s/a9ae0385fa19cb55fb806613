@@ -79,3 +79,16 @@ export interface ScanStatus {
   finishedAt?: string;
   error?: string;
 }
+
+/** One row of the rolling-window table: annualized returns over every start date. */
+export interface RollingWindow {
+  years: number;
+  windows: number;
+  stratWorst: number;
+  stratMedian: number;
+  stratBest: number;
+  benchWorst: number;
+  benchMedian: number;
+  benchBest: number;
+  beatPct: number;
+}
