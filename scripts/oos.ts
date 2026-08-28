@@ -17,8 +17,23 @@
  * FAIRNESS. Prices are in local currency, so the benchmark is an equal-weight
  * portfolio of the same eligible universe on the same exchange. Comparing a
  * GBP portfolio against a USD index would measure the pound, not the strategy.
- * The universe is point-in-time and includes names that later delisted, so
- * survivorship cannot flatter the result.
+ * Both sides rebalance on the same cadence and drift in between, so only stock
+ * SELECTION separates the two lines.
+ *
+ * TWO BIASES THAT WERE IN THE FIRST VERSION, NOW FIXED. It unioned every name
+ * that was ever in the liquid top 400 into a single set and tested all of them
+ * from day one. Entering that set is something a company does after it grows,
+ * so the union was a list of eventual winners handed to the model in advance.
+ * Eligibility is now the most recent quarterly sample on or before each
+ * rebalance, applied to the benchmark too. The shared calendar was also taken
+ * from the single longest series, which dropped any day that one series was
+ * missing for every other name as well; it is now the union of all dates.
+ *
+ * ONE BIAS THAT REMAINS. Names with under 300 bars are dropped, because
+ * momentum needs a 200-day average and they cannot be scored at all. That
+ * skips the shortest-lived listings, which skew toward failures. It applies
+ * identically to the benchmark, so it should largely cancel in the excess,
+ * but the absolute levels on both lines are flattered.
  *
  * Usage: npm run oos -- --exchange LSE --rebalance 21
  */
@@ -69,8 +84,21 @@ async function getJson<T>(url: string): Promise<T | null> {
   return null;
 }
 
-/** Quarterly samples of the bulk file give a point-in-time liquid universe. */
-async function buildUniverse(): Promise<string[]> {
+/**
+ * Quarterly samples of the bulk file, kept SEPARATELY per sample date.
+ *
+ * The first version unioned every symbol that was ever top-400 by traded value
+ * into one set and tested all of them from day one. That is look-ahead: a
+ * company only enters the liquid 400 after it has grown, so the union is a
+ * list of things that went on to do well. Keeping each date's set and asking
+ * "what was liquid as of this rebalance" is what point-in-time actually means.
+ */
+interface UniverseSample {
+  date: string;
+  codes: Set<string>;
+}
+
+async function buildUniverse(): Promise<UniverseSample[]> {
   const dates: string[] = [];
   const now = new Date();
   for (let y = 0; y < YEARS; y++) {
@@ -83,7 +111,8 @@ async function buildUniverse(): Promise<string[]> {
   }
   dates.sort();
 
-  const seen = new Set<string>();
+  const samples: UniverseSample[] = [];
+  const everSeen = new Set<string>();
   for (const date of dates) {
     const rows = await getJson<{ code?: string; close?: number; volume?: number }[]>(
       `https://eodhd.com/api/eod-bulk-last-day/${EXCHANGE}?date=${date}&fmt=json&api_token=${key()}`,
@@ -95,12 +124,29 @@ async function buildUniverse(): Promise<string[]> {
       .map((r) => ({ code: r.code as string, v: (r.close as number) * (r.volume as number) }))
       .sort((a, b) => b.v - a.v)
       .slice(0, LIQUID_KEEP);
-    for (const r of ranked) seen.add(r.code);
-    process.stdout.write(`\r  universe after ${date}: ${seen.size}   `);
+    const codes = new Set(ranked.map((r) => r.code));
+    for (const c of codes) everSeen.add(c);
+    samples.push({ date, codes });
+    process.stdout.write(`
+  ${samples.length} samples, ${everSeen.size} distinct names   `);
     await new Promise((r) => setTimeout(r, 250));
   }
   console.log("");
-  return [...seen].sort();
+  return samples;
+}
+
+/**
+ * What was liquid as of a given date: the most recent sample on or before it.
+ * Before the first sample nothing is eligible, which is why the run starts
+ * after WARMUP anyway.
+ */
+function eligibleAsOf(samples: UniverseSample[], date: string): Set<string> {
+  let found: Set<string> | null = null;
+  for (const s of samples) {
+    if (s.date <= date) found = s.codes;
+    else break;
+  }
+  return found ?? new Set<string>();
 }
 
 async function history(sym: string): Promise<Bar[] | null> {
@@ -161,8 +207,12 @@ async function main() {
   console.log(`Out-of-sample momentum test on ${EXCHANGE}, ${REBALANCE_DAYS}-day rebalance`);
 
   console.log("Building a point-in-time liquid universe...");
-  const universe = await buildUniverse();
-  console.log(`  ${universe.length} names were ever liquid on ${EXCHANGE} in the window`);
+  const samples = await buildUniverse();
+  if (samples.length === 0) throw new Error("no universe samples returned");
+  const universe = [...new Set(samples.flatMap((x) => [...x.codes]))].sort();
+  console.log(
+    `  ${samples.length} quarterly samples, ${universe.length} distinct names ever liquid on ${EXCHANGE}`,
+  );
 
   console.log("Fetching price history...");
   const series = new Map<string, Bar[]>();
@@ -178,9 +228,12 @@ async function main() {
   console.log(`\n  usable history for ${series.size} names`);
   if (series.size < 50) throw new Error("too few names with history to test");
 
-  // Shared calendar, taken from the most complete series.
-  const longest = [...series.values()].reduce((a, b) => (b.length > a.length ? b : a));
-  const dates = longest.map((b) => b.date);
+  // Shared calendar: the UNION of every date any name traded. Taking it from
+  // the single longest series silently dropped every day that series happened
+  // to be missing, for every other name too.
+  const dateSet = new Set<string>();
+  for (const bars of series.values()) for (const b of bars) dateSet.add(b.date);
+  const dates = [...dateSet].sort();
   const idx = new Map(dates.map((d, i) => [d, i]));
   const n = dates.length;
 
@@ -213,6 +266,10 @@ async function main() {
   // weight. On 1,500 volatile names that harvests noise and produced an
   // impossible 153% a year. Matching the strategy's mechanics exactly means
   // only stock SELECTION separates the two lines.
+  //
+  // Eligibility is point-in-time on BOTH sides. If the benchmark could hold
+  // names the strategy was not yet allowed to pick, the gap between the lines
+  // would measure the universe rather than the selection.
   const symbols = [...aligned.keys()];
   const benchDaily: number[] = new Array(n).fill(0);
   {
@@ -220,7 +277,8 @@ async function main() {
     for (let i = 1; i < n; i++) {
       const liveAt = (k: number) => (lastReal.get(symbols[k]) ?? -1) >= i;
       if (w.length === 0 || (i - WARMUP) % REBALANCE_DAYS === 0) {
-        const live: number[] = symbols.map((_, k) => (liveAt(k) ? 1 : 0));
+        const ok = eligibleAsOf(samples, dates[i]);
+        const live: number[] = symbols.map((sym, k) => (liveAt(k) && ok.has(sym) ? 1 : 0));
         const cnt = live.reduce((a, b) => a + b, 0);
         w = live.map((x) => (cnt > 0 ? x / cnt : 0));
       }
@@ -264,7 +322,9 @@ async function main() {
   for (let i = WARMUP; i < n; i++) {
     if ((i - WARMUP) % REBALANCE_DAYS === 0) {
       const inputs: StockInput[] = [];
+      const okNow = eligibleAsOf(samples, dates[i]);
       for (const [sym, s] of aligned) {
+        if (!okNow.has(sym)) continue;
         if ((lastReal.get(sym) ?? -1) < i) continue;
         if (!Number.isFinite(s[i]) || !Number.isFinite(s[i - WARMUP + 1])) continue;
         inputs.push(priceOnlyInput(sym, s.slice(0, i + 1), benchLevel.slice(0, i + 1)));
