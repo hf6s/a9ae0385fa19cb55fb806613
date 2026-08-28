@@ -116,6 +116,8 @@ export default function Home() {
         candles: getHistory(top.ticker) ?? [],
         analysisText: analysis?.text ?? null,
         analysisModel: analysis?.model ?? null,
+        research: analysis?.research ?? null,
+        sources: analysis?.sources ?? [],
       }
     : null;
 

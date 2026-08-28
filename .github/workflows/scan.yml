@@ -24,6 +24,11 @@ on:
         required: false
         default: true
         type: boolean
+      research_top:
+        description: "Web-research the top N stocks (0 = off). Billed per search."
+        required: false
+        default: "5"
+        type: string
       limit:
         description: "Only scan the first N tickers (smoke test; blank = all)"
         required: false
@@ -67,9 +72,13 @@ jobs:
           # SEC rejects placeholder contacts with a 403. Must be a real address.
           SEC_CONTACT: ${{ secrets.SEC_CONTACT }}
 
-      - name: Claude analysis of top 20
+      # Write-ups for the top 20 (batch, 50% cheaper), then a web-research pass
+      # over the top few. Research uses the live web, so it can only ever
+      # describe a company today — it is deliberately absent from the backtest,
+      # where searching would be lookahead.
+      - name: Claude analysis and research
         if: ${{ inputs.analyze }}
-        run: npm run analyze
+        run: npm run analyze -- --research-top ${{ inputs.research_top || '5' }}
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 

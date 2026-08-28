@@ -1847,3 +1847,67 @@ table.rolling-table tbody tr:last-child td {
   font-size: 12px;
   margin-top: 10px;
 }
+
+/* Web research panel. Visually separated from the factor write-up because it
+   is a different kind of claim: that one interprets numbers we computed, this
+   one reads the open web and can be wrong. */
+.research {
+  margin-top: 16px;
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--r-md);
+  padding: 14px 16px;
+}
+
+.research .label {
+  font-size: 11px;
+  font-weight: 650;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+}
+
+.research p {
+  margin: 0 0 10px;
+  line-height: 1.6;
+}
+
+.research-sources {
+  margin: 10px 0 0;
+  font-size: 13px;
+}
+
+.research-sources summary {
+  cursor: pointer;
+  color: var(--text-dim);
+}
+
+.research-sources ul {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.research-sources li {
+  margin-bottom: 5px;
+  line-height: 1.4;
+}
+
+.research-sources a {
+  color: var(--accent);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.research-sources a:hover {
+  text-decoration: underline;
+}
+
+.research-note {
+  font-size: 12px;
+  margin-top: 10px !important;
+  margin-bottom: 0 !important;
+}

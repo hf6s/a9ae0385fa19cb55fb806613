@@ -5,7 +5,7 @@ import { useState } from "react";
 import PriceChart from "@/components/PriceChart";
 import RankingsExplorer from "@/components/RankingsExplorer";
 import StatTiles, { type Stat } from "@/components/StatTiles";
-import type { Candle, RankedStock, RollingWindow } from "@/lib/types";
+import type { Candle, RankedStock, ResearchSource, RollingWindow } from "@/lib/types";
 
 const FACTOR_META = [
   { key: "quality", label: "Quality", weight: "30%", color: "var(--q)" },
@@ -19,11 +19,58 @@ export interface Spotlight {
   candles: Candle[];
   analysisText: string | null;
   analysisModel: string | null;
+  /** Web-researched thesis. Null when research was off or failed. */
+  research: string | null;
+  sources: ResearchSource[];
 }
 
 const fmt = (v: number | null | undefined, suffix = "") =>
   v === null || v === undefined ? "—" : `${Math.round(v * 100) / 100}${suffix}`;
 
+
+/**
+ * The researched thesis, with the pages it came from.
+ *
+ * Kept visually distinct from the factor write-up because it is a different
+ * kind of claim: the write-up interprets numbers we computed, this reads the
+ * open web. Sources are listed so a reader can check rather than trust, which
+ * is the only honest way to show model-written research.
+ */
+function ResearchPanel({
+  research,
+  sources,
+}: {
+  research: string | null;
+  sources: ResearchSource[];
+}) {
+  if (!research) return null;
+  return (
+    <div className="research">
+      <div className="label">Research · what the score cannot see</div>
+      {research.split(/\n\s*\n/).map((para, i) => (
+        <p key={i}>{para}</p>
+      ))}
+      {sources.length > 0 && (
+        <details className="research-sources">
+          <summary>{sources.length} sources consulted</summary>
+          <ul>
+            {sources.slice(0, 20).map((src) => (
+              <li key={src.url}>
+                <a href={src.url} target="_blank" rel="noopener noreferrer">
+                  {src.title}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
+      <p className="name-dim research-note">
+        Written by a model reading the live web. It can be wrong or out of date, and it is
+        not investment advice. Check the sources.
+      </p>
+    </div>
+  );
+}
 
 export interface Verdict {
   cagr: number;
@@ -190,7 +237,7 @@ export default function HomeView({
     );
   }
 
-  const { stock, candles, analysisText, analysisModel } = spotlight;
+  const { stock, candles, analysisText, analysisModel, research, sources } = spotlight;
   const m = stock.metrics;
 
   return (
@@ -275,6 +322,7 @@ export default function HomeView({
               </p>
             )}
           </div>
+          <ResearchPanel research={research} sources={sources} />
         </div>
       </div>
 

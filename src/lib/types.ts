@@ -54,11 +54,28 @@ export interface Rankings {
   stocks: RankedStock[];
 }
 
+/** A source the research pass actually consulted, for the reader to check. */
+export interface ResearchSource {
+  title: string;
+  url: string;
+}
+
 export interface StockAnalysis {
   ticker: string;
   text: string;
   model: string;
   generatedAt: string;
+  /**
+   * Web-researched context: the thesis, what has to go right, and what would
+   * break it. Absent on write-ups produced before research existed, and on
+   * stocks below the research cutoff, so every consumer must treat it as
+   * optional rather than assume it is there.
+   */
+  research?: string;
+  /** Pages the model actually opened. Empty if search returned nothing. */
+  sources?: ResearchSource[];
+  /** Set when search was attempted and failed, so the UI can say so. */
+  researchError?: string;
 }
 
 export interface AnalysisFile {
