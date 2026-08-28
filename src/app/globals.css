@@ -1911,3 +1911,83 @@ table.rolling-table tbody tr:last-child td {
   margin-top: 10px !important;
   margin-bottom: 0 !important;
 }
+
+/* Research report sections and thesis monitoring.
+   Deliberately distinct from the factor cards: those interpret backtestable
+   numbers, this reads the live web and cannot be backtested. */
+.research-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.research-conf {
+  font-size: 11px;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.research-section {
+  margin-top: 12px;
+}
+
+.research-section-head {
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+  margin-bottom: 4px;
+}
+
+.research-section p {
+  margin: 0 0 8px;
+}
+
+/* Monitoring verdict. "review" is a caution, not a neutral state: the parser
+   falls back to it whenever a verdict cannot be read. */
+.monitor {
+  border-radius: var(--r-sm, 6px);
+  border: 1px solid var(--border);
+  padding: 12px 14px;
+  margin: 10px 0 14px;
+}
+
+.monitor-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+
+.monitor p {
+  margin: 0 0 8px;
+  font-size: 14px;
+}
+
+.monitor-note {
+  font-size: 12px;
+  margin-bottom: 0 !important;
+}
+
+.monitor.v-good {
+  border-color: color-mix(in srgb, var(--g) 45%, var(--border));
+  background: color-mix(in srgb, var(--g) 7%, transparent);
+}
+
+.monitor.v-neutral {
+  background: var(--bg-hover);
+}
+
+.monitor.v-warn {
+  border-color: color-mix(in srgb, var(--amber) 45%, var(--border));
+  background: color-mix(in srgb, var(--amber) 7%, transparent);
+}
+
+.monitor.v-bad {
+  border-color: color-mix(in srgb, var(--danger, #e5484d) 50%, var(--border));
+  background: color-mix(in srgb, var(--danger, #e5484d) 8%, transparent);
+}

@@ -27,7 +27,7 @@ on:
       research_top:
         description: "Web-research the top N stocks (0 = off). Billed per search."
         required: false
-        default: "5"
+        default: "3"
         type: string
       limit:
         description: "Only scan the first N tickers (smoke test; blank = all)"
@@ -78,7 +78,7 @@ jobs:
       # where searching would be lookahead.
       - name: Claude analysis and research
         if: ${{ inputs.analyze }}
-        run: npm run analyze -- --research-top ${{ inputs.research_top || '5' }}
+        run: npm run analyze -- --research-top ${{ inputs.research_top || '3' }}
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 

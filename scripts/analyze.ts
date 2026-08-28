@@ -16,6 +16,14 @@ import fs from "node:fs";
 import path from "node:path";
 import Anthropic from "@anthropic-ai/sdk";
 import { loadEnv } from "../src/lib/env";
+import {
+  buildResearchPrompt,
+  buildResearchSystem,
+  parseMonitorText,
+  parseReport,
+  parseVerdict,
+  reportCompleteness,
+} from "../src/lib/research";
 import type {
   AnalysisFile,
   RankedStock,
@@ -39,7 +47,7 @@ const DATA_DIR = path.join(process.cwd(), "data");
  * sources including SEC filings. A starved budget produced a false disclaimer,
  * which is worse than no research at all.
  */
-const RESEARCH_TOP_DEFAULT = 5;
+const RESEARCH_TOP_DEFAULT = 3;
 const MAX_SEARCHES = 12;
 
 const SYSTEM_PROMPT = `You are the analysis layer of Factor20, a transparent, evidence-based stock
@@ -56,53 +64,6 @@ bullet lists) covering:
    (e.g. a high momentum score late in a run, thin margins behind a value
    score, leverage, a weak factor pulling against the others).
 Be concrete and reference the actual numbers. Neutral, analytical tone.`;
-
-/**
- * The research pass: what the factor model structurally cannot see.
- *
- * The model reads filings and prices. It has no idea whether a company just
- * lost its biggest customer, is being acquired, or is a fallen growth story
- * whose cheap multiple is a trap. That is what search is for, so the prompt
- * asks for the things a score cannot contain and explicitly bans restating
- * the numbers we already have.
- *
- * This is deliberately NOT in the backtest. Searching the live web is correct
- * for describing a company today and would be pure lookahead in a historical
- * simulation, so nothing here may ever feed the ranking.
- */
-const RESEARCH_SYSTEM = `You are the research layer of Factor20, a transparent stock-ranking site.
-A quantitative model has already scored this company from SEC filings and
-prices. Your job is to find what those numbers CANNOT contain, using web
-search, and to be candid about risk.
-
-Search for recent developments: earnings and guidance, management changes,
-major contracts or customer losses, regulation and litigation, competitive
-shifts, and anything that would change how a reader reads the score.
-
-Write three short labelled sections, plain prose, no bullet lists:
-
-THESIS: why this company could be meaningfully more valuable in 3-5 years.
-Be specific about the mechanism, not "strong company".
-
-WHAT MUST GO RIGHT: the concrete things that have to happen for that to work.
-
-WHAT WOULD BREAK IT: the strongest bear case you can honestly construct, and
-what observable event would tell a reader the thesis has failed.
-
-Start directly with the THESIS heading. No preamble, no "I'll research this".
-
-If some searches fail or the search allowance runs out, work with whatever you
-did retrieve and mention only the specific gap that remains. Do NOT disclaim
-the whole write-up as unverified when you successfully retrieved anything, and
-do not describe your own tool usage to the reader.
-
-Rules. Prefer primary and reputable sources: SEC filings, company investor
-relations, Reuters, Bloomberg, FT, WSJ, CNBC, Barron's, Morningstar. Treat
-social media, forums and influencers as low-confidence and label them as such
-if you use them at all. Never invent a number, a filing, a quote or an event:
-if you could not verify something, say you could not verify it. Do not repeat
-the factor scores or ratios back, they are already on the page. Do not say
-buy, sell, or hold, and give no price targets. Under 300 words total.`;
 
 function buildPrompt(s: RankedStock): string {
   const m = s.metrics;
@@ -172,22 +133,41 @@ function extractSources(content: Anthropic.ContentBlock[]): {
 }
 
 /**
- * One researched write-up. Streamed because a search-and-read turn is long
- * enough to risk an HTTP timeout on a plain request.
+ * One researched write-up, plus a comparison against the previous thesis when
+ * one exists. Streamed because a search-and-read turn is long enough to risk an
+ * HTTP timeout on a plain request.
  *
- * A failure here must never lose the factor write-up that already succeeded,
- * so every error is caught and recorded on the record instead of thrown.
+ * Monitoring rides along in the SAME call rather than a second one: the model
+ * already holds fresh search results, so comparing costs one extra section
+ * instead of a whole second round of searches.
+ *
+ * A failure here must never lose the factor write-up that already succeeded, so
+ * every error is caught and recorded on the record instead of thrown. Partial
+ * success is preserved too: if search hit an error but text came back, the text
+ * is kept and the error recorded alongside it.
  */
 async function researchOne(
   client: Anthropic,
   s: RankedStock,
-): Promise<Pick<StockAnalysis, "research" | "sources" | "researchError">> {
+  previous: { thesis: string; at: string } | null,
+): Promise<
+  Pick<
+    StockAnalysis,
+    | "research"
+    | "sources"
+    | "researchError"
+    | "report"
+    | "reportCompleteness"
+    | "monitor"
+    | "researchAt"
+  >
+> {
   try {
     const stream = client.messages.stream({
       model: MODEL,
-      max_tokens: 8000,
+      max_tokens: 12000,
       thinking: { type: "adaptive" },
-      system: RESEARCH_SYSTEM,
+      system: buildResearchSystem(previous),
       tools: [
         {
           type: "web_search_20260209",
@@ -198,10 +178,13 @@ async function researchOne(
       messages: [
         {
           role: "user",
-          content:
-            `Research ${s.name} (${s.ticker}), a ${s.sector} company currently ranked #${s.rank} ` +
-            `by the factor model. Today is ${new Date().toISOString().slice(0, 10)}. ` +
-            `Find what has happened recently that the filings-based score cannot capture.`,
+          content: buildResearchPrompt({
+            ticker: s.ticker,
+            name: s.name,
+            sector: s.sector,
+            rank: s.rank,
+            today: new Date().toISOString().slice(0, 10),
+          }),
         },
       ],
     });
@@ -212,15 +195,30 @@ async function researchOne(
     const { sources, error } = extractSources(response.content);
     const text = extractText(response.content);
     if (!text) return { researchError: error ?? "no research text returned" };
+
+    const report = parseReport(text);
+    const monitorText = previous ? parseMonitorText(text) : null;
     return {
       research: text,
       sources,
+      researchAt: new Date().toISOString(),
+      report,
+      reportCompleteness: reportCompleteness(report),
+      ...(monitorText
+        ? {
+            monitor: {
+              verdict: parseVerdict(monitorText),
+              text: monitorText,
+              previousAt: previous!.at,
+            },
+          }
+        : {}),
       ...(error ? { researchError: error } : {}),
     };
   } catch (err) {
     const msg =
       err instanceof Anthropic.APIError ? `${err.status}: ${err.message}` : String(err);
-    console.log(`  ${s.ticker}: research failed — ${msg}`);
+    console.log(`  ${s.ticker}: research failed - ${msg}`);
     return { researchError: msg };
   }
 }
@@ -315,6 +313,14 @@ async function main() {
     return;
   }
 
+  // Loaded BEFORE the research pass, not just before the merge: monitoring
+  // compares against the thesis already on disk, so the previous run's report
+  // has to be in hand while researching, not only when writing.
+  const outPath = path.join(DATA_DIR, "analysis.json");
+  const existing: AnalysisFile = fs.existsSync(outPath)
+    ? JSON.parse(fs.readFileSync(outPath, "utf8"))
+    : { generatedAt: "", model: MODEL, analyses: {} };
+
   const client = new Anthropic();
   const analyses = direct ? await runDirect(client, stocks) : await runBatch(client, stocks);
 
@@ -331,7 +337,18 @@ Researching the top ${targets.length} with web search...`);
     const byTicker = new Map(analyses.map((a) => [a.ticker, a]));
     for (const s of targets) {
       process.stdout.write(`  ${s.ticker}... `);
-      const extra = await researchOne(client, s);
+      // The thesis to compare against comes from whatever is already on disk
+      // for this ticker, so monitoring works across runs without extra state.
+      const prior = existing.analyses[s.ticker];
+      // Fall back to parsing the raw text: records written before sections
+      // existed still carry a THESIS heading, and monitoring should work on
+      // them rather than silently skipping a stock's whole research history.
+      const priorThesis =
+        prior?.report?.THESIS ?? (prior?.research ? parseReport(prior.research).THESIS : undefined);
+      const previousAt = prior?.researchAt ?? prior?.generatedAt;
+      const previous =
+        priorThesis && previousAt ? { thesis: priorThesis, at: previousAt.slice(0, 10) } : null;
+      const extra = await researchOne(client, s, previous);
       const target = byTicker.get(s.ticker);
       if (target) {
         Object.assign(target, extra);
@@ -346,16 +363,14 @@ Researching the top ${targets.length} with web search...`);
         });
       }
       console.log(
-        extra.research ? `ok, ${extra.sources?.length ?? 0} sources` : `skipped (${extra.researchError})`,
+        extra.research
+          ? `ok, ${extra.sources?.length ?? 0} sources, ${extra.reportCompleteness}% complete` +
+            (extra.monitor ? `, monitor: ${extra.monitor.verdict}` : ", first pass")
+          : `skipped (${extra.researchError})`,
       );
     }
   }
 
-  // Merge into any existing file so partial runs don't wipe older analyses
-  const outPath = path.join(DATA_DIR, "analysis.json");
-  const existing: AnalysisFile = fs.existsSync(outPath)
-    ? JSON.parse(fs.readFileSync(outPath, "utf8"))
-    : { generatedAt: "", model: MODEL, analyses: {} };
   // Merge field-wise, not record-wise. A run with research disabled (or one
   // where search failed) carries no research field, and assigning the whole
   // record would delete research gathered by an earlier run. Only overwrite
@@ -365,7 +380,16 @@ Researching the top ${targets.length} with web search...`);
     existing.analyses[a.ticker] = {
       ...prev,
       ...a,
-      ...(a.research ? {} : { research: prev?.research, sources: prev?.sources }),
+      ...(a.research
+        ? {}
+        : {
+            research: prev?.research,
+            sources: prev?.sources,
+            report: prev?.report,
+            reportCompleteness: prev?.reportCompleteness,
+            researchAt: prev?.researchAt,
+            monitor: prev?.monitor,
+          }),
     };
   }
   existing.generatedAt = new Date().toISOString();

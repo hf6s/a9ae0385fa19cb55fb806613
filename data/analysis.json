@@ -1,12 +1,13 @@
 {
-  "generatedAt": "2026-08-28T02:49:34.951Z",
+  "generatedAt": "2026-08-28T04:39:24.013Z",
   "model": "claude-opus-5",
   "analyses": {
     "ALL": {
       "ticker": "ALL",
-      "text": "Allstate's #5 rank (73.5/100) is powered overwhelmingly by two factors: a perfect Growth score of 100 and a near-top Value score of 91.9. The valuation case is straightforward on the surface — a P/E of 6.67, P/FCF of 6.94, and P/S of 1.01 all sit well below typical market multiples, and a 33.59% ROE alongside a 15.19% net margin suggests the underlying insurance business is generating strong returns on capital. Leverage looks conservative for a financial, with debt/equity of just 0.24. Momentum is respectable at 63.4, indicating the shares have participated in the market without being stretched.\n\nThe weak spot is Quality at 48.9 — merely middle-of-the-pack — which tempers the otherwise glowing profile. That matters because many quality inputs (ROIC, Piotroski F-Score, margins, coverage ratios) show as \"n/a\" here, common for insurers whose accounting doesn't map to standard industrial metrics, so the picture is incomplete.\n\nThe number that most warrants scrutiny is the 292% year-over-year revenue growth. For a mature $69B insurer, organic growth of that magnitude is implausible and almost certainly reflects a base effect or accounting reclassification (e.g., recovery from a prior period of heavy catastrophe losses) rather than a genuine tripling of the business. Since that figure is single-handedly earning the perfect Growth score, a reader should treat it skeptically and check whether the cheap valuation reflects a cyclical earnings peak in property-casualty underwriting rather than a durable bargain.",
-      "model": "claude-opus-4-8",
-      "generatedAt": "2026-08-25T04:58:57.269Z"
+      "text": "Allstate's rank is built on two pillars: Growth at 95.5 and Value at 90.6. The growth figure comes almost entirely from a reported 101.7% year-over-year revenue increase, which is an unusually large jump for a mature property-casualty insurer with a $69B market cap. For insurers, the top line blends premiums earned with investment results, so a doubling often reflects a swing from prior-year investment losses to gains, or a base-period distortion, rather than a doubling of policies in force. That is worth checking in the underlying statements before treating the growth score at face value. The value side is more straightforward: a 6.71 P/E, 6.98 P/FCF and 1.02 P/S are cheap on an absolute basis, though the 2.25x price-to-book is not especially low for the sector, which is a hint that the cheapness sits in earnings rather than in assets.\n\nQuality scores a middling 59.1 despite a 33.6% ROE, largely because several inputs — ROIC, operating and gross margins, Piotroski, Altman — are unavailable for this filer, so the score leans on a thin evidence base. Leverage looks conservative at 0.24 debt-to-equity. Momentum at 69.9 is solid but not extreme, so the stock is not obviously stretched after a run.\n\nThe main thing the numbers may be hiding is cyclicality. A 15.2% net margin and 33.6% ROE are strong for a P&C underwriter and typically appear late in a hard pricing cycle, after rate increases have outrun claims inflation. A single-digit P/E on peak-cycle earnings can look expensive if loss ratios normalize or catastrophe seasons turn severe. Reserve development and auto/home rate adequacy are the specifics to verify.",
+      "model": "claude-opus-5",
+      "generatedAt": "2026-08-28T04:39:00.332Z",
+      "researchError": "400: 400 {\"type\":\"error\",\"error\":{\"type\":\"invalid_request_error\",\"message\":\"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.\"},\"request_id\":\"req_011CeUXgjBbmms7WgFMN9qqC\"}"
     },
     "GOOG": {
       "ticker": "GOOG",
@@ -436,42 +437,34 @@
     },
     "HG": {
       "ticker": "HG",
-      "text": "Hamilton Insurance Group tops the ranking on the strength of a balanced profile rather than one dominant factor. Value at 92.3 is the biggest contributor: the stock trades at 1.25x book and 1.21x sales, with a price-to-free-cash-flow multiple of just 4.18 — unusually low even for a specialty insurer, and the kind of figure that suggests the market is discounting either the durability of recent underwriting results or the reinvestment rate on float. Growth backs that up, with revenue up 36% year over year, a pace that in insurance typically reflects rapid premium expansion rather than pricing alone. The balance sheet looks conservative, with debt/equity at 0.05, and Quality at 83.1 plus Momentum at 80.9 round out a stock that scores well on all four legs without needing any of them to be extreme.\n\nThe gaps in the data deserve attention. P/E, ROE, ROIC, margins, the Piotroski F-Score and the Altman Z-Score are all unavailable here, which means the Quality score is leaning on a narrower evidence base than the number implies — for an insurer, combined ratio and reserve development are the metrics that actually matter, and neither is captured. Fast premium growth can also mean writing business at looser terms, with losses surfacing several years later. Free cash flow growth of 10.9% is far slower than the 36% top line, worth reconciling. Momentum at 80.9 means the re-rating from a 1.25x book multiple is already partly underway, so the entry point is less depressed than the value score alone suggests.",
+      "text": "Hamilton Insurance Group tops the ranking on a broad-based profile rather than one dominant factor. Value is the strongest leg at 92.3, built on a 1.25 price-to-book, 1.21 price-to-sales and a 4.18 price-to-free-cash-flow — the last of which is unusually low even for a specialty insurer. Growth (73.8) reflects 36% year-over-year revenue growth, consistent with a company writing considerably more premium, while free cash flow grew a more modest 11%. Quality scores 83.1 largely on balance-sheet conservatism: debt-to-equity of 0.05 is minimal, and momentum at 80.9 indicates the shares have participated in the recent re-rating of the sector.\n\nThe caveat is how much of the underlying data is unavailable. There is no P/E, no ROE or ROIC, no margin data, no Piotroski or Altman score — so the Quality reading is resting on leverage and a narrow set of inputs rather than demonstrated returns on capital. For an insurer, the metrics that actually matter are the combined ratio, prior-year reserve development, and growth in book value per share; none of those feed this model. A 4x price-to-free-cash-flow figure at an insurer often reflects premium float inflows, which are liabilities in waiting, not owner earnings.\n\nTwo things worth checking independently: whether that 36% revenue growth came from favorable pricing or from expanding into riskier lines late in a hardening market, and how much of book value is sensitive to bond mark-to-market. Momentum this strong after a sector-wide run also raises the question of what is already priced in.",
       "model": "claude-opus-5",
-      "generatedAt": "2026-08-28T02:49:34.950Z",
-      "research": "THESIS: Hamilton's value creation runs through mix-shift rather than the reinsurance cycle. Q2 2026 net income was $144 million on a 21% annualized return on average equity and a 95% combined ratio, with gross premiums written up 17%, driven by casualty and specialty; AM Best upgraded Hamilton Select to A. That rating upgrade matters because Select is the US excess-and-surplus arm, and management expects the Select expansion to contribute more meaningfully to growth in 2027 as new team leads and underwriters onboard, with the push into middle-market E&S roughly doubling average premium per risk. Alongside that, capital is being returned: a $2.00 special dividend, $205.8 million, was paid March 30, 2026, and 7,102,791 shares have been repurchased for $163.3 million.\n\nWHAT MUST GO RIGHT: Select must scale into a hardening E&S market without importing casualty severity. Management reiterated low-double-digit full-year growth after 14% first-half growth and held attritional loss ratio guidance at 54.5% International, 56% Bermuda, 55% Group — those must hold as new business seasons. The Two Sigma partnership must keep earning: the fund is 38% of the $5.9 billion portfolio, $2.3 billion at March 31, 2026, contributing $115.5 million of Q2's $141.3 million investment income. Leadership continuity also matters after a run of changes; CEO Pina Albo's employment term was extended by the board.\n\nWHAT WOULD BREAK IT: The market is softening. January 2026 renewals saw \"accelerated softening,\" with property catastrophe down double digits; Guy Carpenter's global rate-on-line index fell 12%. Reserves are the second crack: a $16 million casualty reserve charge followed a scheduled deep dive, and $23.0 million of net unfavorable attritional prior-year development came partly from Baltimore Bridge and casualty. Catastrophe exposure is live — a $46 million Middle East conflict loss cost 7.8 loss-ratio points.\n\nFailure signals: repeated quarterly casualty strengthening beyond one-off deep dives, attritional guidance being raised, or a materially negative Two Sigma quarter turning earnings volatile. I could not verify any pending litigation or regulatory action against Hamilton.",
+      "generatedAt": "2026-08-28T04:38:36.555Z",
+      "research": "I'll research Hamilton Insurance Group's current situation.THESIS: Hamilton compounds book value by pairing an underwriting book increasingly weighted to US E&S and casualty/specialty with an unusual investment structure. Q2 2026 produced net income of $144 million, a 21% annualized return on average equity and a 95% combined ratio that absorbed roughly $50 million of catastrophe losses, with gross premiums written up 17%. Book value per share reached $28.91 with accumulated dividends of $2.00, taking the combined metric to $30.91 versus $17.35 at IPO — 78% growth since listing. The mechanism is mid-teens premium growth at a low-to-mid-90s combined ratio, plus an investment return most peers cannot replicate, retained and partly recycled through buybacks.\n\nWHAT MUST GO RIGHT: E&S and casualty rate adequacy must persist while Hamilton grows into it; management reaffirmed low double-digit growth and a low-to-mid-90s combined ratio, which requires reserve additions to stay absent. The Two Sigma engine must keep delivering — the fund returned 5.1% net in Q2 with investment income of $141 million — and the new governance must not impair liquidity. The AM Best upgrade of Hamilton Select to A must convert into wholesale broker shelf space rather than just optionality.\n\nWHAT COULD BREAK THE THESIS: adverse development on the 2022–2025 casualty years; a Two Sigma drawdown quarter that turns book value negative, as already happened once — BVPS fell 3.8% in Q1 2026 to $27.42; a soft-market year where GPW growth continues while margins do not; or a repeat of concentrated event losses like the $46 million Middle East conflict charge and 2025's $142.8 million California wildfire loss.\n\nGROWTH DRIVERS: organic, not acquisitive. FY2025 gross premiums written rose 20.7% to $2.9 billion with net premiums earned up 21.6%, and Q2 growth came from casualty and specialty classes. New units are being built, not bought: Mike Mulray was promoted to President of Hamilton Select effective July 1, 2026 as the company scales its wholesale-only distribution, and a Private Clients business launched within Hamilton Global Specialty under Jamie Keaney effective June 1, 2026. Per-share growth is aided by buybacks: 7,102,791 shares repurchased for $163.3 million under the 2024 program.\n\nMOAT: modest but strengthening at the edges. The durable advantages are Lloyd's, Bermuda, Ireland and US licences, and the Two Sigma relationship. The Select upgrade to A expands access to US specialty business. Against that, specialty underwriting is replicable capital; management itself describes a market that remains competitive amid social and economic inflation. Call it stable-to-strengthening in distribution, stable in underwriting.\n\nVALUATION: the stock traded at $36.01 near a 52-week high of $37.31, against $2.9 billion of shareholders' equity and $6.1 billion of cash and invested assets — roughly 1.25x the reported $28.91 book value. That embeds continuation of high-teens-plus returns on equity, not a discount. The market is paying up for the compounding, so disappointment is priced asymmetrically.\n\nCATALYSTS: Q3 2026 results (early November, date not yet confirmed); North Atlantic hurricane season through November; January 1 reinsurance renewals as the pricing tell; further buyback activity following program completion; any new special dividend, after the 2025 special dividend paid March 30, 2026.\n\nRISKS: the bear case is that Hamilton is a levered bet on two volatile inputs. Q2's 95% combined ratio missed the 89.2% consensus by 580 basis points and net income fell from $187 million a year earlier — the EPS beat came substantially from investments, not underwriting. The April 1, 2026 Investment Agreement requires Hamilton Re to maintain the lesser of $1.8 billion or 60% of net tangible assets in the fund, with a two-tier withdrawal structure and liquidity limits, formalising concentration and constraining exit. Growing casualty premium 17% into a competitive market is precisely how reserve problems are made.\n\nDATA CONFIDENCE: VERIFIED — Q2 and FY2025 results, BVPS series, buyback totals, Select's AM Best upgrade, the Two Sigma agreement terms, Mulray and Keaney appointments, the $36.01 price. INTERPRETATION — moat direction, the read that investment income carried the quarter, and the implied ~1.25x book. FORECAST — none offered. NOT VERIFIED — insider transactions, institutional ownership changes, analyst estimate revisions after Q2, exact Q3 report date, current reserve development detail, and the end-year of the CEO contract extension.\n\nTHESIS MONITOR: WHAT CHANGED — little in direction, more in texture. Book value per share and the Two Sigma contribution are unchanged from the previous note, confirming that thesis was current. New since: the Select upgrade to A, the completed $163.3 million buyback, the Private Clients launch, and reaffirmed guidance. Negative: the combined-ratio miss and lower year-on-year net income. Governance: the CEO's employment agreement was amended to extend her term — continuity, not a change. WHY IT MATTERS — the mix-shift leg of the thesis got harder evidence via the rating upgrade and Select leadership build; the margin leg got weaker evidence. WHETHER TEMPORARY OR STRUCTURAL — the cat losses are event-driven and temporary; the formalised Two Sigma minimum commitment is structural and makes the balance sheet permanently less conventional. WHETHER STILL VALID — yes; the four legs described previously are intact, with the caveat that the price now sits near its high rather than at a discount.\n\nVERDICT: unchanged",
       "sources": [
-        {
-          "title": "Hamilton Insurance Group, Ltd. - Form 8-K - FY2026",
-          "url": "https://www.sec.gov/Archives/edgar/data/0001593275/000159327526000055/hg991pressreleaseq126.htm"
-        },
-        {
-          "title": "Hamilton Insurance Group, Ltd. - Form 8-K - FY2026",
-          "url": "https://www.sec.gov/Archives/edgar/data/0001593275/000159327526000094/hg991pressreleaseq226.htm"
-        },
-        {
-          "title": "Hamilton Insurance Group Ltd (HG) Q1 2026 Earnings Call Highlights: Strong Net Income and ...",
-          "url": "https://finance.yahoo.com/markets/stocks/articles/hamilton-insurance-group-ltd-hg-070230526.html"
-        },
         {
           "title": "Hamilton Insurance Group, Ltd. (HG) Q2 FY2026 earnings call transcript",
           "url": "https://finance.yahoo.com/quote/HG/earnings/HG-Q2-2026-earnings_call-659114.html"
+        },
+        {
+          "title": "Hamilton Insurance (HG) Q2 2026 Earnings Call Transcript | The Motley Fool",
+          "url": "https://www.fool.com/earnings/call-transcripts/2026/08/13/hamilton-insurance-hg-q2-2026-earnings-call-transcript/"
         },
         {
           "title": "Hamilton Insurance Group Ltd (HG) (Q2 2026) Earnings Call Highlights: Strong Returns Amid ...",
           "url": "https://finance.yahoo.com/markets/stocks/articles/hamilton-insurance-group-ltd-hg-210624293.html"
         },
         {
+          "title": "Hamilton Insurance Group (NYSE:HG) Delivers Impressive Q2 CY2026 — TradingView News",
+          "url": "https://www.tradingview.com/news/stockstory:dac6484cf094b:0-hamilton-insurance-group-nyse-hg-delivers-impressive-q2-cy2026/"
+        },
+        {
           "title": "Hamilton Insurance Group (NYSE:HG) Delivers Impressive Q2 CY2026",
           "url": "https://finance.yahoo.com/markets/stocks/articles/hamilton-insurance-group-nyse-hg-212544720.html"
         },
         {
-          "title": "How Rising Revenue but Softer Profitability and Buybacks Will Impact Hamilton Insurance Group (HG) Investors - Simply Wall St News",
-          "url": "https://simplywall.st/stocks/us/insurance/nyse-hg/hamilton-insurance-group/news/how-rising-revenue-but-softer-profitability-and-buybacks-wil/amp"
-        },
-        {
-          "title": "Hamilton Insurance Group, Ltd. (HG) Q1 FY2026 earnings ...",
-          "url": "https://finance.yahoo.com/quote/HG/earnings/HG-Q1-2026-earnings_call-562139.html"
+          "title": "Hamilton Insurance (HG) Q2 2026 Earnings Call Transcript - AOL",
+          "url": "https://www.aol.com/articles/hamilton-insurance-hg-q2-2026-000347000.html"
         },
         {
           "title": "Hamilton Insurance Group (NYSE: HG) earns Q2 EPS of $1.42",
@@ -482,302 +475,251 @@
           "url": "https://www.businesswire.com/news/home/20260707836418/en/Hamilton-to-Report-Second-Quarter-2026-Financial-Results-on-August-6-2026"
         },
         {
-          "title": "Hamilton Reports 2026 Second Quarter Results - Insurance News | InsuranceNewsNet",
-          "url": "https://insurancenewsnet.com/oarticle/hamilton-reports-2026-second-quarter-results"
-        },
-        {
-          "title": "Hamilton Insurance Reports Q1 2026 Results - Bernews",
-          "url": "https://bernews.com/2026/05/hamilton-insurance-reports-q1-2026-results/"
-        },
-        {
-          "title": "Hamilton Insurance Group, Ltd. Q2 2026 Earnings Call Summary",
-          "url": "https://finance.yahoo.com/markets/stocks/articles/hamilton-insurance-group-ltd-q2-123000644.html"
-        },
-        {
-          "title": "Earnings call transcript: Hamilton Insurance Group posts Q2 2026 profit, shares edge up By Investing.com",
-          "url": "https://www.investing.com/news/transcripts/earnings-call-transcript-hamilton-insurance-group-posts-q2-2026-profit-shares-edge-up-93CH-4846919"
-        },
-        {
-          "title": "Hamilton Insurance Group",
-          "url": "https://www.hamiltongroup.com/"
-        },
-        {
-          "title": "Hamilton Insurance news - Reinsurance News",
-          "url": "https://www.reinsurancene.ws/tag/hamilton-insurance/"
-        },
-        {
-          "title": "Hamilton Establishes Casualty Reinsurance Sidecar | Hamilton",
-          "url": "https://www.hamiltongroup.com/press-release/hamilton-establishes-casualty-reinsurance-sidecar/"
-        },
-        {
-          "title": "Hamilton Re news - Reinsurance News",
-          "url": "https://www.reinsurancene.ws/tag/hamilton-re/"
-        },
-        {
-          "title": "hamilton to report first quarter 2026 financial results on april 30 2026",
-          "url": "https://www.barchart.com/story/news/851578/hamilton-to-report-first-quarter-2026-financial-results-on-april-30-2026"
-        },
-        {
-          "title": "Hamilton Insurance (HG) Q2 2026 Earnings Call Transcript | The Motley Fool",
-          "url": "https://www.fool.com/earnings/call-transcripts/2026/08/13/hamilton-insurance-hg-q2-2026-earnings-call-transcript/"
-        },
-        {
-          "title": "Hamilton Insurance Group (NYSE:HG) Delivers Impressive Q2 CY2026 — TradingView News",
-          "url": "https://www.tradingview.com/news/stockstory:dac6484cf094b:0-hamilton-insurance-group-nyse-hg-delivers-impressive-q2-cy2026/"
-        },
-        {
-          "title": "Hamilton Insurance (HG) Q2 2026 Earnings Call Transcript - AOL",
-          "url": "https://www.aol.com/articles/hamilton-insurance-hg-q2-2026-000347000.html"
-        },
-        {
-          "title": "FinancialContent - Hamilton Insurance Group (NYSE:HG) Delivers Impressive Q2 CY2026",
-          "url": "https://markets.financialcontent.com/stocks/article/stockstory-2026-8-6-hamilton-insurance-group-nysehg-delivers-impressive-q2-cy2026"
-        },
-        {
-          "title": "Hamilton Insurance Group (NYSE:HG) Delivers Impressive Q2 CY2026 - StockStory",
-          "url": "https://stockstory.org/us/stocks/nyse/hg/news/earnings/hamilton-insurance-group-nysehg-delivers-impressive-q2-cy2026"
-        },
-        {
-          "title": "# Hamilton Insurance Group announces leadership changes for 2026 By Investing.com",
-          "url": "https://www.investing.com/news/company-news/-hamilton-insurance-group-announces-leadership-changes-for-2026-93CH-4099087"
-        },
-        {
-          "title": "Hamilton announces new CEOs for Bermuda and London divisions | Reinsurance Business",
-          "url": "https://www.insurancebusinessmag.com/reinsurance/news/breaking-news/hamilton-announces-new-ceos-for-bermuda-and-london-divisions-539550.aspx"
-        },
-        {
-          "title": "Hamilton Insurance taps ex-AXIS CEO for board | Reinsurance Business",
-          "url": "https://www.insurancebusinessmag.com/reinsurance/news/breaking-news/hamilton-insurance-taps-exaxis-ceo-for-board-574546.aspx"
-        },
-        {
-          "title": "Executives on the Move at Hamilton, Markel - Carrier Management",
-          "url": "https://www.carriermanagement.com/news/2025/06/19/276452.htm"
-        },
-        {
-          "title": "Pina Albo Appointed CEO of Hamilton Insurance Group | Hamilton",
-          "url": "https://www.hamiltongroup.com/our-company/press-release/pina-albo-appointed-ceo-of-hamilton-insurance-group/"
-        },
-        {
-          "title": "Hamilton Insurance Group, Ltd. - Hamilton Insurance DAC Appoints Ross Reynolds as Chief Executive Officer",
-          "url": "https://investors.hamiltongroup.com/news/news-details/2024/Hamilton-Insurance-DAC-Appoints-Ross-Reynolds-as-Chief-Executive-Officer/default.aspx"
-        },
-        {
-          "title": "Hamilton Insurance Group reshuffles leadership team",
-          "url": "https://www.lifeinsuranceinternational.com/news/hamilton-insurance-group-reshuffles/"
-        },
-        {
-          "title": "Daws appointed Hamilton Re CEO, Baker to lead Global Specialty as Duffin named Group CUO - Reinsurance News",
-          "url": "https://www.reinsurancene.ws/daws-appointed-hamilton-re-ceo-baker-to-lead-global-specialty-as-duffin-named-group-cuo/"
-        },
-        {
-          "title": "Hamilton Announces Executive Appointments | Hamilton",
-          "url": "https://www.hamiltongroup.com/press-release/hamilton-announces-executive-appointments/"
-        },
-        {
-          "title": "HG - Analysts Lift Target Price for Hamilton Insurance Group Amid Improved Margins and Ongoing Share Buybacks",
-          "url": "https://simplywall.st/community/narratives/us/insurance/nyse-hg/hamilton-insurance-group/6k77ypz4-analysts-lift-target-price-for-hamilton-insurance-group-amid-improved-margins-and-ongoing-share-buybacks"
-        },
-        {
-          "title": "A Look At Hamilton Insurance Group (HG) Valuation After Q1 Results And Share Buyback Completion",
-          "url": "https://finance.yahoo.com/markets/stocks/articles/look-hamilton-insurance-group-hg-021847163.html"
-        },
-        {
           "title": "Should Hamilton’s Stronger Revenue and Aggressive Buybacks Require Action From Hamilton Insurance Group (HG) Investors? - Simply Wall St News",
           "url": "https://simplywall.st/stocks/us/insurance/nyse-hg/hamilton-insurance-group/news/should-hamiltons-stronger-revenue-and-aggressive-buybacks-re"
-        },
-        {
-          "title": "Hamilton Insurance Group, Ltd. - Form 8-K - FY2024",
-          "url": "https://www.sec.gov/Archives/edgar/data/1593275/000159327524000054/hamiltonannouncessharere.htm"
-        },
-        {
-          "title": "Is Hamilton Insurance Group (HG) Fairly Valued On Q2 Earnings, Upgrade And Buybacks? - Simply Wall St News",
-          "url": "https://simplywall.st/stocks/us/insurance/nyse-hg/hamilton-insurance-group/news/is-hamilton-insurance-group-hg-fairly-valued-on-q2-earnings"
-        },
-        {
-          "title": "How Investors Are Reacting To Hamilton Insurance Group (HG) Special Dividend And Share Buyback Move - Simply Wall St News",
-          "url": "https://simplywall.st/stocks/us/insurance/nyse-hg/hamilton-insurance-group/news/how-investors-are-reacting-to-hamilton-insurance-group-hg-sp"
-        },
-        {
-          "title": "Is Hamilton Insurance Group (HG) Fully Priced As Strong Q2 Results And Guidance Hold Up?",
-          "url": "https://finance.yahoo.com/markets/stocks/articles/hamilton-insurance-group-hg-fully-011051943.html"
-        },
-        {
-          "title": "Hamilton Insurance Q1 2026 slides: combined ratio hits 90%, profit surges By Investing.com",
-          "url": "https://www.investing.com/news/company-news/hamilton-insurance-q1-2026-slides-combined-ratio-hits-90-profit-surges-93CH-4653616"
-        },
-        {
-          "title": "Hamilton Insurance Reports Q2 2026 Results - Bernews",
-          "url": "https://bernews.com/2026/08/hamilton-insurance-reports-q2-2026-results/"
         },
         {
           "title": "Hamilton Reports 2026 Second Quarter Results",
           "url": "https://finance.yahoo.com/markets/stocks/articles/hamilton-reports-2026-second-quarter-202000551.html"
         },
         {
+          "title": "Hamilton’s quarterly profit drops 23% - Business Insurance",
+          "url": "https://www.businessinsurance.com/hamiltons-quarterly-profit-drops-23/"
+        },
+        {
+          "title": "Hamilton Insurance Group Ltd (HG) (Q2 2026) Earnings Call Highlights: Strong Returns Amid ...",
+          "url": "https://ca.finance.yahoo.com/news/hamilton-insurance-group-ltd-hg-210624293.html"
+        },
+        {
+          "title": "Hamilton Insurance Group Earnings: What To Look For From HG | FinancialContent",
+          "url": "https://www.financialcontent.com/article/stockstory-2026-8-5-hamilton-insurance-group-earnings-what-to-look-for-from-hg"
+        },
+        {
+          "title": "Hamilton Insurance Group (NYSE:HG) Delivers Impressive Q2 CY2026 - StockStory",
+          "url": "https://stockstory.org/us/stocks/nyse/hg/news/earnings/hamilton-insurance-group-nysehg-delivers-impressive-q2-cy2026"
+        },
+        {
+          "title": "Hamilton Insurance Group Earnings: What To Look For From HG - StockStory",
+          "url": "https://stockstory.org/us/stocks/nyse/hg/news/earnings/hamilton-insurance-group-earnings-what-to-look-for-from-hg-2"
+        },
+        {
+          "title": "Hamilton Insurance Group (HG) Has The Market Watching, But What Is Behind It?",
+          "url": "https://www.sahmcapital.com/news/content/hamilton-insurance-group-hg-has-the-market-watching-but-what-is-behind-it-2026-08-17"
+        },
+        {
           "title": "Hamilton Insurance Q2 2026 slides: 78% BVPS growth, cat losses weigh By Investing.com",
           "url": "https://www.investing.com/news/company-news/hamilton-insurance-q2-2026-slides-78-bvps-growth-cat-losses-weigh-93CH-4846947"
-        },
-        {
-          "title": "Hamilton Insurance Group, Ltd. - Form 10-K - FY2024",
-          "url": "https://www.sec.gov/Archives/edgar/data/1593275/000159327525000023/hg-20241231.htm"
-        },
-        {
-          "title": "Two Sigma Hamilton Fund, LLC D/A Filing | CapEdge",
-          "url": "https://capedge.com/filing/1596835/0001596835-26-000002/D-A"
-        },
-        {
-          "title": "January reinsurance renewal \"accelerated softening\" drives double-digit declines: Guy Carpenter - Artemis.bm",
-          "url": "https://www.artemis.bm/news/january-reinsurance-renewal-accelerated-softening-drives-double-digit-declines-guy-carpenter/"
-        },
-        {
-          "title": "Reinsurance Pricing Softens as Capital Grows and Losses Decline",
-          "url": "https://www.captive.com/news/reinsurance-pricing-softens-as-capital-grows-and-losses-decline"
-        },
-        {
-          "title": "Howden: Reinsurance rates reset at January 2026 renewals",
-          "url": "https://coverager.com/howden-reinsurance-rates-reset-at-january-2026-renewals/"
-        },
-        {
-          "title": "Property catastrophe rates fall 12% globally, in the US and APAC. 15% in Europe: Guy Carpenter - Artemis.bm",
-          "url": "https://www.artemis.bm/news/property-catastrophe-rates-fall-12-globally-in-the-us-and-apac-15-in-europe-guy-carpenter/"
-        },
-        {
-          "title": "Reinsurance prices show sharper softening than anticipated at Jan renewals: Moody’s Ratings - Artemis.bm",
-          "url": "https://www.artemis.bm/news/reinsurance-prices-show-sharper-softening-than-anticipated-at-jan-renewals-moodys-ratings/"
-        },
-        {
-          "title": "Property cat reinsurance down 14.7%, retrocession down 16.5% at Jan 2026 renewals: Howden Re - Artemis.bm",
-          "url": "https://www.artemis.bm/news/property-cat-reinsurance-down-14-7-retrocession-down-16-5-at-jan-2026-renewals-howden-re/"
-        },
-        {
-          "title": "Property cat reinsurance rates set to soften further in 2027: Fitch - Reinsurance News",
-          "url": "https://www.reinsurancene.ws/property-cat-reinsurance-rates-set-to-soften-further-in-2027-fitch/"
-        },
-        {
-          "title": "2026 renewal sees sharpest decline in risk-adjusted global property rates since 2014: Howden - Reinsurance News",
-          "url": "https://www.reinsurancene.ws/2026-renewal-sees-sharpest-decline-in-risk-adjusted-global-property-rates-since-2014-howden/"
-        },
-        {
-          "title": "2026 Construction Insurance Market - What Is Softening, What Is Still Hard, and What It Means for Your Renewal",
-          "url": "https://gritinsurance.com/blog/2026-construction-insurance-market-outlook"
-        },
-        {
-          "title": "Bermuda's 15% corporate tax unlikely to impact re/insurance hub status – S&P | Reinsurance Business",
-          "url": "https://www.insurancebusinessmag.com/reinsurance/news/breaking-news/bermudas-15-corporate-tax-unlikely-to-impact-reinsurance-hub-status--sandp-508958.aspx"
-        },
-        {
-          "title": "Hamilton Reports 2023 Fourth Quarter Results",
-          "url": "https://www.sec.gov/Archives/edgar/data/1593275/000159327524000021/pressreleaselive.htm"
-        },
-        {
-          "title": "Bermuda Corporate Income Tax (CIT) | EY - US",
-          "url": "https://www.ey.com/en_us/bbc/bermuda-corporate-income-tax"
-        },
-        {
-          "title": "Bermuda Corporate Income Tax: could it affect you? - PKF Littlejohn",
-          "url": "https://www.pkf-l.com/insights/bermuda-corporate-income-tax-could-affect-you/"
-        },
-        {
-          "title": "Corporate income tax unlikely to affect Bermuda re/insurers | Bermuda Re",
-          "url": "https://www.bermudareinsurancemagazine.com/corporate-income-tax-unlikely-to-affect-bermuda-reinsurers"
-        },
-        {
-          "title": "Bermuda - Corporate - Taxes on corporate income",
-          "url": "https://taxsummaries.pwc.com/bermuda/corporate/taxes-on-corporate-income"
-        },
-        {
-          "title": "Bermuda Enacts a Corporate Income Tax",
-          "url": "https://www.soa.org/sections/taxation/taxation-newsletter/2024/tax-2024-11-degregorio/"
-        },
-        {
-          "title": "Bermuda grapples with implications of Corporate Income Tax advent | Bermuda Re",
-          "url": "https://www.bermudareinsurancemagazine.com/bermuda-grapples-with-implications-of-cit"
-        },
-        {
-          "title": "Bermuda enacts a corporate income tax: PwC",
-          "url": "https://www.pwc.com/us/en/services/tax/library/pwc-bermuda-enacts-a-corporate-income-tax.html"
-        },
-        {
-          "title": "4Q23 Press Release",
-          "url": "https://s203.q4cdn.com/992304269/files/doc_news/2024/4Q23-Press-Release.pdf"
-        },
-        {
-          "title": "Hamilton Insurance Group, Ltd. - Form 10-K - FY2025",
-          "url": "https://www.sec.gov/Archives/edgar/data/1593275/000159327526000021/hg-20251231.htm"
         },
         {
           "title": "Hamilton Insurance Group, Ltd. - Hamilton Reports 2026 First Quarter Results",
           "url": "https://investors.hamiltongroup.com/news/news-details/2026/Hamilton-Reports-2026-First-Quarter-Results/default.aspx"
         },
         {
-          "title": "Hamilton Insurance Group, Ltd. - Form S-1 - FY2023",
-          "url": "https://www.sec.gov/Archives/edgar/data/1593275/000162828023034427/hamilton-sx1.htm"
+          "title": "Hamilton Insurance Group, Ltd. - Hamilton Reports $577 million of Net Income, 24% Growth in Book Value Per Share, and Declares Special Dividend",
+          "url": "https://investors.hamiltongroup.com/news/news-details/2026/Hamilton-Reports-577-million-of-Net-Income-24-Growth-in-Book-Value-Per-Share-and-Declares-Special-Dividend/default.aspx"
         },
         {
-          "title": "The Baltimore Bridge bill grew 87% - and Hamilton's results show reinsurers are still absorbing it",
-          "url": "https://www.insurancebusinessmag.com/reinsurance/news/breaking-news/the-baltimore-bridge-bill-grew-87--and-hamiltons-results-show-reinsurers-are-still-absorbing-it-585489.aspx"
+          "title": "Hamilton Insurance earnings up next as book value gains loom By Investing.com",
+          "url": "https://ca.investing.com/news/earnings/hamilton-insurance-earnings-up-next-as-book-value-gains-loom-93CH-4783952"
         },
         {
-          "title": "Earnings call transcript: Hamilton Insurance Group posts Q2 2026 profit, shares edge up By Investing.com",
-          "url": "https://m.investing.com/news/transcripts/earnings-call-transcript-hamilton-insurance-group-posts-q2-2026-profit-shares-edge-up-93CH-4846919?ampMode=1"
+          "title": "FinancialContent - Hamilton Insurance Group (NYSE:HG) Delivers Impressive Q2 CY2026",
+          "url": "https://markets.financialcontent.com/stocks/article/stockstory-2026-8-6-hamilton-insurance-group-nysehg-delivers-impressive-q2-cy2026"
         },
         {
-          "title": "NFP, an Aon Company, Acquires The Hamilton Group, LLC, Expanding P&C Capabilities in U.S. Northeast Region",
-          "url": "https://aon.mediaroom.com/2026-04-14-NFP,-an-Aon-Company,-Acquires-The-Hamilton-Group,-LLC,-Expanding-P-C-Capabilities-in-U-S-Northeast-Region"
+          "title": "Hamilton Insurance Group, Ltd. - Form 10-Q - FY2026",
+          "url": "https://www.sec.gov/Archives/edgar/data/0001593275/000159327526000064/hg-20260331.htm"
         },
         {
-          "title": "NFP Acquires The Hamilton Group LLC | NFP",
-          "url": "https://www.nfp.com/about-nfp/newsroom/nfp-acquires-the-hamilton-group-llc/"
+          "title": "hg-20260402",
+          "url": "https://www.sec.gov/Archives/edgar/data/1593275/000159327526000046/hg-20260402.htm"
         },
         {
-          "title": "Hamilton Insurance Group 2026 Company Profile: Stock Performance & Earnings | PitchBook",
-          "url": "https://pitchbook.com/profiles/company/85169-26"
+          "title": "Hamilton Insurance Group updates investment agreement with Two Sigma Hamilton Fund By Investing.com",
+          "url": "https://www.investing.com/news/sec-filings/hamilton-insurance-group-updates-investment-agreement-with-two-sigma-hamilton-fund-93CH-4596708"
         },
         {
-          "title": "Hamilton Insurance Group Net Acquisitions/Divestitures 2021-2026 | HG | MacroTrends",
-          "url": "https://www.macrotrends.net/stocks/charts/HG/hamilton-insurance-group/net-acquisitions-divestitures"
+          "title": "Hamilton Insurance Restructures Two Sigma Investment Agreement - The Globe and Mail",
+          "url": "https://www.theglobeandmail.com/investing/markets/stocks/HG/pressreleases/1140403/hamilton-insurance-restructures-two-sigma-investment-agreement/"
         },
         {
-          "title": "Hamilton Group - 2026 Company Profile, Team, Funding & Competitors - Tracxn",
-          "url": "https://tracxn.com/d/companies/hamilton-group/__3LDKCR5-5S3Q16AH_X8-hpn5QOrPVYu9jeREB_JsuUc"
+          "title": "Hamilton Insurance Group, Ltd. - Form 10-K - FY2024",
+          "url": "https://www.sec.gov/Archives/edgar/data/1593275/000159327525000023/hg-20241231.htm"
         },
         {
-          "title": "Hamilton Insurance Group, Ltd. - Investor Relations",
-          "url": "https://investors.hamiltongroup.com/overview/default.aspx"
+          "title": "Hamilton Insurance Group, Ltd. - Form 10-K - FY2023",
+          "url": "https://www.sec.gov/Archives/edgar/data/1593275/000159327524000028/hg-20231231.htm"
         },
         {
-          "title": "Hamilton Insurance Group (HG) Following Leadership Moves And Value Calls Looks Fully Valued",
-          "url": "https://www.sahmcapital.com/news/content/hamilton-insurance-group-hg-following-leadership-moves-and-value-calls-looks-fully-valued-2026-07-04"
+          "title": "Hamilton Insurance Reports Q2 2026 Results - Bernews",
+          "url": "https://bernews.com/2026/08/hamilton-insurance-reports-q2-2026-results/"
         },
         {
-          "title": "Atlantic hurricane season outlook 2026 | Allianz Commercial",
-          "url": "https://commercial.allianz.com/news-and-insights/expert-risk-articles/atlantic-hurricane-season-outlook-2026.html"
+          "title": "Hamilton Insurance Extends CEO Contract, Affirms Growth Path - TipRanks.com",
+          "url": "https://www.tipranks.com/news/company-announcements/hamilton-insurance-extends-ceo-contract-affirms-growth-path"
         },
         {
-          "title": "2026 hurricane season opens with a rare forecast and a familiar warning | Insurance Business",
-          "url": "https://www.insurancebusinessmag.com/us/news/catastrophe/2026-hurricane-season-opens-with-a-rare-forecast-and-a-familiar-warning-578916.aspx"
+          "title": "Hamilton Insurance extends CEO Giuseppina C. Albo's employment through Dec. 31, 2029 — TradingView News",
+          "url": "https://www.tradingview.com/news/tradingview:2678535bc892c:0-hamilton-insurance-extends-ceo-giuseppina-c-albo-s-employment-through-dec-31-2029/"
         },
         {
-          "title": "Below-Average Hurricane Season Forecast for 2026, but Severity Risk Remains Elevated - Risk & Insurance : Risk & Insurance",
-          "url": "https://riskandinsurance.com/below-average-hurricane-season-forecast-for-2026-but-severity-risk-remains-elevated/"
+          "title": "Hamilton sees premium growth and profit of $144m",
+          "url": "https://www.royalgazette.com/reinsurance/business/article/20260806/hamilton-sees-premium-growth-and-profit-of-144m/"
         },
         {
-          "title": "A look ahead to hurricane season 2026 | The Insurer",
-          "url": "https://www.theinsurer.com/ti/viewpoint/a-look-ahead-to-hurricane-season-2026-2026-06-22-2/"
+          "title": "Hamilton Reports 2026 Second Quarter Results - Insurance News | InsuranceNewsNet",
+          "url": "https://insurancenewsnet.com/oarticle/hamilton-reports-2026-second-quarter-results"
         },
         {
-          "title": "A Look Ahead to Hurricane Season 2026",
-          "url": "https://www.amwins.com/resources-and-insights/market-insights/article/a-look-ahead-to-hurricane-season-2026"
+          "title": "Hamilton Insurance Group, Ltd. Contracts & Agreements | Justia",
+          "url": "https://contracts.justia.com/companies/hamilton-insurance-group-ltd-102352/"
         },
         {
-          "title": "NOAA’s ‘quieter’ 2026 hurricane outlook offers little relief for insurers | Insurance Business",
-          "url": "https://www.insurancebusinessmag.com/us/news/breaking-news/noaas-quieter-2026-hurricane-outlook-offers-little-relief-for-insurers-576235.aspx"
+          "title": "Pina Albo | AFL-CIO",
+          "url": "https://aflcio.org/paywatch/HG"
         },
         {
-          "title": "2026 Atlantic hurricane season outlook points to a more balanced year",
-          "url": "https://www.howdenre.com/news-insights/2026-atlantic-hurricane-season-outlook-points-more-balanced-year"
+          "title": "Pina Albo, Hamilton Insurance Group Ltd: Profile and Biography - Bloomberg Markets",
+          "url": "https://www.bloomberg.com/profile/person/16467305"
+        },
+        {
+          "title": "Pina Albo - Hamilton | LinkedIn",
+          "url": "https://www.linkedin.com/in/pina-albo/"
+        },
+        {
+          "title": "AM Best Upgrades Credit Ratings of Hamilton Select Insurance Inc.; Affirms Credit Ratings of Remaining Members of Hamilton Insurance Group, Ltd.",
+          "url": "https://news.ambest.com/PR/PressContent.aspx?refnum=37292&altsrc=2"
+        },
+        {
+          "title": "AM Best Upgrades Financial Strength Rating to “A” (Excellent ...",
+          "url": "https://s203.q4cdn.com/992304269/files/doc_news/AM-Best-Upgrades-Financial-Strength-Rating-to-A-Excellent-for-Hamilton-Select-2026.pdf"
+        },
+        {
+          "title": "Hamilton Select’s rating upgraded to A by AM Best | E&S Insurer",
+          "url": "https://www.theinsurer.com/e-and-s/news/hamilton-selects-rating-upgraded-to-a-by-am-best-2026-05-12/"
+        },
+        {
+          "title": "AM Best Upgrades Credit Ratings of Hamilton Select Insurance Inc.; Affirms Credit Ratings of Remaining Members of Hamilton Insurance Group, Ltd. | Morningstar",
+          "url": "https://www.morningstar.com/news/business-wire/20260512757650/am-best-upgrades-credit-ratings-of-hamilton-select-insurance-inc-affirms-credit-ratings-of-remaining-members-of-hamilton-insurance-group-ltd"
+        },
+        {
+          "title": "AM Best Upgrades Financial Strength Rating to “A” (Excellent) for Hamilton Select | Morningstar",
+          "url": "https://www.morningstar.com/news/business-wire/20260512582470/am-best-upgrades-financial-strength-rating-to-a-excellent-for-hamilton-select"
+        },
+        {
+          "title": "AM Best Upgrades Financial Strength Rating to “A” (Excellent) for Hamilton Select | Hamilton",
+          "url": "https://www.hamiltongroup.com/press-release/am-best-upgrades-financial-strength-rating-to-a-excellent-for-hamilton-select/"
+        },
+        {
+          "title": "AM Best Upgrades Financial Strength Rating to “A” (Excellent) for Hamilton Select",
+          "url": "https://www.businesswire.com/news/home/20260512582470/en/AM-Best-Upgrades-Financial-Strength-Rating-to-A-Excellent-for-Hamilton-Select"
+        },
+        {
+          "title": "AM Best Upgrades Credit Ratings of Hamilton Select Insurance Inc.; Affirms Credit Ratings of Remaining Members of Hamilton Insurance Group, Ltd.",
+          "url": "https://www.businesswire.com/news/home/20260512757650/en/AM-Best-Upgrades-Credit-Ratings-of-Hamilton-Select-Insurance-Inc.-Affirms-Credit-Ratings-of-Remaining-Members-of-Hamilton-Insurance-Group-Ltd."
+        },
+        {
+          "title": "Hamilton Select Insurance gets ratings upgrade from AM Best - Reinsurance News",
+          "url": "https://www.reinsurancene.ws/hamilton-select-insurance-gets-ratings-upgrade-from-am-best/"
+        },
+        {
+          "title": "AM Best Upgrades Financial Strength Rating to “A” (Excellent) for Hamilton Select | HG Stock News",
+          "url": "https://www.stocktitan.net/news/HG/am-best-upgrades-financial-strength-rating-to-a-excellent-for-xj641bhzd0vr.html"
+        },
+        {
+          "title": "Hamilton Insurance grants 18,284 shares to executive | HG SEC Filing - Form 4",
+          "url": "https://www.stocktitan.net/sec-filings/HG/form-4-hamilton-insurance-group-ltd-insider-trading-activity-98116e428cc4.html"
+        },
+        {
+          "title": "Hamilton Insurance grants RSUs to general counsel | HG SEC Filing - Form 4",
+          "url": "https://www.stocktitan.net/sec-filings/HG/form-4-hamilton-insurance-group-ltd-insider-trading-activity-9a70ccffb849.html"
+        },
+        {
+          "title": "[144] Hamilton Insurance Group, Ltd. SEC Filing | HG SEC Filing - Form 144",
+          "url": "https://www.stocktitan.net/sec-filings/HG/144-hamilton-insurance-group-ltd-sec-filing-4a42e8e1f4e4.html"
+        },
+        {
+          "title": "[Form 4] Hamilton Insurance Group, Ltd. Insider Trading Activity | HG Insider Trading",
+          "url": "https://www.stocktitan.net/sec-filings/HG/form-4-hamilton-insurance-group-ltd-insider-trading-activity-b29483ea3a5f.html"
+        },
+        {
+          "title": "Hamilton Insurance Group (NYSE: HG) treasurer sells 3,030 Class B shares",
+          "url": "https://www.stocktitan.net/sec-filings/HG/form-4-hamilton-insurance-group-ltd-insider-trading-activity-ee73616b5b72.html"
+        },
+        {
+          "title": "Hamilton Insurance (NYSE: HG) CEO gifts 401,720 Class B shares",
+          "url": "https://www.stocktitan.net/sec-filings/HG/form-4-hamilton-insurance-group-ltd-insider-trading-activity-187177ed593c.html"
+        },
+        {
+          "title": "Hamilton Insurance (NYSE: HG) director’s trust sells 37,300 Class B shares",
+          "url": "https://www.stocktitan.net/sec-filings/HG/form-4-hamilton-insurance-group-ltd-insider-trading-activity-8f0b8dcf5f9d.html"
+        },
+        {
+          "title": "Hamilton Insurance director entity sells 12,700 HG shares | HG Insider Trading",
+          "url": "https://www.stocktitan.net/sec-filings/HG/form-4-hamilton-insurance-group-ltd-insider-trading-activity-e6489df64f14.html"
+        },
+        {
+          "title": "hamilton insurance group nysehg shares gap down after insider selling 2025 06 05",
+          "url": "https://www.marketbeat.com/instant-alerts/hamilton-insurance-group-nysehg-shares-gap-down-after-insider-selling-2025-06-05"
+        },
+        {
+          "title": "hamilton insurance group ltd nysehg insider sells 14274000 in stock 2025 08 14",
+          "url": "https://www.marketbeat.com/instant-alerts/hamilton-insurance-group-ltd-nysehg-insider-sells-14274000-in-stock-2025-08-14"
+        },
+        {
+          "title": "HG - Analysts Lift Target Price for Hamilton Insurance Group Amid Improved Margins and Ongoing Share Buybacks",
+          "url": "https://simplywall.st/community/narratives/us/insurance/nyse-hg/hamilton-insurance-group/6k77ypz4-analysts-lift-target-price-for-hamilton-insurance-group-amid-improved-margins-and-ongoing-share-buybacks"
+        },
+        {
+          "title": "Hamilton Insurance Group (HG) Stock Forecast & Price Targets",
+          "url": "https://stockanalysis.com/stocks/hg/forecast/"
+        },
+        {
+          "title": "What is the current Price Target and Forecast for Hamilton Insurance Group, Ltd. (HG)",
+          "url": "https://www.zacks.com/stock/research/HG/price-target-stock-forecast"
+        },
+        {
+          "title": "FinancialContent - Hamilton Insurance Group Earnings: What To Look For From HG",
+          "url": "https://markets.financialcontent.com/stocks/article/stockstory-2026-8-5-hamilton-insurance-group-earnings-what-to-look-for-from-hg"
+        },
+        {
+          "title": "HG Stock Forecast 2026-2027 - Hamilton Insurance Group ...",
+          "url": "https://tickernerd.com/stock/hg-forecast/"
+        },
+        {
+          "title": "Free Trial",
+          "url": "https://www.marketbeat.com/stocks/NYSE/HG/forecast/"
+        },
+        {
+          "title": "www.benzinga.com",
+          "url": "https://www.benzinga.com/stock/HG/ratings"
         }
-      ]
+      ],
+      "report": {
+        "THESIS": "Hamilton compounds book value by pairing an underwriting book increasingly weighted to US E&S and casualty/specialty with an unusual investment structure. Q2 2026 produced net income of $144 million, a 21% annualized return on average equity and a 95% combined ratio that absorbed roughly $50 million of catastrophe losses, with gross premiums written up 17%. Book value per share reached $28.91 with accumulated dividends of $2.00, taking the combined metric to $30.91 versus $17.35 at IPO — 78% growth since listing. The mechanism is mid-teens premium growth at a low-to-mid-90s combined ratio, plus an investment return most peers cannot replicate, retained and partly recycled through buybacks.",
+        "WHAT MUST GO RIGHT": "E&S and casualty rate adequacy must persist while Hamilton grows into it; management reaffirmed low double-digit growth and a low-to-mid-90s combined ratio, which requires reserve additions to stay absent. The Two Sigma engine must keep delivering — the fund returned 5.1% net in Q2 with investment income of $141 million — and the new governance must not impair liquidity. The AM Best upgrade of Hamilton Select to A must convert into wholesale broker shelf space rather than just optionality.",
+        "WHAT COULD BREAK THE THESIS": "adverse development on the 2022–2025 casualty years; a Two Sigma drawdown quarter that turns book value negative, as already happened once — BVPS fell 3.8% in Q1 2026 to $27.42; a soft-market year where GPW growth continues while margins do not; or a repeat of concentrated event losses like the $46 million Middle East conflict charge and 2025's $142.8 million California wildfire loss.",
+        "GROWTH DRIVERS": "organic, not acquisitive. FY2025 gross premiums written rose 20.7% to $2.9 billion with net premiums earned up 21.6%, and Q2 growth came from casualty and specialty classes. New units are being built, not bought: Mike Mulray was promoted to President of Hamilton Select effective July 1, 2026 as the company scales its wholesale-only distribution, and a Private Clients business launched within Hamilton Global Specialty under Jamie Keaney effective June 1, 2026. Per-share growth is aided by buybacks: 7,102,791 shares repurchased for $163.3 million under the 2024 program.",
+        "MOAT": "modest but strengthening at the edges. The durable advantages are Lloyd's, Bermuda, Ireland and US licences, and the Two Sigma relationship. The Select upgrade to A expands access to US specialty business. Against that, specialty underwriting is replicable capital; management itself describes a market that remains competitive amid social and economic inflation. Call it stable-to-strengthening in distribution, stable in underwriting.",
+        "VALUATION": "the stock traded at $36.01 near a 52-week high of $37.31, against $2.9 billion of shareholders' equity and $6.1 billion of cash and invested assets — roughly 1.25x the reported $28.91 book value. That embeds continuation of high-teens-plus returns on equity, not a discount. The market is paying up for the compounding, so disappointment is priced asymmetrically.",
+        "CATALYSTS": "Q3 2026 results (early November, date not yet confirmed); North Atlantic hurricane season through November; January 1 reinsurance renewals as the pricing tell; further buyback activity following program completion; any new special dividend, after the 2025 special dividend paid March 30, 2026.",
+        "RISKS": "the bear case is that Hamilton is a levered bet on two volatile inputs. Q2's 95% combined ratio missed the 89.2% consensus by 580 basis points and net income fell from $187 million a year earlier — the EPS beat came substantially from investments, not underwriting. The April 1, 2026 Investment Agreement requires Hamilton Re to maintain the lesser of $1.8 billion or 60% of net tangible assets in the fund, with a two-tier withdrawal structure and liquidity limits, formalising concentration and constraining exit. Growing casualty premium 17% into a competitive market is precisely how reserve problems are made.",
+        "DATA CONFIDENCE": "VERIFIED — Q2 and FY2025 results, BVPS series, buyback totals, Select's AM Best upgrade, the Two Sigma agreement terms, Mulray and Keaney appointments, the $36.01 price. INTERPRETATION — moat direction, the read that investment income carried the quarter, and the implied ~1.25x book. FORECAST — none offered. NOT VERIFIED — insider transactions, institutional ownership changes, analyst estimate revisions after Q2, exact Q3 report date, current reserve development detail, and the end-year of the CEO contract extension."
+      },
+      "reportCompleteness": 100,
+      "monitor": {
+        "verdict": "unchanged",
+        "text": "WHAT CHANGED — little in direction, more in texture. Book value per share and the Two Sigma contribution are unchanged from the previous note, confirming that thesis was current. New since: the Select upgrade to A, the completed $163.3 million buyback, the Private Clients launch, and reaffirmed guidance. Negative: the combined-ratio miss and lower year-on-year net income. Governance: the CEO's employment agreement was amended to extend her term — continuity, not a change. WHY IT MATTERS — the mix-shift leg of the thesis got harder evidence via the rating upgrade and Select leadership build; the margin leg got weaker evidence. WHETHER TEMPORARY OR STRUCTURAL — the cat losses are event-driven and temporary; the formalised Two Sigma minimum commitment is structural and makes the balance sheet permanently less conventional. WHETHER STILL VALID — yes; the four legs described previously are intact, with the caveat that the price now sits near its high rather than at a discount.\n\nVERDICT: unchanged",
+        "previousAt": "2026-08-28"
+      },
+      "researchError": "undefined: {\"type\":\"error\",\"error\":{\"details\":null,\"type\":\"invalid_request_error\",\"message\":\"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.\"},\"request_id\":\"req_011CeUXeztc1Aw5xTN5HouyV\"}"
+    },
+    "HCI": {
+      "ticker": "HCI",
+      "text": "HCI Group's #2 ranking rests on three of the four factors pulling in the same direction. Growth (94.9) is the standout, driven by roughly 101% year-over-year revenue growth — an unusually large jump for a property insurer, and one that typically reflects policy assumption deals, rate increases in the Florida market, or the consolidation of a growing segment like TypTap rather than steady organic expansion. Quality (88.2) is anchored by a 28.7% ROE and a 33.2% net margin, both exceptional for insurance and a sign that underwriting results and reserve development have been running favorably. Value (89.3) reflects a 7.3x P/E, 2.1x P/B and a striking 4.95x price-to-free-cash-flow, so the market is not paying up for that growth or profitability.\n\nThe tension is Momentum at 37.5. The stock is in the bottom half of the universe on price trend even as fundamentals score near the top — the market is discounting something the trailing numbers don't capture, whether that's the durability of margins, catastrophe exposure, or the fading of a one-time revenue step-up.\n\nWorth checking: Florida homeowners' insurers are inherently lumpy, and a single major hurricane season can reverse a 33% net margin quickly, making the low P/E a reflection of cyclical peak earnings rather than a discount. Leverage, reserve adequacy and reinsurance costs are all listed as n/a here, and for an insurer those are central — the Quality score is being carried almost entirely by ROE and margin without a balance-sheet check behind it.",
+      "model": "claude-opus-5",
+      "generatedAt": "2026-08-28T04:38:45.474Z",
+      "researchError": "400: 400 {\"type\":\"error\",\"error\":{\"type\":\"invalid_request_error\",\"message\":\"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.\"},\"request_id\":\"req_011CeUXghozwLZAX95SY4rKo\"}"
     }
   }
 }

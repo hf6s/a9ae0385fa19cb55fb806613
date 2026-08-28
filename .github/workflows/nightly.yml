@@ -26,7 +26,10 @@ jobs:
         env:
           FINNHUB_API_KEY: ${{ secrets.FINNHUB_API_KEY }}
       - name: Claude analysis of top 20
-        run: npm run analyze
+        # Pinned explicitly. This path used the bare default, so a change to
+        # RESEARCH_TOP_DEFAULT was the only thing standing between a manual
+        # dispatch here and a larger search bill than the maintained path.
+        run: npm run analyze -- --research-top 3
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
       - name: Commit updated data

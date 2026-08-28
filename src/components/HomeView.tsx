@@ -22,34 +22,118 @@ export interface Spotlight {
   /** Web-researched thesis. Null when research was off or failed. */
   research: string | null;
   sources: ResearchSource[];
+  /** The same research split into its labelled sections. */
+  report: Record<string, string> | null;
+  /** Share of the nine sections filled in, 0-100. */
+  reportCompleteness: number | null;
+  /** When the research was gathered, which may be older than the write-up. */
+  researchAt: string | null;
+  /** Comparison against the previous thesis; null on a first pass. */
+  monitor: { verdict: string; text: string; previousAt: string } | null;
 }
 
 const fmt = (v: number | null | undefined, suffix = "") =>
   v === null || v === undefined ? "—" : `${Math.round(v * 100) / 100}${suffix}`;
 
 
+/** Section order for display, matching the order the prompt asks for. */
+const SECTION_ORDER = [
+  "THESIS",
+  "WHAT MUST GO RIGHT",
+  "WHAT COULD BREAK THE THESIS",
+  "GROWTH DRIVERS",
+  "MOAT",
+  "VALUATION",
+  "CATALYSTS",
+  "RISKS",
+  "DATA CONFIDENCE",
+];
+
 /**
- * The researched thesis, with the pages it came from.
+ * How a monitor verdict is presented. "review" is styled as a caution rather
+ * than as neutral, because the parser falls back to it whenever a verdict
+ * cannot be read: an unreadable result must look like something to check.
+ */
+const VERDICT_META: Record<string, { label: string; cls: string }> = {
+  improved: { label: "Thesis strengthened", cls: "v-good" },
+  unchanged: { label: "Thesis unchanged", cls: "v-neutral" },
+  review: { label: "Needs review", cls: "v-warn" },
+  deteriorated: { label: "Thesis deteriorated", cls: "v-bad" },
+};
+
+/**
+ * The researched report, kept visually and structurally separate from the
+ * quantitative score above it.
  *
- * Kept visually distinct from the factor write-up because it is a different
- * kind of claim: the write-up interprets numbers we computed, this reads the
- * open web. Sources are listed so a reader can check rather than trust, which
- * is the only honest way to show model-written research.
+ * Two different kinds of claim sit on this page and a reader must be able to
+ * tell them apart. The factor scores interpret numbers computed from filings
+ * by their filing date, and can be backtested. This panel reads the live web,
+ * cannot be backtested, and does not move the rank by a single place. Whether
+ * it improves returns is unmeasured, which is why the footer says so rather
+ * than implying an edge.
  */
 function ResearchPanel({
   research,
   sources,
+  report,
+  completeness,
+  researchAt,
+  monitor,
 }: {
   research: string | null;
   sources: ResearchSource[];
+  report: Record<string, string> | null;
+  completeness: number | null;
+  researchAt: string | null;
+  monitor: { verdict: string; text: string; previousAt: string } | null;
 }) {
   if (!research) return null;
+  const sections = SECTION_ORDER.filter((k) => report?.[k]);
+  const v = monitor ? (VERDICT_META[monitor.verdict] ?? VERDICT_META.review) : null;
+
   return (
     <div className="research">
-      <div className="label">Research · what the score cannot see</div>
-      {research.split(/\n\s*\n/).map((para, i) => (
-        <p key={i}>{para}</p>
-      ))}
+      <div className="research-head">
+        <div className="label">Research · what the score cannot see</div>
+        <span className="research-conf">
+          {researchAt && <>gathered {researchAt.slice(0, 10)} · </>}
+          {completeness !== null && (
+            <span title="Share of the nine report sections filled in">
+              {completeness}% complete
+            </span>
+          )}
+        </span>
+      </div>
+
+      {monitor && v && (
+        <div className={`monitor ${v.cls}`}>
+          <div className="monitor-head">
+            <strong>{v.label}</strong>
+            <span className="name-dim">vs thesis of {monitor.previousAt}</span>
+          </div>
+          {monitor.text.split(/\n\s*\n/).map((para, i) => (
+            <p key={i}>{para}</p>
+          ))}
+          <p className="name-dim monitor-note">
+            An alert is a reason to look, not a decision to act.
+          </p>
+        </div>
+      )}
+
+      {sections.length > 0 ? (
+        sections.map((key) => (
+          <div className="research-section" key={key}>
+            <div className="research-section-head">{key}</div>
+            {report![key].split(/\n\s*\n/).map((para, i) => (
+              <p key={i}>{para}</p>
+            ))}
+          </div>
+        ))
+      ) : (
+        // Older records, written before sections existed, still render.
+        research.split(/\n\s*\n/).map((para, i) => <p key={i}>{para}</p>)
+      )}
+
       {sources.length > 0 && (
         <details className="research-sources">
           <summary>{sources.length} sources consulted</summary>
@@ -64,9 +148,11 @@ function ResearchPanel({
           </ul>
         </details>
       )}
+
       <p className="name-dim research-note">
-        Written by a model reading the live web. It can be wrong or out of date, and it is
-        not investment advice. Check the sources.
+        Written by a model reading the live web. It does not change the quantitative rank, and
+        whether it improves returns has not been measured. It can be wrong or out of date, and
+        it is not investment advice. Check the sources.
       </p>
     </div>
   );
@@ -237,7 +323,18 @@ export default function HomeView({
     );
   }
 
-  const { stock, candles, analysisText, analysisModel, research, sources } = spotlight;
+  const {
+    stock,
+    candles,
+    analysisText,
+    analysisModel,
+    research,
+    sources,
+    report,
+    reportCompleteness,
+    researchAt,
+    monitor,
+  } = spotlight;
   const m = stock.metrics;
 
   return (
@@ -322,7 +419,14 @@ export default function HomeView({
               </p>
             )}
           </div>
-          <ResearchPanel research={research} sources={sources} />
+          <ResearchPanel
+            research={research}
+            sources={sources}
+            report={report}
+            completeness={reportCompleteness}
+            researchAt={researchAt}
+            monitor={monitor}
+          />
         </div>
       </div>
 

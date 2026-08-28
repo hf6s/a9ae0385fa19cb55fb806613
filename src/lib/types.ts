@@ -76,6 +76,30 @@ export interface StockAnalysis {
   sources?: ResearchSource[];
   /** Set when search was attempted and failed, so the UI can say so. */
   researchError?: string;
+  /**
+   * The research prose split into its labelled sections. Kept alongside the
+   * raw `research` text rather than replacing it, so an older record written
+   * before sections existed still renders.
+   */
+  report?: Record<string, string>;
+  /** Share of the nine sections the model actually filled in, 0-100. */
+  reportCompleteness?: number;
+  /**
+   * When the research itself was last gathered, which is NOT generatedAt.
+   * A run whose research failed still refreshes the factor write-up and its
+   * timestamp, and without this the preserved older research would present as
+   * having been gathered just now.
+   */
+  researchAt?: string;
+  /**
+   * Comparison against the previous thesis. Absent on a first research pass,
+   * because there was nothing to compare against.
+   */
+  monitor?: {
+    verdict: "improved" | "unchanged" | "review" | "deteriorated";
+    text: string;
+    previousAt: string;
+  };
 }
 
 export interface AnalysisFile {

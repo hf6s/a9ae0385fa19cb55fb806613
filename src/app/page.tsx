@@ -118,6 +118,10 @@ export default function Home() {
         analysisModel: analysis?.model ?? null,
         research: analysis?.research ?? null,
         sources: analysis?.sources ?? [],
+        report: analysis?.report ?? null,
+        reportCompleteness: analysis?.reportCompleteness ?? null,
+        researchAt: analysis?.researchAt ?? null,
+        monitor: analysis?.monitor ?? null,
       }
     : null;
 
