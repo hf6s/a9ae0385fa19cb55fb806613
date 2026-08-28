@@ -130,6 +130,17 @@ const CASH_WHEN_BEAR = process.argv.includes("--cash-when-bear");
 const OUT_PATH = argValue("--out");
 
 /**
+ * Fold in the incremental signals: incremental ROIC and growth acceleration
+ * inside the factors, dilution and growth-trap as penalties.
+ *
+ * Off by default so an unflagged run is the untouched control. Nothing about
+ * the harness changes between the two, only which metric specs are selected,
+ * which is the only way the difference measures the signals rather than the
+ * experiment.
+ */
+const NEW_SIGNALS = process.argv.includes("--new-signals");
+
+/**
  * Leverage on the whole portfolio, with a borrowing cost on the margin.
  *
  * This is the arithmetically honest answer to "I want double the index":
@@ -518,12 +529,12 @@ async function main() {
         );
       }
       if (survivors.length >= TOP_N) {
-        const scores = computeFactorScores(survivors);
+        const scores = computeFactorScores(survivors, { newSignals: NEW_SIGNALS });
         const ranked = survivors
           .map((s, k) => ({
             ticker: s.ticker,
             scores: scores[k],
-            final: finalScore(scores[k], computePenalties(s), WEIGHTS),
+            final: finalScore(scores[k], computePenalties(s, { newSignals: NEW_SIGNALS }), WEIGHTS),
           }))
           .sort((a, b) => b.final - a.final);
         // Selection: keep what still ranks inside the exit buffer, then fill

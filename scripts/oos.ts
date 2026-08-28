@@ -197,6 +197,9 @@ function priceOnlyInput(ticker: string, closes: number[], bench: number[]): Stoc
     fcfGrowth: null,
     grossProfitToAssets: null,
     debtToEbitda: null,
+    incrementalRoic: null,
+    shareDilution: null,
+    growthAcceleration: null,
     insiderBought: null,
     insiderSold: null,
   };

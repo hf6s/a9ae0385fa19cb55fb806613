@@ -140,3 +140,39 @@ describe("guards", () => {
     assert.equal(build(year({ assets: null })), null);
   });
 });
+
+describe("incremental signals", () => {
+  it("measures return on NEWLY deployed capital, not the level", () => {
+    // Capital grows 500 -> 700 (+200) while NOPAT grows by 0.79 * 100.
+    const fy1 = year({ ebit: 100, equity: 400, debt: 200, cash: 100 });
+    const fy0 = year({ ebit: 200, equity: 600, debt: 200, cash: 100 });
+    const s = build(fy0, fy1)!;
+    assert.ok(s.incrementalRoic !== null, "should compute when capital was deployed");
+    // A company earning well on new money outranks one earning badly on it,
+    // even where the historical level is identical.
+    const poor = build(year({ ebit: 105, equity: 600, debt: 200, cash: 100 }), fy1)!;
+    assert.ok(s.incrementalRoic! > poor.incrementalRoic!);
+  });
+
+  it("stays null when the company barely deployed any capital", () => {
+    // A flat year makes the ratio meaningless: a tiny denominator explodes it.
+    const fy1 = year({ equity: 500, debt: 200, cash: 100 });
+    const fy0 = year({ equity: 501, debt: 200, cash: 100 });
+    assert.equal(build(fy0, fy1)!.incrementalRoic, null);
+  });
+
+  it("reports dilution as positive and buybacks as negative", () => {
+    const diluting = build(year({ shares: 121 }), year({ shares: 110 }), year({ shares: 100 }));
+    assert.ok(diluting!.shareDilution! > 9, "issuing shares should read positive");
+    const buyback = build(year({ shares: 81 }), year({ shares: 90 }), year({ shares: 100 }));
+    assert.ok(buyback!.shareDilution! < 0, "buybacks should read negative");
+  });
+
+  it("separates accelerating growth from decelerating growth", () => {
+    // Both end at the same revenue; only the path differs.
+    const speedingUp = build(year({ revenue: 1000 }), year({ revenue: 800 }), year({ revenue: 750 }));
+    const slowingDown = build(year({ revenue: 1000 }), year({ revenue: 600 }), year({ revenue: 300 }));
+    assert.ok(speedingUp!.growthAcceleration! > 0);
+    assert.ok(slowingDown!.growthAcceleration! < 0);
+  });
+});

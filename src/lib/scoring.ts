@@ -56,6 +56,12 @@ export interface StockInput {
   fcfGrowth: number | null; // % yoy
   grossProfitToAssets: number | null; // %
   debtToEbitda: number | null;
+  /** Return on capital deployed since last year, not the level. */
+  incrementalRoic: number | null;
+  /** Annualized share-count change. Positive is dilution, negative is buybacks. */
+  shareDilution: number | null;
+  /** This year's revenue growth minus last year's: the second derivative. */
+  growthAcceleration: number | null;
 
   // from Finnhub insider transactions (last 6 months, shares)
   insiderBought: number | null;
@@ -190,6 +196,34 @@ function trailingReturn(closes: number[], days: number, skip = 0): number | null
   return closes[end] / closes[start] - 1;
 }
 
+/**
+ * Variants that fold in the incremental signals.
+ *
+ * Kept as separate specs behind a flag rather than edited in place, so the
+ * backtest can run the model with and without them and measure the difference
+ * instead of assuming an improvement. Weight is taken from the existing
+ * metrics proportionally, never added on top, or the comparison would confound
+ * "new signal" with "quality counts for more now".
+ */
+const QUALITY_PLUS: MetricSpec[] = [
+  { weight: 0.2, extract: (s) => s.roic },
+  { weight: 0.15, extract: (s) => s.incrementalRoic },
+  { weight: 0.15, extract: (s) => s.grossProfitToAssets ?? s.grossMargin },
+  { weight: 0.13, extract: (s) => s.operatingMargin },
+  { weight: 0.13, extract: (s) => derivedFcfMargin(s) },
+  { weight: 0.14, extract: (s) => s.roe },
+  { weight: 0.05, extract: (s) => (s.debtToEquity === null ? null : -s.debtToEquity) },
+  { weight: 0.05, extract: (s) => (s.accrualRatio === null ? null : -s.accrualRatio) },
+];
+
+const GROWTH_PLUS: MetricSpec[] = [
+  { weight: 0.3, extract: (s) => s.revenueGrowth },
+  { weight: 0.25, extract: (s) => s.epsGrowth },
+  { weight: 0.15, extract: (s) => s.fcfGrowth },
+  { weight: 0.15, extract: (s) => s.growthAcceleration },
+  { weight: 0.15, extract: () => null }, // forward EPS growth — needs paid estimates
+];
+
 const QUALITY: MetricSpec[] = [
   { weight: 0.25, extract: (s) => s.roic },
   // Gross Profit / Assets (EDGAR); gross margin as fallback proxy
@@ -281,11 +315,14 @@ function scoreFactor(universe: StockInput[], specs: MetricSpec[]): number[] {
   });
 }
 
-export function computeFactorScores(universe: StockInput[]): FactorScores[] {
-  const quality = scoreFactor(universe, QUALITY);
+export function computeFactorScores(
+  universe: StockInput[],
+  opts: { newSignals?: boolean } = {},
+): FactorScores[] {
+  const quality = scoreFactor(universe, opts.newSignals ? QUALITY_PLUS : QUALITY);
   const value = scoreFactor(universe, VALUE);
   const momentum = scoreFactor(universe, MOMENTUM);
-  const growth = scoreFactor(universe, GROWTH);
+  const growth = scoreFactor(universe, opts.newSignals ? GROWTH_PLUS : GROWTH);
   return universe.map((_, i) => ({
     quality: round1(quality[i]),
     value: round1(value[i]),
@@ -296,7 +333,10 @@ export function computeFactorScores(universe: StockInput[]): FactorScores[] {
 
 // ---------- Stage 3: penalties ----------
 
-export function computePenalties(s: StockInput): Penalty[] {
+export function computePenalties(
+  s: StockInput,
+  opts: { newSignals?: boolean } = {},
+): Penalty[] {
   const penalties: Penalty[] = [];
   if (s.debtToEquity !== null && s.debtToEquity > 2) {
     penalties.push({ reason: "Debt/Equity > 2", points: 20 });
@@ -308,6 +348,29 @@ export function computePenalties(s: StockInput): Penalty[] {
     s.insiderSold > 3 * s.insiderBought
   ) {
     penalties.push({ reason: "Insider selling > buying by large margin", points: 15 });
+  }
+  /**
+   * Dilution. Issuing 5%+ of the company a year transfers value away from
+   * existing holders whatever the headline growth says, and it is the one
+   * input here that was already being fetched and thrown away.
+   */
+  if (opts.newSignals && s.shareDilution !== null && s.shareDilution > 5) {
+    penalties.push({ reason: "Share count growing > 5%/yr", points: 10 });
+  }
+  /**
+   * The growth trap: growth decelerating hard WHILE the company burns cash.
+   * Either alone is ordinary. Together they are the pattern of a business
+   * whose story is running out before its funding does, so the penalty fires
+   * only on the conjunction.
+   */
+  if (
+    opts.newSignals &&
+    s.growthAcceleration !== null &&
+    s.growthAcceleration < -10 &&
+    s.fcfGrowth !== null &&
+    s.fcfGrowth < 0
+  ) {
+    penalties.push({ reason: "Growth decelerating with falling cash flow", points: 15 });
   }
   if (s.latestSurprisePct !== null && s.latestSurprisePct < -20) {
     penalties.push({ reason: "Earnings surprise < -20%", points: 15 });

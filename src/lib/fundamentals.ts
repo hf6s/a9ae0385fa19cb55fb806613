@@ -131,6 +131,7 @@ export function buildStockInput({
   const rev1 = fy1 ? num(fy1.revenue) : null;
   const ni1 = fy1 ? num(fy1.netIncome) : null;
   const sh1 = fy1 ? num(fy1.shares) : null;
+  const sh2 = fy2 ? num(fy2.shares) : null;
   // Prefer a two-year CAGR over a single year-over-year jump: one weak or
   // strong year (a COVID quarter, an acquisition) otherwise dominates the
   // growth score entirely.
@@ -141,6 +142,66 @@ export function buildStockInput({
       : rev1 !== null && rev1 > 0
         ? (revenue / rev1 - 1) * 100
         : null;
+  /**
+   * Incremental ROIC: return on the capital deployed SINCE last year.
+   *
+   * Level ROIC says how good the business already is, which is largely a fact
+   * about past decisions and is heavily priced in. What compounding needs is
+   * whether NEW money still earns well, so this is the change in NOPAT over
+   * the change in invested capital. Only meaningful when the company actually
+   * deployed capital, hence the floor on the denominator: tiny deltas produce
+   * meaningless ratios.
+   */
+  const ebit1 = fy1 ? num(fy1.ebit) : null;
+  const equity1 = fy1 ? num(fy1.equity) : null;
+  const debt1x = fy1 ? num(fy1.debt) : null;
+  const cash1 = fy1 ? (num(fy1.cash) ?? 0) : null;
+  let incrementalRoic: number | null = null;
+  if (
+    nopat !== null &&
+    investedCapital !== null &&
+    ebit1 !== null &&
+    equity1 !== null &&
+    debt1x !== null &&
+    cash1 !== null
+  ) {
+    const nopat1 = ebit1 * (1 - taxRate);
+    const ic1 = equity1 + debt1x - Math.min(cash1, debt1x + equity1);
+    const dCapital = investedCapital - ic1;
+    // At least 5% of the existing base, so noise in a flat year cannot dominate.
+    if (ic1 > 0 && dCapital > ic1 * 0.05) {
+      incrementalRoic = ((nopat - nopat1) / dCapital) * 100;
+    }
+  }
+
+  /**
+   * Share count change, annualized over the years available.
+   *
+   * Already pulled from EDGAR on every scan and never used for anything.
+   * Positive means dilution, which silently taxes per-share compounding;
+   * negative means buybacks.
+   */
+  let shareDilution: number | null = null;
+  {
+    const base = sh2 !== null && sh2 > 0 ? sh2 : sh1;
+    const span = sh2 !== null && sh2 > 0 ? 2 : 1;
+    if (base !== null && base > 0) {
+      shareDilution = (Math.pow(shares / base, 1 / span) - 1) * 100;
+    }
+  }
+
+  /**
+   * Growth acceleration: this year's growth minus last year's.
+   *
+   * The second derivative, not the level. A company slowing from 40% to 25% and
+   * one speeding up from 10% to 25% look identical on revenueGrowth and are
+   * not the same investment.
+   */
+  let growthAcceleration: number | null = null;
+  if (rev1 !== null && rev1 > 0 && rev2 !== null && rev2 > 0) {
+    growthAcceleration = (revenue / rev1 - 1) * 100 - (rev1 / rev2 - 1) * 100;
+  }
+
   let epsGrowth: number | null = null;
   if (ni !== null && ni1 !== null && sh1 !== null && sh1 > 0) {
     const eps0 = ni / shares;
@@ -229,6 +290,9 @@ export function buildStockInput({
     operatingMargin,
     roe,
     roic,
+    incrementalRoic,
+    shareDilution,
+    growthAcceleration,
     debtToEquity,
     pe,
     pb,

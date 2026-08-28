@@ -56,6 +56,9 @@ function stock(overrides: Partial<StockInput> = {}): StockInput {
     fcfGrowth: 8,
     grossProfitToAssets: 30,
     debtToEbitda: 1.5,
+    incrementalRoic: 18,
+    shareDilution: -1,
+    growthAcceleration: 2,
     insiderBought: 1000,
     insiderSold: 500,
     ...overrides,
@@ -241,5 +244,30 @@ describe("filter options", () => {
     const r = stage1Filter(tiny, { currentRatio: false, trend: false, exemptFinancials: true });
     assert.equal(r.passed, false);
     assert.match(r.failures.join(), /market cap/);
+  });
+});
+
+describe("new-signal penalties", () => {
+  it("does not fire at all unless the flag is on, so the control stays clean", () => {
+    const bad = stock({ shareDilution: 20, growthAcceleration: -30, fcfGrowth: -10 });
+    assert.deepEqual(computePenalties(bad), [], "control run must see no new penalties");
+    assert.ok(computePenalties(bad, { newSignals: true }).length > 0);
+  });
+
+  it("penalises heavy dilution", () => {
+    const p = computePenalties(stock({ shareDilution: 8 }), { newSignals: true });
+    assert.equal(p.find((x) => x.reason.includes("Share count"))?.points, 10);
+    // Buybacks must not be penalised.
+    assert.deepEqual(computePenalties(stock({ shareDilution: -3 }), { newSignals: true }), []);
+  });
+
+  it("fires the growth trap only when deceleration AND falling cash flow coincide", () => {
+    const opts = { newSignals: true };
+    const trap = stock({ growthAcceleration: -25, fcfGrowth: -8 });
+    assert.ok(computePenalties(trap, opts).some((x) => x.reason.includes("decelerating")));
+    // Slowing growth while cash flow still rises is ordinary maturation.
+    assert.deepEqual(computePenalties(stock({ growthAcceleration: -25, fcfGrowth: 10 }), opts), []);
+    // Falling cash flow in an accelerating business is not the trap either.
+    assert.deepEqual(computePenalties(stock({ growthAcceleration: 5, fcfGrowth: -8 }), opts), []);
   });
 });
