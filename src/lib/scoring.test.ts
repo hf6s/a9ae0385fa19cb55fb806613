@@ -55,6 +55,7 @@ function stock(overrides: Partial<StockInput> = {}): StockInput {
     piotroskiF: 8,
     accrualRatio: 0.02,
     cashConversion: 1.4,
+    shareholderYield: 2,
     fcfGrowth: 8,
     grossProfitToAssets: 30,
     debtToEbitda: 1.5,
@@ -332,5 +333,165 @@ describe("stage1FilterUniverse", () => {
     const results = stage1FilterUniverse(universe);
     assert.equal(results[1].passed, false);
     assert.match(results[1].failures.join(), /market cap/);
+  });
+});
+
+describe("z-score normalization", () => {
+  /** Three stocks: two nearly tied at the top, one far below. */
+  const spread = [
+    stock({ ticker: "A", roic: 30 }),
+    stock({ ticker: "B", roic: 29 }),
+    stock({ ticker: "C", roic: 2 }),
+  ];
+
+  it("keeps the magnitude of the gap that percentiles discard", () => {
+    const pct = computeFactorScores(spread);
+    const z = computeFactorScores(spread, { zscore: true });
+    // On percentiles the near-tie at the top is as wide as the real chasm below.
+    const pctTopGap = pct[0].quality - pct[1].quality;
+    const pctLowGap = pct[1].quality - pct[2].quality;
+    assert.ok(Math.abs(pctTopGap - pctLowGap) < 1, "percentiles space them evenly");
+    // Z-scores put A and B together and leave C far away.
+    const zTopGap = z[0].quality - z[1].quality;
+    const zLowGap = z[1].quality - z[2].quality;
+    assert.ok(zLowGap > zTopGap * 3, `expected a wide low gap, got ${zLowGap} vs ${zTopGap}`);
+  });
+
+  it("gives everyone the midpoint when a metric cannot separate them", () => {
+    const flat = [stock({ roic: 10 }), stock({ roic: 10 }), stock({ roic: 10 })];
+    const z = computeFactorScores(flat, { zscore: true });
+    assert.ok(z.every((s) => s.quality > 0 && s.quality < 100));
+  });
+
+  it("stays inside 0-100 with a wild outlier present", () => {
+    const outlier = [
+      stock({ roic: 5 }),
+      stock({ roic: 6 }),
+      stock({ roic: 7 }),
+      stock({ roic: 100000 }),
+    ];
+    for (const s of computeFactorScores(outlier, { zscore: true })) {
+      assert.ok(s.quality >= 0 && s.quality <= 100, `out of range: ${s.quality}`);
+    }
+  });
+});
+
+describe("sector-relative ranking", () => {
+  /** A cohort large enough to rank within, at deliberately different levels. */
+  function cohort(sector: string, base: number) {
+    return Array.from({ length: 10 }, (_, i) =>
+      stock({ ticker: `${sector}${i}`, sector, pb: base + i }),
+    );
+  }
+
+  it("judges a stock against its own sector rather than the market", () => {
+    // Banks trade at low price/book, software high. The cheapest bank should
+    // not automatically outrank the cheapest software name on Value.
+    const universe = [...cohort("Banks", 1), ...cohort("Software", 20)];
+    const flat = computeFactorScores(universe);
+    const rel = computeFactorScores(universe, { sectorRelative: true });
+
+    // Market-wide, every bank beats every software name on price/book.
+    const worstBankFlat = Math.min(...flat.slice(0, 10).map((s) => s.value));
+    const bestSoftFlat = Math.max(...flat.slice(10).map((s) => s.value));
+    assert.ok(worstBankFlat > bestSoftFlat, "market-wide ranking is sector-sorted");
+
+    // Sector-relative, the cheapest software name beats the priciest bank.
+    const worstBankRel = rel[9].value;
+    const bestSoftRel = rel[10].value;
+    assert.ok(bestSoftRel > worstBankRel, "cheapest software must beat priciest bank");
+  });
+
+  it("falls back to the market for a sector too thin to rank within", () => {
+    const universe = [...cohort("Banks", 1), stock({ ticker: "LONE", sector: "Solo", pb: 50 })];
+    const flat = computeFactorScores(universe);
+    const rel = computeFactorScores(universe, { sectorRelative: true });
+    // A one-company sector cannot be ranked against itself. The fallback has
+    // to leave that stock on its market-wide score EXACTLY -- being merely
+    // low is not evidence of anything, since an expensive name scores low
+    // either way. The banks around it must still be re-ranked.
+    assert.equal(rel[10].value, flat[10].value, "lone name keeps its market score");
+    // The bank cohort IS big enough, so it must be re-ranked among itself.
+    // Not every member moves -- the cheapest bank is the cheapest name either
+    // way -- so this asks that the cohort as a whole was re-scored.
+    const moved = rel.slice(0, 10).some((r, i) => r.value !== flat[i].value);
+    assert.ok(moved, "the ranked cohort must still be re-scored within sector");
+  });
+
+  it("leaves momentum alone, since returns are comparable across sectors", () => {
+    const rising = Array.from({ length: 300 }, (_, i) => 100 + i);
+    const flat300 = Array.from({ length: 300 }, () => 100);
+    const universe = [
+      ...Array.from({ length: 10 }, (_, i) =>
+        stock({ ticker: `U${i}`, sector: "Banks", closes: rising }),
+      ),
+      ...Array.from({ length: 10 }, (_, i) =>
+        stock({ ticker: `D${i}`, sector: "Software", closes: flat300 }),
+      ),
+    ];
+    const rel = computeFactorScores(universe, { sectorRelative: true });
+    assert.ok(rel[0].momentum > rel[10].momentum, "the rising sector must still win momentum");
+  });
+});
+
+describe("volatility penalty", () => {
+  /** Deterministic alternating series with a given daily swing. */
+  function swings(pct: number): number[] {
+    const out = [100];
+    for (let i = 1; i < 300; i++) out.push(out[i - 1] * (i % 2 ? 1 + pct : 1 - pct));
+    return out;
+  }
+
+  it("does not fire unless the enhancement is on", () => {
+    const wild = stock({ closes: swings(0.06) });
+    assert.deepEqual(computePenalties(wild), []);
+  });
+
+  it("penalises a violently volatile stock", () => {
+    const p = computePenalties(stock({ closes: swings(0.06) }), { volatility: true });
+    assert.ok(p.some((x) => x.reason.includes("volatility")), "expected a volatility penalty");
+  });
+
+  it("leaves a steady compounder alone", () => {
+    const calm = Array.from({ length: 300 }, (_, i) => 100 * 1.0005 ** i);
+    assert.deepEqual(computePenalties(stock({ closes: calm }), { volatility: true }), []);
+  });
+
+  it("says nothing when the price history is too short to measure", () => {
+    assert.deepEqual(
+      computePenalties(stock({ closes: [100, 101, 99] }), { volatility: true }),
+      [],
+    );
+  });
+});
+
+describe("piotroski as a positive factor", () => {
+  it("rewards a strong F-Score without inflating Quality's overall weight", () => {
+    const universe = [
+      stock({ ticker: "STRONG", piotroskiF: 9 }),
+      stock({ ticker: "WEAK", piotroskiF: 1 }),
+      stock({ ticker: "MID", piotroskiF: 5 }),
+    ];
+    const off = computeFactorScores(universe);
+    const on = computeFactorScores(universe, { piotroskiFactor: true });
+    // Everything else is identical across the three, so only the F-Score moves.
+    assert.equal(off[0].quality, off[1].quality, "F-Score is ignored by default");
+    assert.ok(on[0].quality > on[1].quality, "F-Score must separate them when enabled");
+    // Still a 0-100 score, so the final weighting is untouched.
+    assert.ok(on.every((s) => s.quality >= 0 && s.quality <= 100));
+  });
+});
+
+describe("shareholder yield", () => {
+  it("rewards returning capital, and only when enabled", () => {
+    const universe = [
+      stock({ ticker: "RETURNS", shareholderYield: 9 }),
+      stock({ ticker: "HOARDS", shareholderYield: 0 }),
+      stock({ ticker: "MID", shareholderYield: 4 }),
+    ];
+    const off = computeFactorScores(universe);
+    const on = computeFactorScores(universe, { shareholderYield: true });
+    assert.equal(off[0].value, off[1].value, "ignored by default");
+    assert.ok(on[0].value > on[1].value, "buybacks and dividends must count when enabled");
   });
 });

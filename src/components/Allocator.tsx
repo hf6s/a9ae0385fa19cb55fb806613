@@ -81,14 +81,9 @@ export default function Allocator({ candidates }: { candidates: Candidate[] }) {
               <div className="stat-sub">{plan.weightPct.toFixed(1)}% each</div>
             </div>
             <div className="stat-tile">
-              <div className="stat-label">Invested, whole shares</div>
-              <div className="stat-value">{money(plan.investedWhole)}</div>
-              <div className="stat-sub">{money(plan.cashLeftWhole)} left as cash</div>
-            </div>
-            <div className="stat-tile">
-              <div className="stat-label">Need fractional</div>
-              <div className="stat-value">{plan.fractionalCount}</div>
-              <div className="stat-sub">share price above budget</div>
+              <div className="stat-label">Invested</div>
+              <div className="stat-value">{money(plan.invested)}</div>
+              <div className="stat-sub">the whole account</div>
             </div>
           </div>
 
@@ -106,12 +101,6 @@ export default function Allocator({ candidates }: { candidates: Candidate[] }) {
                 position this size.
               </p>
             )}
-            {plan.fractionalCount > 0 && (
-              <p className="alloc-note">
-                {plan.fractionalCount} of these trade above {money(plan.perPosition)} a share.
-                Buying those at this weight needs a broker with fractional shares.
-              </p>
-            )}
           </div>
 
           <div className="table-scroll">
@@ -122,9 +111,9 @@ export default function Allocator({ candidates }: { candidates: Candidate[] }) {
                   <th>Company</th>
                   <th style={{ textAlign: "right" }}>Price</th>
                   <th style={{ textAlign: "right" }}>Weight</th>
-                  <th style={{ textAlign: "right" }}>Budget</th>
+                  <th style={{ textAlign: "right" }}>Buy</th>
+                  <th style={{ textAlign: "right" }}>Shares</th>
                   <th style={{ textAlign: "right" }}>Whole shares</th>
-                  <th style={{ textAlign: "right" }}>Cost</th>
                 </tr>
               </thead>
               <tbody key={plan.positions}>
@@ -144,15 +133,9 @@ export default function Allocator({ candidates }: { candidates: Candidate[] }) {
                     <td style={{ textAlign: "right" }}>${r.price.toFixed(2)}</td>
                     <td style={{ textAlign: "right" }}>{r.weightPct.toFixed(1)}%</td>
                     <td style={{ textAlign: "right" }}>{money(r.dollars)}</td>
-                    <td style={{ textAlign: "right" }}>
-                      {r.needsFractional ? (
-                        <span className="name-dim">fractional</span>
-                      ) : (
-                        r.wholeShares
-                      )}
-                    </td>
-                    <td style={{ textAlign: "right" }}>
-                      {r.needsFractional ? "—" : money(r.cost)}
+                    <td style={{ textAlign: "right" }}>{r.shares.toFixed(4)}</td>
+                    <td className="name-dim" style={{ textAlign: "right" }}>
+                      {r.wholeShares}
                     </td>
                   </tr>
                 ))}

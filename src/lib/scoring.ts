@@ -55,6 +55,8 @@ export interface StockInput {
   accrualRatio: number | null; // (NI - CFO) / Assets, lower is better
   /** CFO / |net income|. Below 1 means reported profit outruns the cash. */
   cashConversion: number | null;
+  /** (dividends + buybacks + debt paydown) / market cap, %. */
+  shareholderYield: number | null;
   fcfGrowth: number | null; // % yoy
   grossProfitToAssets: number | null; // %
   debtToEbitda: number | null;
@@ -264,6 +266,35 @@ const QUALITY: MetricSpec[] = [
   { weight: 0.05, extract: (s) => (s.accrualRatio === null ? null : -s.accrualRatio) },
 ];
 
+/**
+ * Quality with the F-Score folded in.
+ *
+ * Weight is taken from the existing metrics proportionally rather than added
+ * on top: adding it would make Quality count for more than 30% of the final
+ * score, and the comparison would then confound "F-Score helps" with "Quality
+ * matters more than the spec says".
+ */
+const QUALITY_PIOTROSKI: MetricSpec[] = [
+  { weight: 0.225, extract: (s) => s.roic },
+  { weight: 0.18, extract: (s) => s.grossProfitToAssets ?? s.grossMargin },
+  { weight: 0.135, extract: (s) => s.operatingMargin },
+  { weight: 0.135, extract: (s) => derivedFcfMargin(s) },
+  { weight: 0.135, extract: (s) => s.roe },
+  { weight: 0.045, extract: (s) => (s.debtToEquity === null ? null : -s.debtToEquity) },
+  { weight: 0.045, extract: (s) => (s.accrualRatio === null ? null : -s.accrualRatio) },
+  { weight: 0.1, extract: (s) => s.piotroskiF },
+];
+
+/** Value with shareholder yield, weight taken proportionally from the rest. */
+const VALUE_SHAREHOLDER: MetricSpec[] = [
+  { weight: 0.255, extract: (s) => (s.pe && s.pe > 0 ? 1 / s.pe : null) },
+  { weight: 0.255, extract: (s) => (s.pfcf && s.pfcf > 0 ? 1 / s.pfcf : null) },
+  { weight: 0.17, extract: (s) => (s.evToEbitda && s.evToEbitda > 0 ? -s.evToEbitda : null) },
+  { weight: 0.085, extract: (s) => (s.pb && s.pb > 0 ? -s.pb : null) },
+  { weight: 0.085, extract: (s) => (s.ps && s.ps > 0 ? -s.ps : null) },
+  { weight: 0.15, extract: (s) => s.shareholderYield },
+];
+
 const VALUE: MetricSpec[] = [
   { weight: 0.3, extract: (s) => (s.pe && s.pe > 0 ? 1 / s.pe : null) }, // earnings yield
   { weight: 0.3, extract: (s) => (s.pfcf && s.pfcf > 0 ? 1 / s.pfcf : null) }, // FCF yield
@@ -302,6 +333,129 @@ const GROWTH: MetricSpec[] = [
 ];
 
 /**
+ * The spec's "potential enhancements", each behind its own switch.
+ *
+ * They are options rather than edits to the model because the project's rule
+ * is that a change earns its place by measurement. Every one of these has a
+ * plausible story attached; so did the six factor tilts that lost.
+ *
+ * The seventh enhancement, analyst estimate revisions, has no switch: it needs
+ * an estimates feed, and the data plan here is prices and filings.
+ */
+export interface EnhancementOptions {
+  /** Rank Value and Quality inside each sector, not against the whole market. */
+  sectorRelative?: boolean;
+  /** Penalise extreme realised and downside volatility. */
+  volatility?: boolean;
+  /** Piotroski F-Score as a positive Quality input, not only a penalty. */
+  piotroskiFactor?: boolean;
+  /** Dividends + buybacks + debt paydown as a Value input. */
+  shareholderYield?: boolean;
+  /** Winsorised z-scores instead of percentile ranks. */
+  zscore?: boolean;
+}
+
+/**
+ * Below this many names, a sector is too small to rank within: in a cohort of
+ * three, one company is handed 100 and another 0 on the strength of nothing.
+ * Those fall back to the whole-market ranking.
+ */
+const MIN_SECTOR_COHORT = 8;
+
+/**
+ * Standardised score (0–100) from a winsorised z-score.
+ *
+ * Percentiles throw away magnitude: the top two companies are 100 and 99
+ * whether the gap between them is a rounding error or a factor of three.
+ * Z-scores keep it, at the cost of being pulled around by outliers — hence
+ * clamping at ±3 standard deviations before mapping onto the same 0–100
+ * range the rest of the engine works in.
+ */
+function zScores(values: (number | null)[]): (number | null)[] {
+  const present = values.filter((v): v is number => v !== null);
+  if (present.length < 2) return values.map(() => null);
+  const mean = present.reduce((a, b) => a + b, 0) / present.length;
+  const variance = present.reduce((a, b) => a + (b - mean) ** 2, 0) / present.length;
+  const sd = Math.sqrt(variance);
+  // Every survivor identical on this metric: no information, so no separation.
+  if (sd === 0) return values.map((v) => (v === null ? null : 50));
+  return values.map((v) => {
+    if (v === null) return null;
+    const z = Math.max(-3, Math.min(3, (v - mean) / sd));
+    return ((z + 3) / 6) * 100;
+  });
+}
+
+/**
+ * Normalise within each sector rather than across the market.
+ *
+ * A bank's price/book and a software company's are not comparable numbers, so
+ * ranking them against each other mostly measures which industry you are in.
+ * Sectors too thin to rank within fall back to the global ranking, which is
+ * why the global pass is computed regardless.
+ */
+function normalize(
+  universe: StockInput[],
+  values: (number | null)[],
+  norm: (v: (number | null)[]) => (number | null)[],
+  sectorRelative: boolean,
+): (number | null)[] {
+  const global = norm(values);
+  if (!sectorRelative) return global;
+
+  const out = [...global];
+  const groups = new Map<string, number[]>();
+  universe.forEach((s, i) => {
+    const key = s.sector || "Unknown";
+    const arr = groups.get(key);
+    if (arr) arr.push(i);
+    else groups.set(key, [i]);
+  });
+  for (const idx of groups.values()) {
+    if (idx.length < MIN_SECTOR_COHORT) continue; // keeps the global score
+    const within = norm(idx.map((i) => values[i]));
+    idx.forEach((i, k) => {
+      out[i] = within[k];
+    });
+  }
+  return out;
+}
+
+/** Annualised realised volatility from daily log returns, in percent. */
+export function realizedVol(closes: number[], days = 252): number | null {
+  if (closes.length < 60) return null;
+  const window = closes.slice(-(days + 1));
+  const rets: number[] = [];
+  for (let i = 1; i < window.length; i++) {
+    if (window[i - 1] > 0 && window[i] > 0) rets.push(Math.log(window[i] / window[i - 1]));
+  }
+  if (rets.length < 40) return null;
+  const mean = rets.reduce((a, b) => a + b, 0) / rets.length;
+  const varr = rets.reduce((a, b) => a + (b - mean) ** 2, 0) / rets.length;
+  return Math.sqrt(varr) * Math.sqrt(252) * 100;
+}
+
+/**
+ * Downside deviation: the same calculation over losing days only.
+ *
+ * Volatility punishes a stock for rising quickly, which is not the risk
+ * anyone is worried about. This measures the half that is.
+ */
+export function downsideVol(closes: number[], days = 252): number | null {
+  if (closes.length < 60) return null;
+  const window = closes.slice(-(days + 1));
+  const downs: number[] = [];
+  for (let i = 1; i < window.length; i++) {
+    if (window[i - 1] <= 0 || window[i] <= 0) continue;
+    const r = Math.log(window[i] / window[i - 1]);
+    if (r < 0) downs.push(r);
+  }
+  if (downs.length < 20) return null;
+  const varr = downs.reduce((a, b) => a + b ** 2, 0) / downs.length;
+  return Math.sqrt(varr) * Math.sqrt(252) * 100;
+}
+
+/**
  * Percentile rank (0–100) of each value within the universe.
  *
  * Equal values receive the SAME percentile, the average of the positions they
@@ -327,9 +481,16 @@ function percentileRanks(values: (number | null)[]): (number | null)[] {
   return ranks;
 }
 
-function scoreFactor(universe: StockInput[], specs: MetricSpec[]): number[] {
-  // percentile per metric, then weighted with per-stock renormalization
-  const perMetric = specs.map((spec) => percentileRanks(universe.map(spec.extract)));
+function scoreFactor(
+  universe: StockInput[],
+  specs: MetricSpec[],
+  opts: { zscore?: boolean; sectorRelative?: boolean } = {},
+): number[] {
+  // normalise per metric, then weight with per-stock renormalization
+  const norm = opts.zscore ? zScores : percentileRanks;
+  const perMetric = specs.map((spec) =>
+    normalize(universe, universe.map(spec.extract), norm, opts.sectorRelative === true),
+  );
   return universe.map((_, i) => {
     let total = 0;
     let weightSum = 0;
@@ -346,12 +507,29 @@ function scoreFactor(universe: StockInput[], specs: MetricSpec[]): number[] {
 
 export function computeFactorScores(
   universe: StockInput[],
-  opts: { newSignals?: boolean } = {},
+  opts: { newSignals?: boolean } & EnhancementOptions = {},
 ): FactorScores[] {
-  const quality = scoreFactor(universe, opts.newSignals ? QUALITY_PLUS : QUALITY);
-  const value = scoreFactor(universe, VALUE);
-  const momentum = scoreFactor(universe, MOMENTUM);
-  const growth = scoreFactor(universe, opts.newSignals ? GROWTH_PLUS : GROWTH);
+  const n = { zscore: opts.zscore, sectorRelative: false };
+  /**
+   * Sector-relative ranking applies to Value and Quality only, per the spec's
+   * reasoning: those are the factors whose raw numbers differ structurally by
+   * industry. Momentum and Growth are already comparable across sectors —
+   * a 30% return is a 30% return — and ranking them within sector would just
+   * discard the information that one industry is outrunning another.
+   */
+  const rel = { zscore: opts.zscore, sectorRelative: opts.sectorRelative === true };
+
+  const qualitySpecs = opts.newSignals
+    ? QUALITY_PLUS
+    : opts.piotroskiFactor
+      ? QUALITY_PIOTROSKI
+      : QUALITY;
+  const valueSpecs = opts.shareholderYield ? VALUE_SHAREHOLDER : VALUE;
+
+  const quality = scoreFactor(universe, qualitySpecs, rel);
+  const value = scoreFactor(universe, valueSpecs, rel);
+  const momentum = scoreFactor(universe, MOMENTUM, n);
+  const growth = scoreFactor(universe, opts.newSignals ? GROWTH_PLUS : GROWTH, n);
   return universe.map((_, i) => ({
     quality: round1(quality[i]),
     value: round1(value[i]),
@@ -364,7 +542,7 @@ export function computeFactorScores(
 
 export function computePenalties(
   s: StockInput,
-  opts: { newSignals?: boolean; redFlags?: boolean } = {},
+  opts: { newSignals?: boolean; redFlags?: boolean } & EnhancementOptions = {},
 ): Penalty[] {
   const penalties: Penalty[] = [];
   if (s.debtToEquity !== null && s.debtToEquity > 2) {
@@ -400,6 +578,24 @@ export function computePenalties(
     s.fcfGrowth < 0
   ) {
     penalties.push({ reason: "Growth decelerating with falling cash flow", points: 15 });
+  }
+  /**
+   * Volatility. Two separate tests, because they catch different things: a
+   * stock can be merely jumpy (high realised vol, symmetric) or genuinely
+   * punishing (most of the movement to the downside). Thresholds are absolute
+   * rather than relative because these are meant to catch the extremes, and a
+   * top-decile cut would fire on ten percent of the universe by construction
+   * however calm the market was that year.
+   */
+  if (opts.volatility) {
+    const rv = realizedVol(s.closes);
+    if (rv !== null && rv > 60) {
+      penalties.push({ reason: "Realized volatility above 60%", points: 10 });
+    }
+    const dv = downsideVol(s.closes);
+    if (dv !== null && dv > 45) {
+      penalties.push({ reason: "Downside volatility above 45%", points: 10 });
+    }
   }
   if (s.latestSurprisePct !== null && s.latestSurprisePct < -20) {
     penalties.push({ reason: "Earnings surprise < -20%", points: 15 });
@@ -474,6 +670,7 @@ function round1(n: number): number {
 }
 
 export const FREE_TIER_GAPS = [
+  "Analyst estimate revisions — needs an estimates feed; not available on a prices-and-filings data plan",
   "Interest coverage > 4 filter — applied, but only for companies that tag interest expense in their filings; names that do not disclose it separately (many with no debt) are not tested on this rule",
   "Forward EPS growth (Growth 15%) — needs paid analyst estimates; weight renormalized",
   "Accounting red flags penalty (-20) — detected as accrual-based earnings quality only; receivables, restatements and auditor changes are not in the data plan",

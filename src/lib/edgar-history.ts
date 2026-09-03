@@ -65,6 +65,11 @@ export interface AnnualRecord {
   taxExpense: number | null;
   /** Pre-tax income, the denominator of the effective tax rate. */
   pretaxIncome: number | null;
+  /** Cash dividends paid. One third of shareholder yield. */
+  dividendsPaid: number | null;
+  /** Cash spent buying back stock. Better than inferring it from share
+   *  count, which nets off issuance for employee compensation. */
+  buybacks: number | null;
 }
 
 export interface TickerHistory {
@@ -345,6 +350,23 @@ function deriveHistory(facts: CompanyFacts): AnnualRecord[] {
       "IncomeLossFromContinuingOperationsBeforeIncomeTaxesMinorityInterestAndIncomeLossFromEquityMethodInvestments",
     ]),
   );
+  // Shareholder yield needs the two cash outflows that return capital to
+  // holders. Both are cash-flow-statement lines, so they are what the company
+  // actually paid rather than what it announced.
+  const dividendsPaid = pickLargest(
+    collectAnnual(facts, [
+      "PaymentsOfDividendsCommonStock",
+      "PaymentsOfDividends",
+      "PaymentsOfDividendsMinorityInterest",
+    ]),
+  );
+  const buybacks = pickLargest(
+    collectAnnual(facts, [
+      "PaymentsForRepurchaseOfCommonStock",
+      "PaymentsForRepurchaseOfEquity",
+      "TreasuryStockValueAcquiredCostMethod",
+    ]),
+  );
   const shares = pickEarliest(
     collectAnnual(facts, ["EntityCommonStockSharesOutstanding"], "dei", "shares"),
   );
@@ -401,6 +423,8 @@ function deriveHistory(facts: CompanyFacts): AnnualRecord[] {
       interestExpense: interestExpense.get(end)?.val ?? null,
       taxExpense: taxExpense.get(end)?.val ?? null,
       pretaxIncome: pretaxIncome.get(end)?.val ?? null,
+      dividendsPaid: dividendsPaid.get(end)?.val ?? null,
+      buybacks: buybacks.get(end)?.val ?? null,
     });
   }
 
@@ -471,7 +495,7 @@ interface CacheFile {
   histories: Record<string, AnnualRecord[]>;
 }
 
-const CACHE_VERSION = 2; // added interestExpense, taxExpense, pretaxIncome
+const CACHE_VERSION = 3; // added dividendsPaid, buybacks (shareholder yield)
 const CACHE_MAX_AGE_MS = 7 * 24 * 3600 * 1000;
 
 function cachePath(): string {

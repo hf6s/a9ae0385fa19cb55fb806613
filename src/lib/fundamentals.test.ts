@@ -34,6 +34,8 @@ function year(over: Partial<AnnualRecord> = {}): AnnualRecord {
     interestExpense: 20,
     taxExpense: 40,
     pretaxIncome: 180,
+    dividendsPaid: null,
+    buybacks: null,
     ...over,
   };
 }

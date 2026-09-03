@@ -78,6 +78,8 @@ export function buildStockInput({
   const tl = num(fy0.totalLiab);
   const re = num(fy0.retained);
   const interest = num(fy0.interestExpense);
+  const dividends = num(fy0.dividendsPaid) ?? 0;
+  const buybacks = num(fy0.buybacks) ?? 0;
   const tax = num(fy0.taxExpense);
   const pretax = num(fy0.pretaxIncome);
 
@@ -205,6 +207,23 @@ export function buildStockInput({
     growthAcceleration = (revenue / rev1 - 1) * 100 - (rev1 / rev2 - 1) * 100;
   }
 
+  /**
+   * Shareholder yield: every route by which the company returned capital,
+   * as a percentage of what the market pays for it.
+   *
+   * The spec asks for dividends, buybacks AND debt reduction rather than
+   * dividends alone, and the reason is that the three are substitutes. A board
+   * choosing buybacks over a dividend, or paying down debt instead of either,
+   * has not stopped returning capital — a dividend-only screen just stops
+   * seeing it. Debt paydown counts because retiring a claim ahead of equity
+   * raises what the equity is worth, though only when it is a real reduction:
+   * a company that simply refinanced shows no change here.
+   */
+  const debt1y = fy1 ? num(fy1.debt) : null;
+  const debtReduction = debt !== null && debt1y !== null ? Math.max(0, debt1y - debt) : 0;
+  const shareholderYield =
+    mve > 0 ? ((dividends + buybacks + debtReduction) / mve) * 100 : null;
+
   let epsGrowth: number | null = null;
   if (ni !== null && ni1 !== null && sh1 !== null && sh1 > 0) {
     const eps0 = ni / shares;
@@ -312,6 +331,7 @@ export function buildStockInput({
     piotroskiF,
     accrualRatio,
     cashConversion,
+    shareholderYield,
     fcfGrowth,
     grossProfitToAssets,
     debtToEbitda,

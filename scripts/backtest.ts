@@ -46,6 +46,7 @@ import {
   edgarFilter,
   finalScore,
   stage1FilterUniverse,
+  type EnhancementOptions,
   DEFAULT_WEIGHTS,
   type FactorWeights,
   type FilterOptions,
@@ -150,6 +151,20 @@ const NEW_SIGNALS = process.argv.includes("--new-signals");
  * rather than the penalty being adopted on the strength of its rationale.
  */
 const RED_FLAGS = !process.argv.includes("--no-red-flags");
+
+/**
+ * The spec's "potential enhancements", each independently switchable so a run
+ * can attribute a change to one of them rather than to the bundle.
+ * --enhanced turns on all five that this data plan can support.
+ */
+const ALL_ENH = process.argv.includes("--enhanced");
+const ENHANCEMENTS: EnhancementOptions = {
+  sectorRelative: ALL_ENH || process.argv.includes("--sector-relative"),
+  volatility: ALL_ENH || process.argv.includes("--volatility"),
+  piotroskiFactor: ALL_ENH || process.argv.includes("--piotroski-factor"),
+  shareholderYield: ALL_ENH || process.argv.includes("--shareholder-yield"),
+  zscore: ALL_ENH || process.argv.includes("--zscore"),
+};
 
 /**
  * Leverage on the whole portfolio, with a borrowing cost on the margin.
@@ -541,12 +556,15 @@ async function main() {
         );
       }
       if (survivors.length >= TOP_N) {
-        const scores = computeFactorScores(survivors, { newSignals: NEW_SIGNALS });
+        const scores = computeFactorScores(survivors, {
+          newSignals: NEW_SIGNALS,
+          ...ENHANCEMENTS,
+        });
         const ranked = survivors
           .map((s, k) => ({
             ticker: s.ticker,
             scores: scores[k],
-            final: finalScore(scores[k], computePenalties(s, { newSignals: NEW_SIGNALS, redFlags: RED_FLAGS }), WEIGHTS),
+            final: finalScore(scores[k], computePenalties(s, { newSignals: NEW_SIGNALS, redFlags: RED_FLAGS, ...ENHANCEMENTS }), WEIGHTS),
           }))
           .sort((a, b) => b.final - a.final);
         // Selection: keep what still ranks inside the exit buffer, then fill
@@ -804,6 +822,7 @@ async function main() {
       topN: TOP_N,
       exitRank: EXIT_RANK,
       redFlags: RED_FLAGS,
+      enhancements: ENHANCEMENTS,
       maxPerSector: MAX_PER_SECTOR,
       rebalanceDays: REBALANCE_DAYS,
       cashWhenBear: CASH_WHEN_BEAR,
