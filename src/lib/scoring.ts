@@ -53,6 +53,8 @@ export interface StockInput {
   altmanZ: number | null;
   piotroskiF: number | null; // 0-9
   accrualRatio: number | null; // (NI - CFO) / Assets, lower is better
+  /** CFO / |net income|. Below 1 means reported profit outruns the cash. */
+  cashConversion: number | null;
   fcfGrowth: number | null; // % yoy
   grossProfitToAssets: number | null; // %
   debtToEbitda: number | null;
@@ -145,6 +147,33 @@ export function edgarFilter(s: StockInput): FilterResult {
   if (s.debtToEbitda !== null && s.debtToEbitda >= 3) failures.push("Debt/EBITDA ≥ 3");
   if (s.altmanZ !== null && s.altmanZ <= 2) failures.push("Altman Z ≤ 2");
   return { passed: failures.length === 0, failures };
+}
+
+/**
+ * Stage 1 applied to a whole universe at once.
+ *
+ * Every rule in `stage1Filter` looks at one stock in isolation. The spec's
+ * gross-margin rule does not: it is relative to the sector median, so it can
+ * only be evaluated once the whole cohort is known. That is exactly why it
+ * ended up living in the scan script rather than the engine — and why the
+ * backtest silently omitted it, measuring a looser model than the one the site
+ * displayed. Both callers go through here now, so the live pipeline and the
+ * tested pipeline cannot disagree about what Stage 1 means.
+ */
+export function stage1FilterUniverse(
+  universe: StockInput[],
+  opts: FilterOptions = {},
+): FilterResult[] {
+  const medians = sectorMedianGrossMargins(universe);
+  return universe.map((s) => {
+    const result = stage1Filter(s, opts);
+    const median = medians.get(s.sector);
+    if (s.grossMargin !== null && median !== undefined && s.grossMargin < median) {
+      result.passed = false;
+      result.failures.push("gross margin below sector median");
+    }
+    return result;
+  });
 }
 
 /** Gross margin > sector median (computed across the scanned universe). */
@@ -335,7 +364,7 @@ export function computeFactorScores(
 
 export function computePenalties(
   s: StockInput,
-  opts: { newSignals?: boolean } = {},
+  opts: { newSignals?: boolean; redFlags?: boolean } = {},
 ): Penalty[] {
   const penalties: Penalty[] = [];
   if (s.debtToEquity !== null && s.debtToEquity > 2) {
@@ -381,8 +410,31 @@ export function computePenalties(
   if (s.altmanZ !== null && s.altmanZ < 3) {
     penalties.push({ reason: "Altman Z < 3", points: 10 });
   }
-  // Remaining spec item not implemented: "accounting red flags" (-20) — no
-  // objective free-data definition; the accrual ratio in Quality covers part of it.
+  /**
+   * Accounting red flags.
+   *
+   * The spec asks for this without saying what counts, and the honest answer
+   * is that the giveaways auditors look for — receivables outrunning revenue,
+   * restatements, auditor changes — are not in the data this app pays for.
+   * What IS visible is the oldest and best-evidenced signal of the family
+   * (Sloan 1996): profit that the cash flow statement does not corroborate.
+   *
+   * Two readings of that gap are required together. `accrualRatio` scales it
+   * by assets, `cashConversion` by earnings, so an asset-light firm with a
+   * large gap and an asset-heavy firm with a small one are each caught by one
+   * and cleared by the other. They share inputs, so this is not two
+   * independent confirmations — it is one signal measured two ways, and it
+   * fires only where both readings agree.
+   */
+  if (
+    opts.redFlags !== false &&
+    s.accrualRatio !== null &&
+    s.accrualRatio > 0.1 &&
+    s.cashConversion !== null &&
+    s.cashConversion < 0.5
+  ) {
+    penalties.push({ reason: "Accounting red flags: earnings not backed by cash", points: 20 });
+  }
   return penalties;
 }
 
@@ -422,7 +474,7 @@ function round1(n: number): number {
 }
 
 export const FREE_TIER_GAPS = [
-  "Interest coverage > 4 filter — SEC filings do not expose interest expense as a reliable tag, so this Stage-1 rule is not applied",
+  "Interest coverage > 4 filter — applied, but only for companies that tag interest expense in their filings; names that do not disclose it separately (many with no debt) are not tested on this rule",
   "Forward EPS growth (Growth 15%) — needs paid analyst estimates; weight renormalized",
-  "Accounting red flags penalty (-20) — no objective free-data definition",
+  "Accounting red flags penalty (-20) — detected as accrual-based earnings quality only; receivables, restatements and auditor changes are not in the data plan",
 ];

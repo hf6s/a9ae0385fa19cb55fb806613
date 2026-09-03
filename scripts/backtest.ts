@@ -45,7 +45,7 @@ import {
   computePenalties,
   edgarFilter,
   finalScore,
-  stage1Filter,
+  stage1FilterUniverse,
   DEFAULT_WEIGHTS,
   type FactorWeights,
   type FilterOptions,
@@ -86,8 +86,13 @@ const TOP_N = Number(argValue("--top")) || 20;
 const EXIT_RANK = Number(argValue("--exit-rank")) || TOP_N;
 /** Max holdings from any one sector. 0 disables the cap. */
 const MAX_PER_SECTOR = Number(argValue("--max-sector")) || 0;
-/** Sectors are needed to exempt financials, and for the per-sector cap. */
-const NEEDS_SECTORS = MAX_PER_SECTOR > 0 || FILTER_OPTS.exemptFinancials === true;
+/**
+ * Sectors are always needed now: Stage 1's gross-margin rule is measured
+ * against the sector median, so a run without them would silently skip a
+ * filter the live scan applies. Resolution is one cached SEC lookup per
+ * company, so this costs nothing after the first run.
+ */
+const NEEDS_SECTORS = true;
 
 function argValue(flag: string): string | null {
   const i = process.argv.indexOf(flag);
@@ -139,6 +144,12 @@ const OUT_PATH = argValue("--out");
  * experiment.
  */
 const NEW_SIGNALS = process.argv.includes("--new-signals");
+/**
+ * The spec's accounting-red-flags penalty is on by default, since it is part
+ * of the model. This turns it off so a run can measure what it is worth,
+ * rather than the penalty being adopted on the strength of its rationale.
+ */
+const RED_FLAGS = !process.argv.includes("--no-red-flags");
 
 /**
  * Leverage on the whole portfolio, with a borrowing cost on the margin.
@@ -515,7 +526,8 @@ async function main() {
       }
 
       // Live pipeline: Stage-1 filters -> EDGAR filters -> factor scores -> penalties
-      const survivors1 = inputs.filter((s) => stage1Filter(s, FILTER_OPTS).passed);
+      const stage1 = stage1FilterUniverse(inputs, FILTER_OPTS);
+      const survivors1 = inputs.filter((_, i) => stage1[i].passed);
       const survivors = survivors1.filter((s) => edgarFilter(s).passed);
       // Work actually done per rebalance. If these collapse, the run is
       // ranking a handful of names and finishing fast for the wrong reason.
@@ -534,7 +546,7 @@ async function main() {
           .map((s, k) => ({
             ticker: s.ticker,
             scores: scores[k],
-            final: finalScore(scores[k], computePenalties(s, { newSignals: NEW_SIGNALS }), WEIGHTS),
+            final: finalScore(scores[k], computePenalties(s, { newSignals: NEW_SIGNALS, redFlags: RED_FLAGS }), WEIGHTS),
           }))
           .sort((a, b) => b.final - a.final);
         // Selection: keep what still ranks inside the exit buffer, then fill
@@ -791,6 +803,7 @@ async function main() {
       oneWayCostBps: COST_ONE_WAY * 10000,
       topN: TOP_N,
       exitRank: EXIT_RANK,
+      redFlags: RED_FLAGS,
       maxPerSector: MAX_PER_SECTOR,
       rebalanceDays: REBALANCE_DAYS,
       cashWhenBear: CASH_WHEN_BEAR,

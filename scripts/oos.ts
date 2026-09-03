@@ -194,6 +194,7 @@ function priceOnlyInput(ticker: string, closes: number[], bench: number[]): Stoc
     altmanZ: null,
     piotroskiF: null,
     accrualRatio: null,
+    cashConversion: null,
     fcfGrowth: null,
     grossProfitToAssets: null,
     debtToEbitda: null,

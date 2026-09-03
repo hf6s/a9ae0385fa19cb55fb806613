@@ -18,6 +18,7 @@ import {
   finalScore,
   sectorMedianGrossMargins,
   stage1Filter,
+  stage1FilterUniverse,
   type StockInput,
 } from "./scoring";
 
@@ -53,6 +54,7 @@ function stock(overrides: Partial<StockInput> = {}): StockInput {
     altmanZ: 5,
     piotroskiF: 8,
     accrualRatio: 0.02,
+    cashConversion: 1.4,
     fcfGrowth: 8,
     grossProfitToAssets: 30,
     debtToEbitda: 1.5,
@@ -269,5 +271,66 @@ describe("new-signal penalties", () => {
     assert.deepEqual(computePenalties(stock({ growthAcceleration: -25, fcfGrowth: 10 }), opts), []);
     // Falling cash flow in an accelerating business is not the trap either.
     assert.deepEqual(computePenalties(stock({ growthAcceleration: 5, fcfGrowth: -8 }), opts), []);
+  });
+});
+
+describe("accounting red flags", () => {
+  it("fires only when both readings of the accrual gap agree", () => {
+    // High accruals against assets AND poor conversion against earnings.
+    const cooked = stock({ accrualRatio: 0.18, cashConversion: 0.2 });
+    const p = computePenalties(cooked);
+    assert.equal(p.find((x) => x.reason.includes("red flags"))?.points, 20);
+
+    // Asset-light: a big gap relative to assets, but the cash still arrives.
+    assert.deepEqual(computePenalties(stock({ accrualRatio: 0.18, cashConversion: 1.6 })), []);
+    // Asset-heavy: weak conversion this year, gap small against the asset base.
+    assert.deepEqual(computePenalties(stock({ accrualRatio: 0.01, cashConversion: 0.2 })), []);
+  });
+
+  it("stays silent when the cash flow statement is unreadable", () => {
+    assert.deepEqual(computePenalties(stock({ accrualRatio: null, cashConversion: 0.1 })), []);
+    assert.deepEqual(computePenalties(stock({ accrualRatio: 0.5, cashConversion: null })), []);
+  });
+
+  it("can be switched off so the backtest can measure what it costs", () => {
+    const cooked = stock({ accrualRatio: 0.18, cashConversion: 0.2 });
+    assert.deepEqual(computePenalties(cooked, { redFlags: false }), []);
+  });
+});
+
+describe("stage1FilterUniverse", () => {
+  it("eliminates a stock whose gross margin trails its own sector's median", () => {
+    const universe = [
+      stock({ ticker: "HI", sector: "Tech", grossMargin: 80 }),
+      stock({ ticker: "MID", sector: "Tech", grossMargin: 60 }),
+      stock({ ticker: "LO", sector: "Tech", grossMargin: 20 }),
+    ];
+    const results = stage1FilterUniverse(universe);
+    assert.equal(results[0].passed, true);
+    assert.equal(results[2].passed, false);
+    assert.match(results[2].failures.join(), /gross margin below sector median/);
+  });
+
+  it("compares within a sector, not across the whole market", () => {
+    // A grocer at 25% beats grocery peers; it must not be judged against software.
+    const universe = [
+      stock({ ticker: "SOFT1", sector: "Tech", grossMargin: 85 }),
+      stock({ ticker: "SOFT2", sector: "Tech", grossMargin: 75 }),
+      stock({ ticker: "SHOP", sector: "Staples", grossMargin: 25 }),
+      stock({ ticker: "MART", sector: "Staples", grossMargin: 12 }),
+    ];
+    const results = stage1FilterUniverse(universe);
+    assert.equal(results[2].passed, true, "grocer above grocery median must survive");
+    assert.equal(results[3].passed, false);
+  });
+
+  it("still applies the per-stock rules it wraps", () => {
+    const universe = [
+      stock({ ticker: "OK", grossMargin: 60 }),
+      stock({ ticker: "SMALL", grossMargin: 60, marketCap: 100 }),
+    ];
+    const results = stage1FilterUniverse(universe);
+    assert.equal(results[1].passed, false);
+    assert.match(results[1].failures.join(), /market cap/);
   });
 });

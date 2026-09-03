@@ -124,6 +124,9 @@ export function buildStockInput({
   const grossProfitToAssets = cogs !== null ? ((revenue - cogs) / assets) * 100 : null;
   const debtToEquity = debt !== null && equity !== null && equity > 0 ? debt / equity : null;
   const accrualRatio = ni !== null && cfo !== null ? (ni - cfo) / assets : null;
+  // Conversion against the ABSOLUTE value of earnings: a loss-making year
+  // would otherwise flip the sign and read as excellent conversion.
+  const cashConversion = ni !== null && cfo !== null && ni !== 0 ? cfo / Math.abs(ni) : null;
   const currentRatio = ca !== null && cl !== null && cl > 0 ? ca / cl : null;
   const debtToEbitda = debt !== null && ebitda !== null && ebitda > 0 ? debt / ebitda : null;
 
@@ -308,6 +311,7 @@ export function buildStockInput({
     altmanZ,
     piotroskiF,
     accrualRatio,
+    cashConversion,
     fcfGrowth,
     grossProfitToAssets,
     debtToEbitda,

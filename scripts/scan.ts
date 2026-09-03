@@ -19,8 +19,7 @@ import {
   edgarFilter,
   finalScore,
   FREE_TIER_GAPS,
-  sectorMedianGrossMargins,
-  stage1Filter,
+  stage1FilterUniverse,
   type StockInput,
 } from "../src/lib/scoring";
 import type { Candle, RankedStock, Rankings, ScanStatus } from "../src/lib/types";
@@ -205,24 +204,10 @@ async function main() {
       `Applying Stage 1 filters...`,
   );
 
-  // Gross margin vs sector median (computed across everything we scanned)
-  const gmMedians = sectorMedianGrossMargins(inputs);
-
-  const provisional: StockInput[] = [];
-  for (const s of inputs) {
-    const result = stage1Filter(s);
-    const median = gmMedians.get(s.sector);
-    if (
-      result.passed &&
-      s.grossMargin !== null &&
-      median !== undefined &&
-      s.grossMargin < median
-    ) {
-      result.passed = false;
-      result.failures.push("gross margin below sector median");
-    }
-    if (result.passed) provisional.push(s);
-  }
+  // Stage 1, including the sector-relative gross-margin rule. Shared with the
+  // backtest so the two cannot apply different definitions.
+  const stage1 = stage1FilterUniverse(inputs);
+  const provisional = inputs.filter((_, i) => stage1[i].passed);
   console.log(`${provisional.length} stocks passed the market-data filters.`);
 
   // Debt/EBITDA and Altman Z were already derived from the filings above, so
