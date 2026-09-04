@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ResearchPanel } from "@/components/HomeView";
 import { notFound } from "next/navigation";
 import { getAnalyses, getHistory, getRankings } from "@/lib/data";
 import AskClaude from "@/components/AskClaude";
@@ -170,6 +171,17 @@ export default async function StockPage({
             </p>
           </div>
         )}
+        {/* Research renders only for stocks that have it: the top few plus any
+            carried over with an existing thesis. Everyone else sees nothing
+            here rather than an empty promise. */}
+        <ResearchPanel
+          research={analysis?.research ?? null}
+          sources={analysis?.sources ?? []}
+          report={analysis?.report ?? null}
+          completeness={analysis?.reportCompleteness ?? null}
+          researchAt={analysis?.researchAt ?? null}
+          monitor={analysis?.monitor ?? null}
+        />
       </section>
 
       <section>

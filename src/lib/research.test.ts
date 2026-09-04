@@ -14,7 +14,10 @@ import fsSync from "node:fs";
 import path from "node:path";
 import { describe, it } from "node:test";
 import {
+  addSpend,
   buildResearchSystem,
+  emptyTally,
+  needsResearch,
   parseMonitorText,
   parseReport,
   parseVerdict,
@@ -237,5 +240,76 @@ describe("parser robustness against how the model actually writes", () => {
     const r = parseReport("I'll look into this. THESIS: only one section.");
     assert.equal(Object.keys(r).length, 1);
     assert.ok(reportCompleteness(r) < 20);
+  });
+});
+
+describe("spend guard", () => {
+  it("prices a Sonnet 5 call correctly", () => {
+    const t = addSpend(emptyTally(), "claude-sonnet-5", { input_tokens: 1e6, output_tokens: 1e6 }, 0);
+    assert.equal(t.usd, 12); // $2 in + $10 out
+  });
+
+  it("bills each search on top of tokens", () => {
+    const t = addSpend(emptyTally(), "claude-sonnet-5", { input_tokens: 0, output_tokens: 0 }, 10);
+    assert.equal(Math.round(t.usd * 100) / 100, 0.1);
+  });
+
+  it("accumulates across calls", () => {
+    let t = emptyTally();
+    t = addSpend(t, "claude-sonnet-5", { input_tokens: 100_000, output_tokens: 10_000 }, 5);
+    t = addSpend(t, "claude-sonnet-5", { input_tokens: 100_000, output_tokens: 10_000 }, 5);
+    assert.equal(t.inputTokens, 200_000);
+    assert.equal(t.searches, 10);
+    assert.ok(t.usd > 0.7 && t.usd < 0.8, `unexpected total ${t.usd}`);
+  });
+
+  it("over-estimates an unknown model rather than disabling the guard", () => {
+    // Pricing zero for an unknown model would silently switch the cap off.
+    const known = addSpend(emptyTally(), "claude-sonnet-5", { input_tokens: 1e6 }, 0);
+    const unknown = addSpend(emptyTally(), "some-future-model", { input_tokens: 1e6 }, 0);
+    assert.ok(unknown.usd > known.usd, "unknown model must not be cheaper than a known one");
+    assert.ok(unknown.usd > 0);
+  });
+
+  it("treats missing usage fields as zero rather than NaN", () => {
+    const t = addSpend(emptyTally(), "claude-sonnet-5", {}, 0);
+    assert.equal(t.usd, 0);
+    assert.ok(!Number.isNaN(t.usd));
+  });
+});
+
+describe("needsResearch", () => {
+  const now = new Date("2026-09-03T00:00:00Z");
+
+  it("researches a stock that has never been researched", () => {
+    assert.equal(needsResearch(undefined, now, 7).research, true);
+    assert.equal(needsResearch({}, now, 7).research, true);
+  });
+
+  it("skips a stock researched recently", () => {
+    const r = needsResearch(
+      { research: "x", researchAt: "2026-09-01T00:00:00Z" },
+      now,
+      7,
+    );
+    assert.equal(r.research, false);
+    assert.match(r.reason, /2d ago/);
+  });
+
+  it("re-researches once the report is older than the window", () => {
+    const r = needsResearch(
+      { research: "x", researchAt: "2026-08-20T00:00:00Z" },
+      now,
+      7,
+    );
+    assert.equal(r.research, true);
+    assert.match(r.reason, /14d old/);
+  });
+
+  it("researches rather than skips when the date is missing or unreadable", () => {
+    // Erring toward doing the work is right here: skipping on bad data would
+    // silently freeze a thesis forever.
+    assert.equal(needsResearch({ research: "x" }, now, 7).research, true);
+    assert.equal(needsResearch({ research: "x", researchAt: "not-a-date" }, now, 7).research, true);
   });
 });

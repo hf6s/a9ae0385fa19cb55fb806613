@@ -32,3 +32,4 @@ data/sector-cache.json
 /tilt-results.json
 /filter-results.json
 /data/backtest-wide.json
+/sweep-baseline.json

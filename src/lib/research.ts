@@ -146,6 +146,86 @@ export function reportCompleteness(report: ResearchReport): number {
   return Math.round((present / REPORT_SECTIONS.length) * 100);
 }
 
+/**
+ * Per-million-token prices, USD, for the models this job can run.
+ *
+ * Hardcoded deliberately. The spend guard has to work offline and before the
+ * first call returns, so it cannot ask an API what things cost. These will go
+ * stale; the guard is a floor against runaway spend, not an invoice.
+ */
+export const MODEL_PRICES: Record<string, { in: number; out: number }> = {
+  "claude-sonnet-5": { in: 2, out: 10 },
+  "claude-opus-5": { in: 5, out: 25 },
+  "claude-opus-4-8": { in: 5, out: 25 },
+  "claude-haiku-4-5": { in: 1, out: 5 },
+};
+
+/** USD per web search. Billed per call on top of the tokens the results cost. */
+export const SEARCH_PRICE = 0.01;
+
+export interface SpendTally {
+  inputTokens: number;
+  outputTokens: number;
+  searches: number;
+  usd: number;
+}
+
+export function emptyTally(): SpendTally {
+  return { inputTokens: 0, outputTokens: 0, searches: 0, usd: 0 };
+}
+
+/**
+ * Add one call's usage to a running tally.
+ *
+ * An unknown model priced at zero would silently disable the guard, so it
+ * falls back to the most expensive entry: a guard that over-estimates stops
+ * early and costs nothing, one that under-estimates does not stop at all.
+ */
+export function addSpend(
+  tally: SpendTally,
+  model: string,
+  usage: { input_tokens?: number; output_tokens?: number },
+  searches: number,
+): SpendTally {
+  const dearest = Object.values(MODEL_PRICES).reduce((a, b) => (b.out > a.out ? b : a));
+  const price = MODEL_PRICES[model] ?? dearest;
+  const inTok = usage.input_tokens ?? 0;
+  const outTok = usage.output_tokens ?? 0;
+  return {
+    inputTokens: tally.inputTokens + inTok,
+    outputTokens: tally.outputTokens + outTok,
+    searches: tally.searches + searches,
+    usd:
+      tally.usd +
+      (inTok / 1e6) * price.in +
+      (outTok / 1e6) * price.out +
+      searches * SEARCH_PRICE,
+  };
+}
+
+/**
+ * Whether research for one more stock has been earned.
+ *
+ * Research is skipped when an existing report is younger than maxAgeDays. A
+ * scan every two days does not produce two days of new company news, and
+ * re-researching an unchanged thesis was most of the recurring bill.
+ */
+export function needsResearch(
+  prior: { researchAt?: string; research?: string } | undefined,
+  today: Date,
+  maxAgeDays: number,
+): { research: boolean; reason: string } {
+  if (!prior?.research) return { research: true, reason: "no prior research" };
+  if (!prior.researchAt) return { research: true, reason: "prior research undated" };
+  const ageMs = today.getTime() - new Date(prior.researchAt).getTime();
+  const ageDays = ageMs / 86_400_000;
+  if (Number.isNaN(ageDays)) return { research: true, reason: "prior date unreadable" };
+  if (ageDays >= maxAgeDays) {
+    return { research: true, reason: `prior research is ${Math.floor(ageDays)}d old` };
+  }
+  return { research: false, reason: `researched ${Math.floor(ageDays)}d ago` };
+}
+
 export const RESEARCH_SYSTEM = `You are the research layer of Factor20, a transparent stock-ranking site.
 
 A quantitative model has already scored this company from SEC filings and market

@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-08-28T04:39:24.013Z",
-  "model": "claude-opus-5",
+  "generatedAt": "2026-09-04T04:23:59.475Z",
+  "model": "claude-sonnet-5",
   "analyses": {
     "ALL": {
       "ticker": "ALL",
-      "text": "Allstate's rank is built on two pillars: Growth at 95.5 and Value at 90.6. The growth figure comes almost entirely from a reported 101.7% year-over-year revenue increase, which is an unusually large jump for a mature property-casualty insurer with a $69B market cap. For insurers, the top line blends premiums earned with investment results, so a doubling often reflects a swing from prior-year investment losses to gains, or a base-period distortion, rather than a doubling of policies in force. That is worth checking in the underlying statements before treating the growth score at face value. The value side is more straightforward: a 6.71 P/E, 6.98 P/FCF and 1.02 P/S are cheap on an absolute basis, though the 2.25x price-to-book is not especially low for the sector, which is a hint that the cheapness sits in earnings rather than in assets.\n\nQuality scores a middling 59.1 despite a 33.6% ROE, largely because several inputs — ROIC, operating and gross margins, Piotroski, Altman — are unavailable for this filer, so the score leans on a thin evidence base. Leverage looks conservative at 0.24 debt-to-equity. Momentum at 69.9 is solid but not extreme, so the stock is not obviously stretched after a run.\n\nThe main thing the numbers may be hiding is cyclicality. A 15.2% net margin and 33.6% ROE are strong for a P&C underwriter and typically appear late in a hard pricing cycle, after rate increases have outrun claims inflation. A single-digit P/E on peak-cycle earnings can look expensive if loss ratios normalize or catastrophe seasons turn severe. Reserve development and auto/home rate adequacy are the specifics to verify.",
-      "model": "claude-opus-5",
-      "generatedAt": "2026-08-28T04:39:00.332Z",
-      "researchError": "400: 400 {\"type\":\"error\",\"error\":{\"type\":\"invalid_request_error\",\"message\":\"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.\"},\"request_id\":\"req_011CeUXgjBbmms7WgFMN9qqC\"}"
+      "text": "",
+      "model": "claude-sonnet-5",
+      "generatedAt": "2026-09-04T04:23:59.406Z",
+      "researchError": "400: 400 {\"type\":\"error\",\"error\":{\"type\":\"invalid_request_error\",\"message\":\"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.\"},\"request_id\":\"req_011CehmAyNinbQgR9Nj23CzL\"}"
     },
     "GOOG": {
       "ticker": "GOOG",
@@ -712,14 +712,15 @@
         "text": "WHAT CHANGED — little in direction, more in texture. Book value per share and the Two Sigma contribution are unchanged from the previous note, confirming that thesis was current. New since: the Select upgrade to A, the completed $163.3 million buyback, the Private Clients launch, and reaffirmed guidance. Negative: the combined-ratio miss and lower year-on-year net income. Governance: the CEO's employment agreement was amended to extend her term — continuity, not a change. WHY IT MATTERS — the mix-shift leg of the thesis got harder evidence via the rating upgrade and Select leadership build; the margin leg got weaker evidence. WHETHER TEMPORARY OR STRUCTURAL — the cat losses are event-driven and temporary; the formalised Two Sigma minimum commitment is structural and makes the balance sheet permanently less conventional. WHETHER STILL VALID — yes; the four legs described previously are intact, with the caveat that the price now sits near its high rather than at a discount.\n\nVERDICT: unchanged",
         "previousAt": "2026-08-28"
       },
-      "researchError": "undefined: {\"type\":\"error\",\"error\":{\"details\":null,\"type\":\"invalid_request_error\",\"message\":\"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.\"},\"request_id\":\"req_011CeUXeztc1Aw5xTN5HouyV\"}"
+      "researchError": "undefined: {\"type\":\"error\",\"error\":{\"details\":null,\"type\":\"invalid_request_error\",\"message\":\"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.\"},\"request_id\":\"req_011CeUXeztc1Aw5xTN5HouyV\"}",
+      "researchAt": "2026-09-04T04:23:57.596Z"
     },
     "HCI": {
       "ticker": "HCI",
-      "text": "HCI Group's #2 ranking rests on three of the four factors pulling in the same direction. Growth (94.9) is the standout, driven by roughly 101% year-over-year revenue growth — an unusually large jump for a property insurer, and one that typically reflects policy assumption deals, rate increases in the Florida market, or the consolidation of a growing segment like TypTap rather than steady organic expansion. Quality (88.2) is anchored by a 28.7% ROE and a 33.2% net margin, both exceptional for insurance and a sign that underwriting results and reserve development have been running favorably. Value (89.3) reflects a 7.3x P/E, 2.1x P/B and a striking 4.95x price-to-free-cash-flow, so the market is not paying up for that growth or profitability.\n\nThe tension is Momentum at 37.5. The stock is in the bottom half of the universe on price trend even as fundamentals score near the top — the market is discounting something the trailing numbers don't capture, whether that's the durability of margins, catastrophe exposure, or the fading of a one-time revenue step-up.\n\nWorth checking: Florida homeowners' insurers are inherently lumpy, and a single major hurricane season can reverse a 33% net margin quickly, making the low P/E a reflection of cyclical peak earnings rather than a discount. Leverage, reserve adequacy and reinsurance costs are all listed as n/a here, and for an insurer those are central — the Quality score is being carried almost entirely by ROE and margin without a balance-sheet check behind it.",
-      "model": "claude-opus-5",
-      "generatedAt": "2026-08-28T04:38:45.474Z",
-      "researchError": "400: 400 {\"type\":\"error\",\"error\":{\"type\":\"invalid_request_error\",\"message\":\"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.\"},\"request_id\":\"req_011CeUXghozwLZAX95SY4rKo\"}"
+      "text": "",
+      "model": "claude-sonnet-5",
+      "generatedAt": "2026-09-04T04:23:59.273Z",
+      "researchError": "400: 400 {\"type\":\"error\",\"error\":{\"type\":\"invalid_request_error\",\"message\":\"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.\"},\"request_id\":\"req_011CehmAxozebJBGwTTtTv2M\"}"
     }
   }
 }

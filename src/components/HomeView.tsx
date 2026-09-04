@@ -72,7 +72,7 @@ const VERDICT_META: Record<string, { label: string; cls: string }> = {
  * it improves returns is unmeasured, which is why the footer says so rather
  * than implying an edge.
  */
-function ResearchPanel({
+export function ResearchPanel({
   research,
   sources,
   report,

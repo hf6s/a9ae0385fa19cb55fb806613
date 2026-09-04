@@ -17,8 +17,11 @@ import path from "node:path";
 import Anthropic from "@anthropic-ai/sdk";
 import { loadEnv } from "../src/lib/env";
 import {
+  addSpend,
   buildResearchPrompt,
   buildResearchSystem,
+  emptyTally,
+  needsResearch,
   parseMonitorText,
   parseReport,
   parseVerdict,
@@ -34,7 +37,7 @@ import type {
 
 loadEnv();
 
-const MODEL = "claude-opus-5";
+const MODEL = "claude-sonnet-5";
 const DATA_DIR = path.join(process.cwd(), "data");
 /**
  * Research is billed per search on top of tokens, so it is capped twice: how
@@ -49,6 +52,25 @@ const DATA_DIR = path.join(process.cwd(), "data");
  */
 const RESEARCH_TOP_DEFAULT = 3;
 const MAX_SEARCHES = 12;
+/**
+ * Hard ceiling on what one run may spend on research, USD.
+ *
+ * Nothing stopped a runaway before this. A loop that researches more stocks
+ * than intended, or a model that searches its full allowance every time, spends
+ * real money with no upper bound and no warning until the balance is gone.
+ */
+const MAX_SPEND_USD = Number(process.env.RESEARCH_MAX_SPEND_USD) || 2;
+/**
+ * Skip a stock whose research is younger than this. Scans run every two days
+ * and company news does not arrive that fast, so re-researching an unchanged
+ * thesis was most of the recurring bill.
+ */
+const RESEARCH_MAX_AGE_DAYS = Number(process.env.RESEARCH_MAX_AGE_DAYS) || 7;
+/**
+ * How many stocks that have dropped out of the top N still get monitored.
+ * Capped so a long history of past holdings cannot grow the bill without limit.
+ */
+const MONITOR_CARRYOVER = Number(process.env.RESEARCH_CARRYOVER) || 2;
 
 const SYSTEM_PROMPT = `You are the analysis layer of Factor20, a transparent, evidence-based stock
 ranking website. Stocks are ranked by a quantitative factor model (Quality 30%,
@@ -160,7 +182,7 @@ async function researchOne(
     | "reportCompleteness"
     | "monitor"
     | "researchAt"
-  >
+  > & { usage?: { input_tokens?: number; output_tokens?: number }; searches?: number }
 > {
   try {
     const stream = client.messages.stream({
@@ -194,11 +216,17 @@ async function researchOne(
     }
     const { sources, error } = extractSources(response.content);
     const text = extractText(response.content);
-    if (!text) return { researchError: error ?? "no research text returned" };
+    // Count the searches actually issued, not the allowance: a call that used
+    // three of twelve must be billed for three in the tally.
+    const searches = response.content.filter((b) => b.type === "server_tool_use").length;
+    const usage = { input_tokens: response.usage.input_tokens, output_tokens: response.usage.output_tokens };
+    if (!text) return { researchError: error ?? "no research text returned", usage, searches };
 
     const report = parseReport(text);
     const monitorText = previous ? parseMonitorText(text) : null;
     return {
+      usage,
+      searches,
       research: text,
       sources,
       researchAt: new Date().toISOString(),
@@ -232,23 +260,32 @@ async function runDirect(client: Anthropic, stocks: RankedStock[]): Promise<Stoc
   const out: StockAnalysis[] = [];
   for (const s of stocks) {
     console.log(`Analyzing ${s.ticker}...`);
-    const response = await client.messages.create({
+    try {
+      const response = await client.messages.create({
       model: MODEL,
       max_tokens: 3000,
       thinking: { type: "adaptive" },
       system: SYSTEM_PROMPT,
       messages: [{ role: "user", content: buildPrompt(s) }],
     });
-    if (response.stop_reason === "refusal") {
-      console.log(`  ${s.ticker}: refused — skipping`);
-      continue;
+      if (response.stop_reason === "refusal") {
+        console.log(`  ${s.ticker}: refused — skipping`);
+        continue;
+      }
+      out.push({
+        ticker: s.ticker,
+        text: extractText(response.content),
+        model: MODEL,
+        generatedAt: new Date().toISOString(),
+      });
+    } catch (err) {
+      // One stock's failure must not abort the run. An exhausted balance or a
+      // transient 500 previously threw out of main and crashed the scheduled
+      // job, losing the stocks that would have succeeded after it.
+      const msg =
+        err instanceof Anthropic.APIError ? `${err.status}: ${err.message}` : String(err);
+      console.log(`  ${s.ticker}: write-up failed — ${msg.slice(0, 120)}`);
     }
-    out.push({
-      ticker: s.ticker,
-      text: extractText(response.content),
-      model: MODEL,
-      generatedAt: new Date().toISOString(),
-    });
   }
   return out;
 }
@@ -331,11 +368,36 @@ async function main() {
   // "0" must mean off, which Number(...) || DEFAULT would silently turn back on.
   const researchTop = researchArg === null ? RESEARCH_TOP_DEFAULT : Number(researchArg);
   if (!process.argv.includes("--no-research") && researchTop > 0) {
-    const targets = stocks.slice(0, Math.min(researchTop, stocks.length));
-    console.log(`
-Researching the top ${targets.length} with web search...`);
+    // Targets are the top N, PLUS any stock further down that already has a
+    // thesis. A holding that slips out of the top three still deserves
+    // monitoring: silently abandoning its thesis is how a watchlist rots.
+    const top = stocks.slice(0, Math.min(researchTop, stocks.length));
+    const withThesis = stocks
+      .slice(top.length)
+      .filter((s) => existing.analyses[s.ticker]?.research)
+      .slice(0, MONITOR_CARRYOVER);
+    const targets = [...top, ...withThesis];
+    console.log(
+      `
+Researching ${top.length} top-ranked` +
+        (withThesis.length ? ` + ${withThesis.length} carried over with an existing thesis` : "") +
+        ` (cap $${MAX_SPEND_USD.toFixed(2)}, skip if researched < ${RESEARCH_MAX_AGE_DAYS}d ago)...`,
+    );
     const byTicker = new Map(analyses.map((a) => [a.ticker, a]));
+    let tally = emptyTally();
+    const now = new Date();
     for (const s of targets) {
+      // Guard BEFORE the call, not after: a check that only runs afterwards
+      // has already spent the money it was meant to prevent.
+      if (tally.usd >= MAX_SPEND_USD) {
+        console.log(`  stopping: spend cap $${MAX_SPEND_USD.toFixed(2)} reached`);
+        break;
+      }
+      const fresh = needsResearch(existing.analyses[s.ticker], now, RESEARCH_MAX_AGE_DAYS);
+      if (!fresh.research) {
+        console.log(`  ${s.ticker}... skipped (${fresh.reason})`);
+        continue;
+      }
       process.stdout.write(`  ${s.ticker}... `);
       // The thesis to compare against comes from whatever is already on disk
       // for this ticker, so monitoring works across runs without extra state.
@@ -348,7 +410,8 @@ Researching the top ${targets.length} with web search...`);
       const previousAt = prior?.researchAt ?? prior?.generatedAt;
       const previous =
         priorThesis && previousAt ? { thesis: priorThesis, at: previousAt.slice(0, 10) } : null;
-      const extra = await researchOne(client, s, previous);
+      const { usage, searches, ...extra } = await researchOne(client, s, previous);
+      if (usage) tally = addSpend(tally, MODEL, usage, searches ?? 0);
       const target = byTicker.get(s.ticker);
       if (target) {
         Object.assign(target, extra);
@@ -369,6 +432,11 @@ Researching the top ${targets.length} with web search...`);
           : `skipped (${extra.researchError})`,
       );
     }
+    console.log(
+      `  research spend: $${tally.usd.toFixed(3)} ` +
+        `(${tally.inputTokens.toLocaleString()} in, ${tally.outputTokens.toLocaleString()} out, ` +
+        `${tally.searches} searches)`,
+    );
   }
 
   // Merge field-wise, not record-wise. A run with research disabled (or one
