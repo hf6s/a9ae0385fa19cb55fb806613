@@ -12,7 +12,8 @@
     "backtest": "tsx scripts/backtest.ts",
     "universe-pit": "tsx scripts/universe-pit.ts",
     "test": "tsx --test src/lib/*.test.ts",
-    "oos": "tsx scripts/oos.ts"
+    "oos": "tsx scripts/oos.ts",
+    "forward": "tsx scripts/forward.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.111.0",

@@ -43,7 +43,15 @@ export interface RankedStock {
 
 export interface ScoreHistoryPoint {
   date: string;
-  entries: Record<string, { r: number; s: number }>; // ticker -> { rank, score }
+  /**
+   * ticker -> { rank, score, price }.
+   *
+   * `p` is optional because entries written before forward tracking existed do
+   * not have it. Without a price at recommendation time there is no way to
+   * compute what a pick actually returned, which is the only route to ever
+   * knowing whether this model works on data it has not seen.
+   */
+  entries: Record<string, { r: number; s: number; p?: number }>;
 }
 
 export interface Rankings {

@@ -350,10 +350,17 @@ async function main() {
 
   // Append compact per-scan snapshot for score/rank history (last 90 scans)
   const historyPath = path.join(DATA_DIR, "score-history.json");
-  const history: { date: string; entries: Record<string, { r: number; s: number }> }[] =
-    fs.existsSync(historyPath) ? JSON.parse(fs.readFileSync(historyPath, "utf8")) : [];
-  const entries: Record<string, { r: number; s: number }> = {};
-  for (const s of ranked) entries[s.ticker] = { r: s.rank, s: s.finalScore };
+  type HistEntry = { r: number; s: number; p?: number };
+  const history: { date: string; entries: Record<string, HistEntry> }[] = fs.existsSync(
+    historyPath,
+  )
+    ? JSON.parse(fs.readFileSync(historyPath, "utf8"))
+    : [];
+  // Price is recorded alongside rank so forward returns can be measured later.
+  // The backtest can only ever test the past; this is the record that lets the
+  // model eventually be judged on picks it made before the outcome was known.
+  const entries: Record<string, HistEntry> = {};
+  for (const s of ranked) entries[s.ticker] = { r: s.rank, s: s.finalScore, p: s.price };
   history.push({ date: rankings.generatedAt.slice(0, 10), entries });
   fs.writeFileSync(historyPath, JSON.stringify(history.slice(-90)));
   // Price-history files for chart pages — cap at 120 to keep the repo lean
