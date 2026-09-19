@@ -56,12 +56,13 @@ const REF = "F20-001";
 const PAY_URL = "https://paypal.me/Marky978/114.99";
 
 /**
- * DRAFT. marky rewrites this in his own words before it ships.
+ * Approved by marky as it stands, 19 Sep 2026.
  *
- * It is the last thing read before the number, and for a sale to family it
- * carries more weight than anything else on the page — which is exactly why
- * it must not be written by someone else and left that way. Blunt, short, no
- * persuasion, and it says the unflattering part out loud.
+ * The last thing read before the number. Blunt, short, no persuasion, and it
+ * says the unflattering part out loud: the historical test does not beat the
+ * market. Every claim in it is true of the code in this repository.
+ *
+ * Treat edits here as carefully as edits to the bill. It is signed.
  */
 const NOTE = [
   "I built this over the summer to find out whether picking stocks could be done by rules instead of by guessing.",
