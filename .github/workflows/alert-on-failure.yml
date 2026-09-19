@@ -1,6 +1,6 @@
 name: Alert on failed run
 
-# Scans and backtests run unattended on a schedule. Without this, a failure is
+# The scan runs unattended on a schedule. Without this, a failure is
 # invisible until someone notices the numbers are stale -- which is exactly how
 # a broken nightly went unnoticed for days.
 #
@@ -9,7 +9,7 @@ name: Alert on failed run
 
 on:
   workflow_run:
-    workflows: ["Scan (site-triggered)", "Backtest (site-triggered)"]
+    workflows: ["Scan (site-triggered)"]
     types: [completed]
 
 permissions:

@@ -6,8 +6,8 @@ import type { NextRequest } from "next/server";
  *
  * The rankings, backtest and stock pages stay public: they are the product.
  * What is NOT public is anything that spends money or changes data. The scan
- * and backtest endpoints trigger GitHub Actions runs that cost real API calls,
- * and until this existed anyone who found the URL could press the button.
+ * endpoint triggers a GitHub Actions run that costs real API calls, and until
+ * this existed anyone who found the URL could press the button.
  *
  * Basic auth rather than accounts: this is a stopgap for a single operator.
  * Real per-user accounts are still the v1 requirement.
@@ -56,5 +56,5 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/api/scan/:path*", "/api/backtest/:path*"],
+  matcher: ["/dashboard/:path*", "/api/scan/:path*"],
 };

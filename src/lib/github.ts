@@ -1,8 +1,8 @@
 /**
- * Triggers long jobs (scan, backtest) as GitHub Actions runs.
+ * Triggers the scan as a GitHub Actions run.
  *
- * Why not run them in the API route: a scan takes ~90 minutes and a backtest
- * ~30, while a serverless function is killed after seconds. GitHub Actions
+ * Why not run it in the API route: a scan takes ~90 minutes while a
+ * serverless function is killed after seconds. GitHub Actions
  * allows hours per job, and since prices now come from EODHD (which answers
  * datacenter IPs, unlike Yahoo and Finnhub's free tier) CI is finally a place
  * these jobs can actually succeed.
@@ -17,7 +17,6 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 
 export const WORKFLOWS = {
   scan: "scan.yml",
-  backtest: "backtest.yml",
 } as const;
 
 export type WorkflowName = keyof typeof WORKFLOWS;
@@ -106,7 +105,6 @@ export async function latestRun(name: WorkflowName): Promise<RunInfo | null> {
 /** Fallbacks until this repo has finished runs to learn from. */
 const ASSUMED_MS: Record<WorkflowName, number> = {
   scan: 35 * 60 * 1000,
-  backtest: 20 * 60 * 1000,
 };
 
 export interface Progress {
