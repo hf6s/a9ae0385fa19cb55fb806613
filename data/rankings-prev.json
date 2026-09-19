@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-29T12:32:16.714Z",
+  "generatedAt": "2026-08-31T12:38:46.976Z",
   "universeScanned": 905,
   "passedFilters": 171,
   "skippedFilters": [
@@ -843,7 +843,7 @@
       "scores": {
         "quality": 64.8,
         "value": 70.4,
-        "momentum": 96,
+        "momentum": 96.2,
         "growth": 8.2
       },
       "penalties": [],
@@ -2559,7 +2559,7 @@
       "scores": {
         "quality": 82.4,
         "value": 28.9,
-        "momentum": 84.7,
+        "momentum": 84.9,
         "growth": 49.2
       },
       "penalties": [
@@ -3144,12 +3144,12 @@
       "ticker": "FDS",
       "name": "Factset Research Systems Inc",
       "sector": "Financial Services",
-      "price": 308.98,
-      "marketCap": 11717.75752,
+      "price": 307.82,
+      "marketCap": 11673.76568,
       "scores": {
         "quality": 66.7,
-        "value": 47.6,
-        "momentum": 37.7,
+        "value": 47.7,
+        "momentum": 37.3,
         "growth": 42
       },
       "penalties": [],
@@ -3157,10 +3157,10 @@
       "recommended": false,
       "nextEarningsDate": null,
       "metrics": {
-        "pe": 21.938723678322752,
-        "pb": 5.3593522907154325,
-        "ps": 5.046954932232094,
-        "pfcf": 18.977539249887442,
+        "pe": 21.856359384624604,
+        "pb": 5.3392317370963305,
+        "ps": 5.028007208361975,
+        "pfcf": 18.906292096253324,
         "roe": 27.306826294940617,
         "roic": 19.26268926046847,
         "grossMargin": 52.71743531167034,
@@ -3171,7 +3171,7 @@
         "revenueGrowth": 5.5119404134539085,
         "epsGrowth": 11.550234728064869,
         "latestSurprisePct": null,
-        "altmanZ": 5.25,
+        "altmanZ": 5.23,
         "piotroskiF": 7,
         "fcfGrowth": 0.45505054038268494,
         "debtToEbitda": 1.5102307520800358,
@@ -3882,6 +3882,45 @@
     },
     {
       "rank": 100,
+      "ticker": "DV",
+      "name": "Doubleverify Holdings Inc",
+      "sector": "Media",
+      "price": 13.38,
+      "marketCap": 2177.9964,
+      "scores": {
+        "quality": 50.2,
+        "value": 50.8,
+        "momentum": 33.4,
+        "growth": 55.3
+      },
+      "penalties": [],
+      "finalScore": 47.2,
+      "recommended": false,
+      "nextEarningsDate": null,
+      "metrics": {
+        "pe": 36.63638412757153,
+        "pb": 1.9251611374910282,
+        "ps": 2.9106275499772147,
+        "pfcf": 12.614804174823636,
+        "roe": 4.477023543928749,
+        "roic": null,
+        "grossMargin": 82.1594807367722,
+        "operatingMargin": 10.583850400445815,
+        "netMargin": 6.768757074453655,
+        "debtToEquity": null,
+        "currentRatio": 4.272089369298224,
+        "revenueGrowth": 14.322366603228097,
+        "epsGrowth": -5.644941561279381,
+        "latestSurprisePct": null,
+        "altmanZ": 7.28,
+        "piotroskiF": 6,
+        "fcfGrowth": 30.290155831415312,
+        "debtToEbitda": null,
+        "grossProfitToAssets": 45.40286334210188
+      }
+    },
+    {
+      "rank": 101,
       "ticker": "NEU",
       "name": "NewMarket Corp",
       "sector": "Chemicals",
@@ -3917,45 +3956,6 @@
         "fcfGrowth": 6.285679674131953,
         "debtToEbitda": 1.326120210704244,
         "grossProfitToAssets": 24.54999549029124
-      }
-    },
-    {
-      "rank": 101,
-      "ticker": "DV",
-      "name": "Doubleverify Holdings Inc",
-      "sector": "Media",
-      "price": 13.38,
-      "marketCap": 2177.9964,
-      "scores": {
-        "quality": 50.2,
-        "value": 50.8,
-        "momentum": 33.3,
-        "growth": 55.3
-      },
-      "penalties": [],
-      "finalScore": 47.1,
-      "recommended": false,
-      "nextEarningsDate": null,
-      "metrics": {
-        "pe": 36.63638412757153,
-        "pb": 1.9251611374910282,
-        "ps": 2.9106275499772147,
-        "pfcf": 12.614804174823636,
-        "roe": 4.477023543928749,
-        "roic": null,
-        "grossMargin": 82.1594807367722,
-        "operatingMargin": 10.583850400445815,
-        "netMargin": 6.768757074453655,
-        "debtToEquity": null,
-        "currentRatio": 4.272089369298224,
-        "revenueGrowth": 14.322366603228097,
-        "epsGrowth": -5.644941561279381,
-        "latestSurprisePct": null,
-        "altmanZ": 7.28,
-        "piotroskiF": 6,
-        "fcfGrowth": 30.290155831415312,
-        "debtToEbitda": null,
-        "grossProfitToAssets": 45.40286334210188
       }
     },
     {
