@@ -50,7 +50,7 @@ const SCENE_VH = 450;
  * It is a speed limit, not scroll-jacking. Nothing is prevented, nothing is
  * snapped, and scrolling away mid-catch-up simply leaves it where it got to.
  */
-const MAX_PROGRESS_PER_SEC = 0.17;
+const MAX_PROGRESS_PER_SEC = 0.1;
 
 /**
  * How fast the scene advances on its own while it is on screen.
@@ -63,7 +63,7 @@ const MAX_PROGRESS_PER_SEC = 0.17;
  * A reader who stops anywhere in the section watches the whole thing without
  * moving a thumb. A reader who flicks sees it playing on the way past.
  */
-const AUTOPLAY_PER_SEC = 0.15;
+const AUTOPLAY_PER_SEC = 0.1;
 
 /**
  * Where the gates sit, as a fraction of the world height.
