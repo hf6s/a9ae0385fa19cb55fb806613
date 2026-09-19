@@ -30,11 +30,11 @@ import { COLOURS, FRAGMENT, VERTEX, WORLD_ZOOM } from "./programs";
 /**
  * Scroll distance the pinned scene occupies.
  *
- * Long on purpose. At 420vh the whole sequence went past in one flick and the
- * gates were over before they registered; the reader should be able to travel
- * through it and watch each stage happen.
+ * Tuned down from 620vh: long enough that the three gates each register, short
+ * enough that nobody is trapped scrolling through it. The whole sequence is
+ * about three screens of travel.
  */
-const SCENE_VH = 620;
+const SCENE_VH = 300;
 
 /**
  * Where the gates sit, as a fraction of the world height.

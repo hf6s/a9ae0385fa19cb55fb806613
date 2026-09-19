@@ -48,8 +48,8 @@
   /* Heavy easing: long settle, slow start. */
   --ease-heavy: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-mech: cubic-bezier(0.2, 0.9, 0.1, 1);
-  --dur-1: 700ms;
-  --dur-2: 1100ms;
+  --dur-1: 420ms;
+  --dur-2: 640ms;
 
   font-family: var(--font-mono), ui-monospace, "SF Mono", Menlo, monospace;
   background: var(--ph-void);
@@ -206,7 +206,7 @@
 /* ---- Sections ----------------------------------------------------------- */
 
 .inv-section {
-  padding: 40px 0;
+  padding: 30px 0;
   border-bottom: 1px solid var(--ph-rule);
 }
 
@@ -232,7 +232,7 @@
 /* ---- Hero --------------------------------------------------------------- */
 
 .inv-hero {
-  min-height: min(84vh, 680px);
+  min-height: min(72vh, 560px);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -742,7 +742,7 @@ html.inv-booting body {
   align-items: flex-end;
   padding: 0 var(--gutter) 18vh;
   transform: translateY(0);
-  transition: transform 860ms var(--ease-heavy);
+  transition: transform 620ms var(--ease-heavy);
 }
 
 .inv-boot.is-lifting {

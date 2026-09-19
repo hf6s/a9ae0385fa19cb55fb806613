@@ -28,7 +28,7 @@ import { prefersReducedMotion } from "@/components/ScrollStory";
  * another input here, which is the point: the wait does actual work.
  */
 
-const BOOT_MAX_MS = 2600;
+const BOOT_MAX_MS = 1700;
 const SEEN_KEY = "f20-boot-seen";
 const SEEN_FOR_MS = 6 * 60 * 60 * 1000;
 
@@ -47,8 +47,8 @@ export interface BootLine {
 function delayFor(index: number): number {
   const wobble = Math.sin(index * 12.9898) * 43758.5453;
   const frac = wobble - Math.floor(wobble);
-  if (frac > 0.94) return 46; // the occasional hitch
-  return 7 + frac * 12;
+  if (frac > 0.94) return 26; // the occasional hitch
+  return 3.5 + frac * 6;
 }
 
 export default function Boot({ lines }: { lines: BootLine[] }) {
@@ -97,7 +97,7 @@ export default function Boot({ lines }: { lines: BootLine[] }) {
         window.setTimeout(() => {
           document.documentElement.classList.remove("inv-booting");
           setActive(false);
-        }, 900),
+        }, 700),
       );
     };
 
@@ -139,7 +139,7 @@ export default function Boot({ lines }: { lines: BootLine[] }) {
       const printed = script.length > 0 ? i / script.length : 1;
       const progress = (fontsReady ? 0.3 : 0) + (loaded ? 0.2 : 0) + printed * 0.5;
       setPct(Math.min(99, Math.round(progress * 100)));
-      if (progress >= 0.99 && elapsed > 900) {
+      if (progress >= 0.99 && elapsed > 550) {
         finish();
         return;
       }
