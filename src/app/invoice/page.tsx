@@ -2,6 +2,7 @@ import Link from "next/link";
 import fs from "node:fs";
 import path from "node:path";
 import Reveal from "@/components/Reveal";
+import { ParallaxHero, ScrollRail, ScrubNumber, StickySteps } from "@/components/ScrollStory";
 
 export const metadata = { title: "Factor20 — the build" };
 export const dynamic = "force-dynamic";
@@ -113,28 +114,55 @@ export default function Invoice() {
   const years = backtest?.stats?.years ?? null;
   const rebalances = backtest?.stats?.quartersTotal ?? null;
 
-  const facts: { n: string; label: string }[] = [
-    scanned ? { n: scanned.toLocaleString(), label: "stocks scored every scan" } : null,
-    passed ? { n: String(passed), label: "survived the health filters" } : null,
-    years ? { n: `${years.toFixed(1)}y`, label: "of history tested" } : null,
-    rebalances ? { n: String(rebalances), label: "rebalances simulated" } : null,
-    { n: "124", label: "automated tests passing" },
-    { n: "4", label: "free data sources wired together" },
-  ].filter(Boolean) as { n: string; label: string }[];
+  const facts: { value: number; decimals?: number; suffix?: string; label: string }[] = [
+    scanned ? { value: scanned, label: "stocks scored every scan" } : null,
+    passed ? { value: passed, label: "survived the health filters" } : null,
+    years ? { value: years, decimals: 1, suffix: "y", label: "of history tested" } : null,
+    rebalances ? { value: rebalances, label: "rebalances simulated" } : null,
+    { value: 124, label: "automated tests passing" },
+    { value: 4, label: "free data sources wired together" },
+  ].filter(Boolean) as { value: number; decimals?: number; suffix?: string; label: string }[];
+
+  const STEPS = [
+    {
+      head: "It reads the filings",
+      body: "SEC submissions, daily prices and dividends pulled automatically for the whole US market. No numbers typed in by hand, ever.",
+    },
+    {
+      head: "It throws most of them out",
+      body: "Eleven health checks: debt, cash flow, margins, solvency, and whether the stock is even in an uptrend. Most companies fail.",
+    },
+    {
+      head: "It scores what survives",
+      body: "Quality, Value, Momentum and Growth — weighted 30/25/25/20 — each metric ranked against every other stock that passed.",
+    },
+    {
+      head: "It shows its work",
+      body: "Every filter, score and penalty is on the page. Nothing is hidden behind a single mystery rating.",
+    },
+    {
+      head: "It tells you when to sell",
+      body: "Falls below its moving average, breaks a health filter, cuts its dividend, drops out of the top 50 — the site flags it.",
+    },
+  ];
 
   return (
     <main className="inv-page">
+      <ScrollRail />
+
       <section className="inv-hero">
-        <p className="inv-kicker">Factor20</p>
-        <h1>
-          Months of work.
-          <br />
-          <span className="inv-hero-accent">Here is what it became.</span>
-        </h1>
-        <p className="inv-hero-sub">
-          A stock ranking system that scores the market on published academic research, shows every
-          number behind every rank, and updates itself without anyone touching it.
-        </p>
+        <ParallaxHero>
+          <p className="inv-kicker">Factor20</p>
+          <h1>
+            Months of work.
+            <br />
+            <span className="inv-hero-accent">Here is what it became.</span>
+          </h1>
+          <p className="inv-hero-sub">
+            A stock ranking system that scores the market on published academic research, shows
+            every number behind every rank, and updates itself without anyone touching it.
+          </p>
+        </ParallaxHero>
         <div className="inv-scroll-cue" aria-hidden="true">
           <span>scroll</span>
           <i />
@@ -145,37 +173,19 @@ export default function Invoice() {
         <section className="inv-facts">
           {facts.map((f) => (
             <div className="inv-fact" key={f.label}>
-              <strong>{f.n}</strong>
+              <strong>
+                <ScrubNumber value={f.value} decimals={f.decimals} suffix={f.suffix} />
+              </strong>
               <span>{f.label}</span>
             </div>
           ))}
         </section>
       </Reveal>
 
-      <Reveal>
-        <section className="inv-section inv-story">
-          <h2>What was built</h2>
-          <ul className="inv-list">
-            <li>
-              <b>A scoring engine.</b> Quality, Value, Momentum and Growth, weighted 30/25/25/20,
-              every metric ranked against every other stock, with eleven health filters a company
-              must pass before it is even considered.
-            </li>
-            <li>
-              <b>A pipeline that runs itself.</b> Prices, SEC filings and dividends pulled
-              automatically, scores recomputed, the site republished. No one presses a button.
-            </li>
-            <li>
-              <b>A backtest over 13.9 years</b>, including companies that went bankrupt or were
-              bought, so the result is not flattered by only counting survivors.
-            </li>
-            <li>
-              <b>Written analysis</b> of the top-ranked names, and sell signals for anything that
-              breaks the rules.
-            </li>
-          </ul>
-        </section>
-      </Reveal>
+      <section className="inv-section inv-story">
+        <h2>How it works</h2>
+      </section>
+      <StickySteps steps={STEPS} />
 
       <Reveal>
         <section className="inv-section inv-story">
@@ -216,7 +226,9 @@ export default function Invoice() {
       <Reveal>
         <div className="inv-total">
           <span>Due now, one time</span>
-          <strong>${oneTime.toFixed(2)}</strong>
+          <strong>
+            <ScrubNumber value={oneTime} decimals={2} prefix="$" />
+          </strong>
         </div>
       </Reveal>
 

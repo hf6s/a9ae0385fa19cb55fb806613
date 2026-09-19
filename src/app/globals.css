@@ -2296,3 +2296,112 @@ table.rolling-table tbody tr:last-child td {
     transform: none !important;
   }
 }
+/* Scroll-linked pieces: parallax hero, progress rail, sticky steps. */
+.inv-parallax {
+  will-change: transform, opacity;
+}
+.inv-rail {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 2px;
+  height: 100vh;
+  background: var(--border);
+  z-index: 5;
+  pointer-events: none;
+}
+.inv-rail-fill {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to bottom, var(--accent), var(--q));
+  transform: scaleY(0);
+  transform-origin: top;
+  will-change: transform;
+}
+.inv-sticky-wrap {
+  position: relative;
+  margin: 0 0 20px;
+}
+.inv-sticky {
+  position: sticky;
+  top: 0;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+}
+.inv-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+.inv-steps li {
+  display: flex;
+  gap: 14px;
+  padding: 14px 0;
+  opacity: 0.22;
+  filter: blur(0.6px);
+  transform: translateY(4px);
+  transition:
+    opacity 0.45s ease,
+    filter 0.45s ease,
+    transform 0.45s ease;
+}
+.inv-steps li.is-active {
+  opacity: 1;
+  filter: none;
+  transform: none;
+}
+.inv-step-n {
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent);
+  padding-top: 4px;
+  min-width: 22px;
+}
+.inv-steps h3 {
+  margin: 0 0 5px;
+  font-size: clamp(17px, 4vw, 21px);
+  letter-spacing: -0.01em;
+}
+.inv-steps p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-dim);
+  max-width: 48ch;
+}
+@media (prefers-reduced-motion: reduce) {
+  .inv-parallax {
+    transform: none !important;
+    opacity: 1 !important;
+  }
+  .inv-sticky-wrap {
+    height: auto !important;
+  }
+  .inv-sticky {
+    position: static;
+    min-height: 0;
+  }
+  .inv-steps li {
+    opacity: 1;
+    filter: none;
+    transform: none;
+  }
+}
+@media print {
+  .inv-rail {
+    display: none;
+  }
+  .inv-sticky-wrap {
+    height: auto !important;
+  }
+  .inv-sticky {
+    position: static;
+    min-height: 0;
+  }
+  .inv-steps li {
+    opacity: 1;
+    filter: none;
+  }
+}
