@@ -1590,3 +1590,18 @@ html.inv-booting body {
     display: none !important;
   }
 }
+
+/* Subtotal and rounding sit tighter than the itemised sections above them:
+   they are arithmetic, not new information. */
+.inv-rounding {
+  margin-top: 4px;
+}
+
+.inv-rounding td {
+  padding: 7px 0;
+}
+
+.inv-rounding .inv-item {
+  font-size: 12.5px;
+  color: var(--ph-text);
+}

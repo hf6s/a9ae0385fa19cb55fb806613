@@ -65,7 +65,17 @@ const REF = "F20-001";
  * Supplied by marky. The amount is prefilled so the tap lands on the right
  * figure rather than an empty box he has to type into.
  */
-const PAY_URL = "https://paypal.me/Marky978/114.99";
+const PAY_URL = "https://paypal.me/Marky978/120";
+
+/**
+ * The figure actually asked for, rounded.
+ *
+ * The itemised lines stay exactly what they are; the difference is shown as
+ * its own line rather than folded into one of them. A bill that quietly
+ * adjusts an item to reach a round number is the kind of thing that, once
+ * noticed, makes every other figure on the page worth re-checking.
+ */
+const ROUNDED_TOTAL = 120;
 
 /**
  * Approved by marky as it stands, 19 Sep 2026.
@@ -107,7 +117,7 @@ const LABOUR: Line[] = [
   {
     item: "Development and testing",
     detail: "Specification, build, verification, deployment.",
-    amount: 80.0,
+    amount: 85.0,
   },
 ];
 
@@ -190,7 +200,9 @@ function Table({ lines, label }: { lines: Line[]; label: string }) {
 }
 
 export default function Invoice() {
-  const oneTime = total(BUILD_COSTS) + total(LABOUR);
+  const subtotal = total(BUILD_COSTS) + total(LABOUR);
+  const rounding = Math.round((ROUNDED_TOTAL - subtotal) * 100) / 100;
+  const oneTime = ROUNDED_TOTAL;
   const monthly = total(ONGOING);
 
   const rankings = readJson<{
@@ -439,6 +451,29 @@ export default function Invoice() {
       <Reveal>
         <Table lines={LABOUR} label="Work" />
       </Reveal>
+
+      {rounding !== 0 ? (
+        <Reveal>
+          <table className="inv-table inv-rounding">
+            <tbody>
+              <tr>
+                <td>
+                  <span className="inv-item">Subtotal</span>
+                </td>
+                <td className="inv-amount">${subtotal.toFixed(2)}</td>
+              </tr>
+              <tr>
+                <td>
+                  <span className="inv-item">Rounding</span>
+                </td>
+                <td className="inv-amount">
+                  {rounding > 0 ? "+" : "-"}${Math.abs(rounding).toFixed(2)}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </Reveal>
+      ) : null}
 
       <Reveal>
         <div className="inv-total">
