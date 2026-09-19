@@ -6,6 +6,7 @@ import Boot from "@/components/Boot";
 import Diag from "@/components/Diag";
 import Machine from "@/components/machine/Machine";
 import PayClose from "@/components/PayClose";
+import Receipt from "@/components/Receipt";
 import Reveal from "@/components/Reveal";
 import SmoothScroll from "@/components/SmoothScroll";
 import {
@@ -326,7 +327,9 @@ export default function Invoice() {
       </Reveal>
 
       <Reveal>
-        <PayClose url={PAY_URL} amount={oneTime} monthly={monthly} />
+        <Receipt>
+          <PayClose url={PAY_URL} amount={oneTime} monthly={monthly} />
+        </Receipt>
       </Reveal>
 
       <Reveal>
