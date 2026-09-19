@@ -175,6 +175,34 @@ export function emptyTally(): SpendTally {
 }
 
 /**
+ * Worst-case usage of a single research call, from measurement rather than
+ * guesswork: the 2026-09-19 production run billed 1,019,311 input and 17,336
+ * output tokens across two calls, so roughly 510k in and 9k out each. These
+ * are set near double that, because the cost is driven by how much a search
+ * returns and a verbose set of results is exactly the case the guard exists
+ * for.
+ */
+export const WORST_CASE_CALL = { inputTokens: 900_000, outputTokens: 20_000 };
+
+/**
+ * What the NEXT research call could cost, USD.
+ *
+ * The old guard compared spend-so-far against the cap, which let a call start
+ * whenever the tally was a cent under it and finish well past: a $2.00 cap
+ * produced a $2.81 run. A ceiling has to be checked against what a call might
+ * cost, not against what previous calls did cost.
+ */
+export function reserveUsd(model: string, maxSearches: number): number {
+  const dearest = Object.values(MODEL_PRICES).reduce((a, b) => (b.out > a.out ? b : a));
+  const price = MODEL_PRICES[model] ?? dearest;
+  return (
+    (WORST_CASE_CALL.inputTokens / 1e6) * price.in +
+    (WORST_CASE_CALL.outputTokens / 1e6) * price.out +
+    maxSearches * SEARCH_PRICE
+  );
+}
+
+/**
  * Add one call's usage to a running tally.
  *
  * An unknown model priced at zero would silently disable the guard, so it

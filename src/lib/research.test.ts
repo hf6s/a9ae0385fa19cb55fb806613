@@ -24,6 +24,7 @@ import {
   REPORT_SECTIONS,
   reportCompleteness,
   RESEARCH_SYSTEM,
+  reserveUsd,
 } from "./research";
 
 /** A full report in the shape the prompt asks for. */
@@ -275,6 +276,45 @@ describe("spend guard", () => {
     const t = addSpend(emptyTally(), "claude-sonnet-5", {}, 0);
     assert.equal(t.usd, 0);
     assert.ok(!Number.isNaN(t.usd));
+  });
+
+  it("reserves more than a real call actually cost", () => {
+    // The 2026-09-19 production run: two calls, 1,019,311 in and 17,336 out
+    // with 60 searches, for $2.812. A reserve smaller than one such call is
+    // what let that run pass a $2.00 cap.
+    const real = addSpend(
+      emptyTally(),
+      "claude-sonnet-5",
+      { input_tokens: 509_655, output_tokens: 8_668 },
+      30,
+    );
+    assert.ok(
+      reserveUsd("claude-sonnet-5", 12) > real.usd,
+      `reserve ${reserveUsd("claude-sonnet-5", 12)} must exceed a measured call at ${real.usd}`,
+    );
+  });
+
+  it("stops a second call rather than letting the tally creep past the cap", () => {
+    // Must match MAX_SPEND_USD's default in scripts/analyze.ts. A cap below
+    // one reserve blocks every call, which is how the first version of this
+    // guard would have silently switched research off.
+    const cap = 3;
+    const reserve = reserveUsd("claude-sonnet-5", 12);
+    // One call is affordable from zero, which is what makes the cap usable.
+    assert.ok(reserve <= cap, `a single call must fit under the cap, reserve was ${reserve}`);
+    // After a real call, the old guard (tally < cap) would have allowed another.
+    const after = addSpend(
+      emptyTally(),
+      "claude-sonnet-5",
+      { input_tokens: 509_655, output_tokens: 8_668 },
+      30,
+    );
+    assert.ok(after.usd < cap, "precondition: the old guard would have permitted another call");
+    assert.ok(after.usd + reserve > cap, "the new guard must refuse it");
+  });
+
+  it("over-estimates an unknown model in the reserve too", () => {
+    assert.ok(reserveUsd("some-future-model", 12) > reserveUsd("claude-sonnet-5", 12));
   });
 });
 

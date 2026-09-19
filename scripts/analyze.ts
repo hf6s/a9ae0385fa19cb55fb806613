@@ -26,6 +26,7 @@ import {
   parseReport,
   parseVerdict,
   reportCompleteness,
+  reserveUsd,
 } from "../src/lib/research";
 import type {
   AnalysisFile,
@@ -50,7 +51,7 @@ const DATA_DIR = path.join(process.cwd(), "data");
  * sources including SEC filings. A starved budget produced a false disclaimer,
  * which is worse than no research at all.
  */
-const RESEARCH_TOP_DEFAULT = 3;
+const RESEARCH_TOP_DEFAULT = 2;
 const MAX_SEARCHES = 12;
 /**
  * Hard ceiling on what one run may spend on research, USD.
@@ -58,14 +59,24 @@ const MAX_SEARCHES = 12;
  * Nothing stopped a runaway before this. A loop that researches more stocks
  * than intended, or a model that searches its full allowance every time, spends
  * real money with no upper bound and no warning until the balance is gone.
+ *
+ * Measured: a real call costs about $1.40 and the worst-case reserve checked
+ * before each one is $2.12. The cap must therefore clear $2.12 or the guard
+ * is an off switch, not a ceiling — at the old $2.00 no research would ever
+ * have run again. At $3.00 exactly one call may start per run, and a second
+ * target waits for the next scan rather than doubling the bill.
  */
-const MAX_SPEND_USD = Number(process.env.RESEARCH_MAX_SPEND_USD) || 2;
+const MAX_SPEND_USD = Number(process.env.RESEARCH_MAX_SPEND_USD) || 3;
 /**
- * Skip a stock whose research is younger than this. Scans run every two days
- * and company news does not arrive that fast, so re-researching an unchanged
- * thesis was most of the recurring bill.
+ * Skip a stock whose research is younger than this.
+ *
+ * Was 7 days, which cost about $18/month against the $25 this app is sold
+ * for. Research reads news and filings coverage for a strategy that rebalances
+ * quarterly off quarterly filings, so a monthly refresh matches what the
+ * reader is actually deciding. The quantitative scores still update every scan;
+ * only the written reports age.
  */
-const RESEARCH_MAX_AGE_DAYS = Number(process.env.RESEARCH_MAX_AGE_DAYS) || 7;
+const RESEARCH_MAX_AGE_DAYS = Number(process.env.RESEARCH_MAX_AGE_DAYS) || 30;
 /**
  * How many stocks that have dropped out of the top N still get monitored.
  * Capped so a long history of past holdings cannot grow the bill without limit.
@@ -385,12 +396,17 @@ Researching ${top.length} top-ranked` +
     );
     const byTicker = new Map(analyses.map((a) => [a.ticker, a]));
     let tally = emptyTally();
+    const reserve = reserveUsd(MODEL, MAX_SEARCHES);
     const now = new Date();
     for (const s of targets) {
-      // Guard BEFORE the call, not after: a check that only runs afterwards
-      // has already spent the money it was meant to prevent.
-      if (tally.usd >= MAX_SPEND_USD) {
-        console.log(`  stopping: spend cap $${MAX_SPEND_USD.toFixed(2)} reached`);
+      // Guard BEFORE the call, and against what the call COULD cost, not what
+      // earlier calls did cost. Comparing the tally alone let a run start a
+      // call while a cent under the cap and finish far past it.
+      if (tally.usd + reserve > MAX_SPEND_USD) {
+        console.log(
+          `  stopping: another call could reach $${(tally.usd + reserve).toFixed(2)}, ` +
+            `past the $${MAX_SPEND_USD.toFixed(2)} cap`,
+        );
         break;
       }
       const fresh = needsResearch(existing.analyses[s.ticker], now, RESEARCH_MAX_AGE_DAYS);
