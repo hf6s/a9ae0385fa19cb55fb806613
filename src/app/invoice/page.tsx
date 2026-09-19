@@ -9,7 +9,8 @@ import {
   ScrubNumber,
   StickySteps,
 } from "@/components/ScrollStory";
-import type { CurvePoint } from "@/components/ScrollStory";
+import type { CurvePoint } from "@/lib/scroll-math";
+import { sampleCurve } from "@/lib/scroll-math";
 
 export const metadata = { title: "Factor20 — the build" };
 export const dynamic = "force-dynamic";
@@ -120,18 +121,10 @@ export default function Invoice() {
   /**
    * The curve is ~3,500 daily points. Shipping all of them would put a
    * 200KB path in the HTML for a chart 375px wide, where nothing past the
-   * ~200th point is a distinguishable pixel. Sampled evenly, with the final
-   * point forced in so the line always ends on the real closing value.
+   * ~200th point is a distinguishable pixel. Sampling keeps the true final
+   * value, which is the one number on the chart a reader might repeat.
    */
-  const curve: CurvePoint[] = (() => {
-    const raw = backtest?.curve ?? [];
-    if (raw.length <= 220) return raw;
-    const step = raw.length / 200;
-    const out: CurvePoint[] = [];
-    for (let i = 0; i < 200; i++) out.push(raw[Math.floor(i * step)]);
-    out.push(raw[raw.length - 1]);
-    return out;
-  })();
+  const curve: CurvePoint[] = sampleCurve(backtest?.curve ?? [], 200);
 
   const scanned = rankings?.universeScanned ?? null;
   const passed = rankings?.passedFilters ?? null;

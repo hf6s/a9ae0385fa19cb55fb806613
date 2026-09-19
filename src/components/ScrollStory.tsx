@@ -2,6 +2,16 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
+import {
+  clamp01,
+  curveGeometry,
+  pinnedProgress,
+  scrubProgress,
+  stepIndex,
+} from "@/lib/scroll-math";
+import type { CurvePoint } from "@/lib/scroll-math";
+
+export type { CurvePoint };
 
 /**
  * Scroll-linked motion for the invoice page.
@@ -93,8 +103,6 @@ function useScrollTick(onTick: () => void, enabled = true) {
   }, [enabled]);
 }
 
-const clamp01 = (n: number) => (n < 0 ? 0 : n > 1 ? 1 : n);
-
 /**
  * Hero that drifts and dims as the reader scrolls past it.
  *
@@ -155,17 +163,12 @@ export function ScrubNumber({
   useScrollTick(() => {
     const el = ref.current;
     if (!el) return;
-    const r = el.getBoundingClientRect();
-    const vh = window.innerHeight;
     const doc = document.documentElement;
-    // At the very bottom of the page there is no scroll left to finish the
-    // count with, so anything still mid-count freezes short. The invoice
-    // total lives there, and $108.75 on a page that owes $114.99 is not a
-    // cosmetic bug — it is the wrong number on a bill.
-    const atPageBottom = doc.scrollTop + doc.clientHeight >= doc.scrollHeight - 2;
-    // Otherwise: starts as the element enters the bottom edge, finishes once
-    // it is comfortably on screen rather than after it has left.
-    const p = atPageBottom ? 1 : clamp01((vh - r.top) / (vh * 0.45));
+    const p = scrubProgress({
+      top: el.getBoundingClientRect().top,
+      viewportHeight: window.innerHeight,
+      atPageBottom: doc.scrollTop + doc.clientHeight >= doc.scrollHeight - 2,
+    });
     const next = format(value * p);
     if (next !== shown.current) {
       shown.current = next;
@@ -214,10 +217,10 @@ export function StickySteps({ steps }: { steps: { head: string; body: string }[]
     const el = wrap.current;
     if (!el) return;
     const r = el.getBoundingClientRect();
-    const travel = r.height - window.innerHeight;
-    if (travel <= 0) return;
-    const p = clamp01(-r.top / travel);
-    const idx = Math.min(steps.length - 1, Math.floor(p * steps.length));
+    const idx = stepIndex(
+      pinnedProgress({ top: r.top, height: r.height, viewportHeight: window.innerHeight }),
+      steps.length,
+    );
     setActive((cur) => (cur === idx ? cur : idx));
   });
 
@@ -241,13 +244,6 @@ export function StickySteps({ steps }: { steps: { head: string; body: string }[]
       </div>
     </div>
   );
-}
-
-/** One point of the backtest curve, already downsampled by the server. */
-export interface CurvePoint {
-  t: string;
-  strat: number;
-  bench: number;
 }
 
 /**
@@ -276,22 +272,7 @@ export function ScrollCurve({ points, start = 10000 }: { points: CurvePoint[]; s
   const H = 420;
   const PAD = 10;
 
-  const geom = (() => {
-    const max = Math.max(...points.map((p) => Math.max(p.strat, p.bench)));
-    const min = Math.min(...points.map((p) => Math.min(p.strat, p.bench)), 1);
-    const x = (i: number) => (i / (points.length - 1)) * W;
-    const y = (v: number) => H - PAD - ((v - min) / (max - min)) * (H - PAD * 2);
-    const line = (key: "strat" | "bench") =>
-      points.map((p, i) => `${i === 0 ? "M" : "L"}${x(i).toFixed(1)},${y(p[key]).toFixed(1)}`).join(" ");
-    return {
-      strat: line("strat"),
-      bench: line("bench"),
-      area: `${line("strat")} L${W},${H} L0,${H} Z`,
-      xs: points.map((_, i) => x(i)),
-      ysS: points.map((p) => y(p.strat)),
-      ysB: points.map((p) => y(p.bench)),
-    };
-  })();
+  const geom = curveGeometry(points, W, H, PAD);
 
   const cash = (mult: number) =>
     `$${Math.round(start * mult).toLocaleString("en-US")}`;
@@ -300,12 +281,15 @@ export function ScrollCurve({ points, start = 10000 }: { points: CurvePoint[]; s
     const el = wrap.current;
     if (!el) return;
     const r = el.getBoundingClientRect();
-    const travel = r.height - window.innerHeight;
     const doc = document.documentElement;
-    const atBottom = doc.scrollTop + doc.clientHeight >= doc.scrollHeight - 2;
     // Same rule as the counters: the chart must be able to finish. A curve
-    // frozen at 80% would report a return the app never claimed.
-    const p = atBottom ? 1 : travel > 0 ? clamp01(-r.top / travel) : clamp01((window.innerHeight - r.top) / window.innerHeight);
+    // frozen at 80% reports a return the app never claimed.
+    const p = pinnedProgress({
+      top: r.top,
+      height: r.height,
+      viewportHeight: window.innerHeight,
+      atPageBottom: doc.scrollTop + doc.clientHeight >= doc.scrollHeight - 2,
+    });
     const i = Math.min(points.length - 1, Math.max(0, Math.round(p * (points.length - 1))));
 
     if (clip.current) clip.current.setAttribute("width", String(Math.max(0.001, geom.xs[i])));
