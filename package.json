@@ -13,7 +13,8 @@
     "universe-pit": "tsx scripts/universe-pit.ts",
     "test": "tsx --test src/lib/*.test.ts",
     "oos": "tsx scripts/oos.ts",
-    "forward": "tsx scripts/forward.ts"
+    "forward": "tsx scripts/forward.ts",
+    "stats": "tsx scripts/build-stats.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.111.0",

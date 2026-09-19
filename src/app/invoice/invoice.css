@@ -1293,3 +1293,120 @@ html.inv-booting body {
     box-shadow: none;
   }
 }
+
+/* ---- Terminal panel ----------------------------------------------------- */
+
+.inv-term-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.inv-term-chip {
+  font: inherit;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  /* 44px so a thumb hits it first time. */
+  min-height: 44px;
+  padding: 10px 14px;
+  background: transparent;
+  border: 1px solid var(--ph-rule-bright);
+  color: var(--ph-text);
+  cursor: pointer;
+  transition:
+    border-color var(--dur-1) var(--ease-heavy),
+    color var(--dur-1) var(--ease-heavy),
+    background var(--dur-1) var(--ease-heavy);
+}
+
+.inv-term-chip:active,
+.inv-term-chip.is-active {
+  border-color: var(--ph-green-mid);
+  color: var(--ph-green);
+  background: color-mix(in srgb, var(--ph-green) 8%, transparent);
+}
+
+.inv-term-out {
+  margin: 0;
+  min-height: 132px;
+  padding: 14px;
+  background: var(--ph-panel);
+  border: 1px solid var(--ph-rule);
+  border-left: 2px solid var(--ph-green-dim);
+  font-family: inherit;
+  font-size: 11.5px;
+  line-height: 18px;
+  color: var(--ph-text);
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-variant-numeric: tabular-nums slashed-zero;
+}
+
+.inv-term-echo {
+  color: var(--ph-green);
+}
+
+.inv-term-idle {
+  color: var(--ph-green-dim);
+}
+
+/* ---- The record --------------------------------------------------------- */
+
+.inv-record {
+  margin: 0;
+  border-top: 1px solid var(--ph-rule);
+}
+
+.inv-record > div {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 16px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--ph-rule);
+}
+
+.inv-record dt {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ph-green-dim);
+  align-self: center;
+}
+
+.inv-record dd {
+  margin: 0;
+  font-size: 14px;
+  color: var(--ph-bright);
+  font-variant-numeric: tabular-nums slashed-zero;
+  text-align: right;
+}
+
+/*
+ * The outage. Amber rather than green: it is the one thing on the page that
+ * went wrong, and it should not be dressed as an achievement.
+ */
+.inv-incident {
+  margin-top: 18px;
+  padding: 12px 14px;
+  border-left: 2px solid var(--ph-amber);
+  background: color-mix(in srgb, var(--ph-amber) 5%, transparent);
+}
+
+.inv-incident-when {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ph-amber);
+  margin-bottom: 6px;
+}
+
+.inv-incident p {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 19px;
+  color: var(--ph-text);
+  max-width: 58ch;
+}

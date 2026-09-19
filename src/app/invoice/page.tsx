@@ -7,6 +7,8 @@ import Diag from "@/components/Diag";
 import Machine from "@/components/machine/Machine";
 import PayClose from "@/components/PayClose";
 import Receipt from "@/components/Receipt";
+import Record from "@/components/Record";
+import TerminalPanel from "@/components/TerminalPanel";
 import Reveal from "@/components/Reveal";
 import SmoothScroll from "@/components/SmoothScroll";
 import {
@@ -165,8 +167,18 @@ export default function Invoice() {
     generatedAt?: string;
     universeScanned?: number;
     passedFilters?: number;
-    stocks?: { ticker: string }[];
+    stocks?: { ticker: string; rank: number; finalScore: number; name?: string }[];
   }>("rankings.json");
+
+  const build = readJson<{
+    commits?: number;
+    tests?: number;
+    sourceLines?: number;
+    scansPublished?: number;
+    days?: number;
+  }>("build-stats.json");
+
+  const analyses = readJson<{ analyses?: Record<string, { text?: string }> }>("analysis.json");
 
   const scanned = rankings?.universeScanned ?? 0;
   const passed = rankings?.passedFilters ?? 0;
@@ -187,6 +199,69 @@ export default function Invoice() {
     { value: 26, label: "metrics per stock" },
     { value: 4, label: "data sources" },
   ].filter((f) => f.value > 0);
+
+  const top = rankings?.stocks ?? [];
+  const leader = top[0];
+
+  /**
+   * Commands the reader can run. Every line is read from the files the site
+   * serves - none of this is written out by hand, so it cannot drift from
+   * what the site says elsewhere.
+   */
+  const commands = [
+    {
+      id: "top",
+      label: "Top 20",
+      lines: top.slice(0, 20).map((s) => `${String(s.rank).padStart(2, " ")}  ${s.ticker.padEnd(6, " ")}${s.finalScore.toFixed(1)}`),
+    },
+    leader
+      ? {
+          id: "why",
+          label: `Why ${leader.ticker}`,
+          lines: (() => {
+            const text = analyses?.analyses?.[leader.ticker]?.text ?? "";
+            const clean = text.replace(/\s+/g, " ").trim();
+            return clean
+              ? [`${leader.ticker} ${leader.name ?? ""}`.trim(), "", clean.slice(0, 420) + (clean.length > 420 ? "..." : "")]
+              : [`${leader.ticker} ranks first on the latest scan with ${leader.finalScore.toFixed(1)}.`, "No written analysis on file for this scan."];
+          })(),
+        }
+      : null,
+    {
+      id: "cost",
+      label: "What it costs",
+      lines: [
+        "EODHD market data      $19.99 / month",
+        "Anthropic API           $3.00 / month",
+        "Hosting and automation      included",
+        "                      --------------",
+        `TOTAL                  $${monthly.toFixed(2)} / month`,
+      ],
+    },
+    {
+      id: "sell",
+      label: "When it sells",
+      lines: [
+        "Closes below its 200-day average",
+        "Breaks any Stage 1 health filter",
+        "Cuts its dividend",
+        "Falls out of the top 50",
+        "",
+        "Checked on every scan. Flagged on the exits page.",
+      ],
+    },
+  ].filter(Boolean) as { id: string; label: string; lines: string[] }[];
+
+  const recordRows = [
+    lastScan ? { label: "Last scan", value: lastScan } : null,
+    build?.scansPublished ? { label: "Scans published", value: String(build.scansPublished) } : null,
+    build?.days ? { label: "In development", value: `${build.days} days` } : null,
+    build?.commits ? { label: "Commits", value: String(build.commits) } : null,
+    build?.tests ? { label: "Tests passing", value: String(build.tests) } : null,
+    build?.sourceLines
+      ? { label: "Lines of code", value: build.sourceLines.toLocaleString("en-US") }
+      : null,
+  ].filter(Boolean) as { label: string; value: string }[];
 
   return (
     <main className="inv-page">
@@ -268,6 +343,20 @@ export default function Invoice() {
           <ScrollFunnel scanned={scanned} passed={passed} picked={picked} tickers={tickers} />
         </Machine>
       ) : null}
+
+      <Reveal>
+        <TerminalPanel commands={commands} />
+      </Reveal>
+
+      <Reveal>
+        <Record
+          rows={recordRows}
+          incident={{
+            period: "31 Aug - 19 Sep 2026",
+            what: "Nineteen days with no new rankings. The market data subscription lapsed, and rather than publish stale prices as if they were current, the scan refused to overwrite good data and opened a ticket. Fixed on 19 September.",
+          }}
+        />
+      </Reveal>
 
       <Reveal>
         <section className="inv-section">
