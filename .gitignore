@@ -33,3 +33,5 @@ data/sector-cache.json
 /filter-results.json
 /data/backtest-wide.json
 /sweep-baseline.json
+/enh-*.json
+/enh-results.json

@@ -38,6 +38,14 @@ export interface RankedStock {
   finalScore: number;
   recommended: boolean; // top 20
   nextEarningsDate?: string | null; // ISO date of next scheduled earnings, if within ~60d
+  /**
+   * Dividends per share paid in the trailing twelve months.
+   *
+   * null and 0 mean different things: 0 is a company that pays nothing, null
+   * is a feed that did not answer. The dividend-cut sell rule must never fire
+   * on the second, so consumers have to keep them apart.
+   */
+  dividendTtm?: number | null;
   metrics: Record<string, number | null>; // key metrics surfaced in the UI / analysis prompt
 }
 

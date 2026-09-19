@@ -9,6 +9,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { loadEnv } from "../src/lib/env";
+import { trailingDividend } from "../src/lib/dividends";
 import { finnhub } from "../src/lib/finnhub";
 import { dailyHistory } from "../src/lib/prices";
 import { asOf, edgarHistory, loadHistoryCache, saveHistoryCache } from "../src/lib/edgar-history";
@@ -267,6 +268,22 @@ async function main() {
   }
 
   // Stage 2-5
+  // Trailing dividends, for the spec's dividend-cut sell rule. Fetched only for
+  // survivors, so this adds a few hundred calls rather than thousands, and a
+  // failure yields null (unknown) rather than 0, which would read as a cut.
+  console.log(`Fetching trailing dividends for ${survivors.length} survivors...`);
+  const dividends = new Map<string, number | null>();
+  for (let i = 0; i < survivors.length; i += 8) {
+    const chunk = survivors.slice(i, i + 8);
+    const got = await Promise.all(
+      chunk.map((s) => trailingDividend(s.ticker).catch(() => null)),
+    );
+    got.forEach((d, j) => dividends.set(chunk[j].ticker, d));
+  }
+  const paying = [...dividends.values()].filter((d) => d !== null && d > 0).length;
+  const unknown = [...dividends.values()].filter((d) => d === null).length;
+  console.log(`  ${paying} pay a dividend, ${unknown} unknown`);
+
   const factorScores = computeFactorScores(survivors);
   const ranked: RankedStock[] = survivors
     .map((s, i) => {
@@ -284,6 +301,7 @@ async function main() {
         finalScore: score,
         recommended: false,
         nextEarningsDate: nextEarnings.get(s.ticker) ?? null,
+        dividendTtm: dividends.get(s.ticker) ?? null,
         metrics: {
           pe: s.pe,
           pb: s.pb,

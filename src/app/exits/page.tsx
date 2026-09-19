@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { classifyDividend } from "@/lib/dividends";
 import { getPrevRankings, getRankings } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
@@ -81,7 +82,40 @@ export default function ExitsPage() {
       severity: "med" as Severity,
     }));
 
-  const all = [...droppedExits, ...belowLine];
+  /**
+   * Dividend cuts, comparing this scan's trailing-twelve-month figure against
+   * the previous scan's.
+   *
+   * The spec's rule is "cuts dividend due to distress". Only the cut is in the
+   * data; intent is not, and a board moving capital return from dividends to
+   * buybacks has not stopped returning capital. So severity is decided by
+   * whether the company is ALSO in trouble on the numbers we do have: a cut
+   * alongside a failing score is the distress case, a cut on its own is a
+   * flag to look at rather than a sell.
+   */
+  const prevDiv = new Map(prev?.stocks.map((s) => [s.ticker, s.dividendTtm]) ?? []);
+  const dividendExits: Exit[] = rankings.stocks
+    .slice(0, 50)
+    .map((s) => {
+      const change = classifyDividend(prevDiv.get(s.ticker), s.dividendTtm);
+      if (change !== "cut" && change !== "suspended") return null;
+      const before = prevDiv.get(s.ticker) ?? 0;
+      const distress = s.finalScore < SCORE_SELL_LINE || s.penalties.length > 0;
+      return {
+        ticker: s.ticker,
+        name: s.name,
+        rule: change === "suspended" ? "Dividend suspended" : "Dividend cut",
+        detail:
+          `$${before.toFixed(2)} to $${(s.dividendTtm ?? 0).toFixed(2)} per share (trailing 12m)` +
+          (distress
+            ? ", alongside a weak score or active penalties"
+            : ", but the company still scores clean"),
+        severity: (distress ? "high" : "low") as Severity,
+      };
+    })
+    .filter((e): e is Exit => e !== null);
+
+  const all = [...droppedExits, ...belowLine, ...dividendExits];
   const rank = { high: 0, med: 1, low: 2 };
   all.sort((a, b) => rank[a.severity] - rank[b.severity]);
 
@@ -198,6 +232,11 @@ export default function ExitsPage() {
           <div className="card">
             <div className="label">Needs data beyond the scan</div>
             <p>Price closing below the 200-day MA intraday</p>
+          <p>
+            A dividend cut or suspension. Shown as high severity only when the score or
+            penalties also point to trouble: the data records the cut, not the reason, and a
+            board switching from dividends to buybacks has not stopped returning capital.
+          </p>
             <p>Dividend cut due to distress</p>
             <p className="name-dim" style={{ marginTop: 8, fontSize: 12 }}>
               The nightly scan sees daily closes, so same-day breaks are not caught.
