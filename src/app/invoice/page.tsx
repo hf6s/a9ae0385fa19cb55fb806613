@@ -21,7 +21,18 @@ import {
   StickySteps,
 } from "@/components/ScrollStory";
 
-export const metadata = { title: "Factor20 — the build" };
+export const metadata = {
+  title: "Factor20 — the build",
+  /**
+   * Keep this page out of search results.
+   *
+   * It is addressed to a named person and carries a payment link with an
+   * amount on it. It has to stay public so a link works without a login, but
+   * public and indexed are different things: nobody should find Jorge's
+   * invoice by searching.
+   */
+  robots: { index: false, follow: false, nocache: true },
+};
 export const dynamic = "force-dynamic";
 
 /**

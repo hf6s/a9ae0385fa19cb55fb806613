@@ -370,17 +370,26 @@ export default function Machine({
     const r = el.getBoundingClientRect();
     const doc = document.documentElement;
 
-    // Offscreen scenes do not need drawing, and a phone should not spend its
-    // battery on a canvas nobody is looking at.
-    if (r.bottom < -200 || r.top > window.innerHeight + 200) return;
-
     const p = pinnedProgress({
       top: r.top,
       height: r.height,
       viewportHeight: window.innerHeight,
       atPageBottom: doc.scrollTop + doc.clientHeight >= doc.scrollHeight - 2,
     });
-    draw(p);
+
+    // Progress and the counter are computed even off screen, so scrolling
+    // past the scene and back does not leave the headline reading 905 over a
+    // finished grid. Only the drawing is skipped, which is the part that
+    // costs a phone anything.
+    const offscreen = r.bottom < -200 || r.top > window.innerHeight + 200;
+    if (!offscreen) {
+      draw(p);
+      // Counted only when a frame is actually rendered: a diagnostic that
+      // counts skipped frames as draws would send the next person debugging
+      // this in exactly the wrong direction.
+      const drawn = (window.__f20diag ??= {});
+      drawn.draws = (drawn.draws ?? 0) + 1;
+    }
     // Labels arrive with the formation, not before it.
     const l = labels.current;
     if (l) {
@@ -388,7 +397,6 @@ export default function Machine({
       l.style.opacity = String(lock);
     }
     const d = (window.__f20diag ??= {});
-    d.draws = (d.draws ?? 0) + 1;
     d.progress = p;
 
     // The counter states only figures the scan actually produced.
