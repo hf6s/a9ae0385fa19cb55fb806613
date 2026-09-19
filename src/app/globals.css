@@ -1991,3 +1991,139 @@ table.rolling-table tbody tr:last-child td {
   border-color: color-mix(in srgb, var(--danger, #e5484d) 50%, var(--border));
   background: color-mix(in srgb, var(--danger, #e5484d) 8%, transparent);
 }
+
+/* ---- Invoice (/invoice) --------------------------------------------------
+   A page that gets sent to someone who has never seen the site, and may be
+   printed. Wider line-height and a print block that drops the chrome. */
+.inv-page {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 8px 0 48px;
+}
+.inv-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--border);
+}
+.inv-head h1 {
+  font-size: 26px;
+  margin: 0 0 4px;
+  letter-spacing: -0.01em;
+}
+.inv-sub {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 14px;
+}
+.inv-date {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 13px;
+  white-space: nowrap;
+}
+.inv-section {
+  margin-top: 26px;
+}
+.inv-section h2 {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+  margin: 0 0 10px;
+  font-weight: 600;
+}
+.inv-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.inv-table td {
+  padding: 11px 0;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+.inv-item {
+  display: block;
+  font-size: 15px;
+  color: var(--text);
+}
+.inv-detail {
+  display: block;
+  margin-top: 3px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-dim);
+}
+.inv-amount {
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  font-size: 15px;
+  padding-left: 16px !important;
+}
+.inv-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-top: 18px;
+  padding: 14px 16px;
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.inv-total strong {
+  font-size: 22px;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent);
+}
+.inv-total-sub strong {
+  font-size: 18px;
+  color: var(--text);
+}
+.inv-list {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--text);
+}
+.inv-list li {
+  margin-bottom: 8px;
+  line-height: 1.6;
+  font-size: 14px;
+}
+.inv-plain {
+  margin: 0;
+  line-height: 1.65;
+  font-size: 14px;
+  color: var(--text-dim);
+}
+.inv-foot {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 32px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--text-dim);
+}
+@media (max-width: 520px) {
+  .inv-head {
+    flex-direction: column;
+    gap: 6px;
+  }
+  .inv-total strong {
+    font-size: 20px;
+  }
+}
+@media print {
+  .site-header,
+  .inv-foot a {
+    display: none;
+  }
+  .inv-page {
+    max-width: none;
+  }
+}
