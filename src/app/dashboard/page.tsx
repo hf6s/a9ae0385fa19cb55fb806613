@@ -1,7 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
 import Link from "next/link";
-import BacktestControl from "@/components/BacktestControl";
 import NextScanCountdown from "@/components/NextScanCountdown";
 import ScanControl from "@/components/ScanControl";
 import { getAnalyses, getRankings } from "@/lib/data";
@@ -21,7 +20,6 @@ export default function Dashboard() {
   const analyses = getAnalyses();
   const dataDir = path.join(process.cwd(), "data");
   const universeBuilt = fs.existsSync(path.join(dataDir, "universe.json"));
-  const hasBacktest = fs.existsSync(path.join(dataDir, "backtest.json"));
 
   const growthLeaders = rankings
     ? [...rankings.stocks].sort((a, b) => b.scores.growth - a.scores.growth).slice(0, 10)
@@ -63,7 +61,6 @@ export default function Dashboard() {
 
       <div className="cards">
         <ScanControl universeBuilt={universeBuilt} />
-        <BacktestControl hasResult={hasBacktest} />
       </div>
 
       <div className="cards">

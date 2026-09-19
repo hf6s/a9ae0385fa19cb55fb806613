@@ -6,14 +6,15 @@ import { useEffect, useState } from "react";
 import Logo from "./Logo";
 import ThemeToggle from "./ThemeToggle";
 
-// Portfolio is still reachable by URL; it is just off the sidebar. Factor Lab
-// and How it works sit last as reference rather than daily screens.
+// Portfolio and Backtest are still reachable by URL; they are just off the
+// sidebar. The backtest's numbers are not hidden by that - "How it works"
+// prints the full result, benchmark included, and that page stays linked.
+// Factor Lab and How it works sit last as reference rather than daily screens.
 const LINKS = [
   { href: "/", icon: "▤", label: "Rankings" },
   { href: "/universe", icon: "✦", label: "Universe" },
   { href: "/exits", icon: "▼", label: "Exits" },
   { href: "/allocate", icon: "◑", label: "Position sizing" },
-  { href: "/backtest", icon: "◷", label: "Backtest" },
   { href: "/dashboard", icon: "⣿", label: "Dashboard" },
   { href: "/lab", icon: "⚗", label: "Factor Lab" },
   { href: "/methodology", icon: "?", label: "How it works" },
