@@ -96,6 +96,13 @@ export default function Machine({
   const drawRef = useRef<((t: number) => void) | null>(null);
   const shownCount = useRef("");
   const [mode, setMode] = useState<Mode>("fallback");
+  /**
+   * The static picture is 1,063 SVG circles. It has to be in the markup, and
+   * it has to survive until a renderer is genuinely running - but once the
+   * canvas is live those nodes are a thousand elements a phone keeps in
+   * memory for nothing. Faded out first, then dropped.
+   */
+  const [showFallback, setShowFallback] = useState(true);
 
   useEffect(() => {
     const el = canvas.current;
@@ -363,6 +370,12 @@ export default function Machine({
     };
   }, [scanned, passed]);
 
+  useEffect(() => {
+    if (mode === "fallback") return;
+    const t = window.setTimeout(() => setShowFallback(false), 800);
+    return () => window.clearTimeout(t);
+  }, [mode]);
+
   useScrollTick(() => {
     const el = wrap.current;
     const draw = drawRef.current;
@@ -446,9 +459,11 @@ export default function Machine({
             className={`inv-machine-canvas${mode === "fallback" ? "" : " is-live"}`}
             aria-hidden="true"
           />
-          <div className={`inv-machine-fallback${mode === "fallback" ? "" : " is-replaced"}`}>
-            {children}
-          </div>
+          {showFallback ? (
+            <div className={`inv-machine-fallback${mode === "fallback" ? "" : " is-replaced"}`}>
+              {children}
+            </div>
+          ) : null}
         </div>
       </div>
     </div>
