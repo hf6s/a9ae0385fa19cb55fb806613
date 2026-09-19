@@ -263,7 +263,7 @@ export default function Invoice() {
       <StickySteps steps={STEPS} />
 
       {scanned > 0 && passed > 0 ? (
-        <Machine scanned={scanned} passed={passed} picked={picked}>
+        <Machine scanned={scanned} passed={passed} picked={picked} tickers={tickers}>
           <ScrollFunnel scanned={scanned} passed={passed} picked={picked} tickers={tickers} />
         </Machine>
       ) : null}

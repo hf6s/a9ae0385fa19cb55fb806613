@@ -45,6 +45,23 @@ const SCENE_VH = 300;
  */
 const GATE_LABELS = ["Financial health", "Profitability", "Trend"] as const;
 
+/**
+ * The final act: the top 20 leave the crowd.
+ *
+ * The bake ends with all 136 survivors holding in a band, which contradicted
+ * the counter saying 20. Rather than bake a second simulation, the last slice
+ * of scroll blends each of the top twenty from its settled position into a
+ * grid cell, and fades the other 116 back. Physics gets the fall; arithmetic
+ * gets the formation, which is the right division - a grid is not something
+ * bodies do by falling.
+ */
+const LOCK_FROM = 0.74;
+const GRID_COLS = 4;
+const GRID_ROWS = 5;
+const GRID_BOX = { x0: 170, x1: 830, y0: 330, y1: 980 };
+
+const easeOut = (t: number) => 1 - (1 - t) ** 3;
+
 type Mode = "fallback" | "gl" | "2d";
 
 interface Renderer2D {
@@ -57,17 +74,20 @@ export default function Machine({
   scanned,
   passed,
   picked,
+  tickers,
   children,
 }: {
   scanned: number;
   passed: number;
   picked: number;
+  tickers: string[];
   children: ReactNode;
 }) {
   const wrap = useRef<HTMLDivElement>(null);
   const stage = useRef<HTMLDivElement>(null);
   const gates = useRef<HTMLDivElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
+  const labels = useRef<HTMLDivElement>(null);
   const counter = useRef<HTMLSpanElement>(null);
   const caption = useRef<HTMLSpanElement>(null);
   const bakeRef = useRef<Bake | null>(null);
@@ -83,6 +103,49 @@ export default function Machine({
     let cleanup: (() => void) | undefined;
 
     const bake = simulate({ ...DEFAULT_CONFIG, count: scanned, passed });
+
+    /**
+     * Grid cell per particle, and which of them are the final twenty.
+     *
+     * The first twenty survivors by index, which is deterministic and spread
+     * across the field rather than clustered - the same reasoning as the role
+     * assignment in the simulation.
+     */
+    const targetX = new Float32Array(bake.count);
+    const targetY = new Float32Array(bake.count);
+    const isPicked = new Uint8Array(bake.count);
+    {
+      const cellW = (GRID_BOX.x1 - GRID_BOX.x0) / (GRID_COLS - 1);
+      const cellH = (GRID_BOX.y1 - GRID_BOX.y0) / (GRID_ROWS - 1);
+      let rank = 0;
+      for (let i = 0; i < bake.count && rank < picked; i++) {
+        if (bake.roles[i] !== 3) continue;
+        isPicked[i] = 1;
+        targetX[i] = GRID_BOX.x0 + (rank % GRID_COLS) * cellW;
+        targetY[i] = GRID_BOX.y0 + Math.floor(rank / GRID_COLS) * cellH;
+        rank++;
+      }
+    }
+
+    /** Blend the settled scene into the final formation. */
+    const applyLock = (data: Float32Array, t: number) => {
+      const lock = easeOut(Math.max(0, Math.min(1, (t - LOCK_FROM) / (1 - LOCK_FROM))));
+      if (lock <= 0) return;
+      for (let i = 0; i < bake.count; i++) {
+        const o = i * 3;
+        if (isPicked[i]) {
+          data[o] += (targetX[i] - data[o]) * lock;
+          data[o + 1] += (targetY[i] - data[o + 1]) * lock;
+          data[o + 2] = Math.max(data[o + 2], lock);
+        } else if (bake.roles[i] === 3) {
+          // The other survivors are still survivors; they recede, they do not
+          // vanish, because 136 passing is a number the page states out loud.
+          data[o + 2] *= 1 - lock * 0.78;
+        } else {
+          data[o + 2] *= 1 - lock * 0.45;
+        }
+      }
+    };
     bakeRef.current = bake;
     const frame = new Float32Array(bake.count * 3);
     frameRef.current = frame;
@@ -128,6 +191,18 @@ export default function Machine({
         if (el) el.style.top = `${((1 - ndc) / 2) * height}px`;
       });
       g.classList.add("is-placed");
+
+      const l = labels.current;
+      if (!l) return;
+      const fitX =
+        (screenAspect > worldAspect ? worldAspect / screenAspect : 1) * WORLD_ZOOM;
+      for (let i = 0; i < l.children.length; i++) {
+        const el = l.children[i] as HTMLElement;
+        const ux = (GRID_BOX.x0 + (i % GRID_COLS) * ((GRID_BOX.x1 - GRID_BOX.x0) / (GRID_COLS - 1))) / DEFAULT_CONFIG.width;
+        const uy = (GRID_BOX.y0 + Math.floor(i / GRID_COLS) * ((GRID_BOX.y1 - GRID_BOX.y0) / (GRID_ROWS - 1))) / DEFAULT_CONFIG.height;
+        el.style.left = `${((1 + (ux * 2 - 1) * fitX) / 2) * width}px`;
+        el.style.top = `${((1 - (1 - uy * 2) * fitY) / 2) * height}px`;
+      }
     };
 
     const sizeCanvas = () => {
@@ -176,6 +251,7 @@ export default function Machine({
       layoutGates();
       drawRef.current = (t: number) => {
         readFrame(bake, t, frame);
+        applyLock(frame, t);
         r2d.draw(frame, bake.roles);
       };
       const onResize = () => {
@@ -249,6 +325,7 @@ export default function Machine({
 
         drawRef.current = (t: number) => {
           readFrame(bake, t, frame);
+          applyLock(frame, t);
           for (let i = 0; i < bake.count; i++) {
             positions[i * 2] = frame[i * 3];
             positions[i * 2 + 1] = frame[i * 3 + 1];
@@ -303,6 +380,12 @@ export default function Machine({
       atPageBottom: doc.scrollTop + doc.clientHeight >= doc.scrollHeight - 2,
     });
     draw(p);
+    // Labels arrive with the formation, not before it.
+    const l = labels.current;
+    if (l) {
+      const lock = easeOut(Math.max(0, Math.min(1, (p - LOCK_FROM) / (1 - LOCK_FROM))));
+      l.style.opacity = String(lock);
+    }
     const d = (window.__f20diag ??= {});
     d.draws = (d.draws ?? 0) + 1;
     d.progress = p;
@@ -335,6 +418,11 @@ export default function Machine({
               <div className="inv-machine-gate" key={label} data-gate={i}>
                 <span>{label}</span>
               </div>
+            ))}
+          </div>
+          <div className="inv-machine-labels" ref={labels} aria-hidden="true">
+            {tickers.slice(0, picked).map((t) => (
+              <span key={t}>{t}</span>
             ))}
           </div>
           <canvas

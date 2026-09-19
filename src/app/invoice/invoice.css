@@ -1125,3 +1125,23 @@ html.inv-booting body {
 .inv-boot.is-gentle .inv-caret {
   animation: none;
 }
+
+/* Ticker labels for the final twenty, placed on the same grid the particles
+   lock into. */
+.inv-machine-labels {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 3;
+}
+
+.inv-machine-labels span {
+  position: absolute;
+  transform: translate(-50%, -160%);
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+  color: var(--ph-bright);
+  text-shadow: 0 0 6px rgba(0, 0, 0, 0.9);
+  white-space: nowrap;
+}
