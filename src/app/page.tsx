@@ -1,8 +1,12 @@
+import ExitAlerts from "@/components/ExitAlerts";
 import HomeView, { type Spotlight } from "@/components/HomeView";
+import InstallApp from "@/components/InstallApp";
+import SuggestBox from "@/components/SuggestBox";
 import { type Stat } from "@/components/StatTiles";
 import fs from "node:fs";
 import path from "node:path";
 import { getAnalyses, getHistory, getPrevRankings, getRankings } from "@/lib/data";
+import { computeExits, exitsSignature } from "@/lib/exits";
 import type { Rankings, RollingWindow } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -125,8 +129,13 @@ export default function Home() {
       }
     : null;
 
+  // The sell rules, from the same engine the exits page uses.
+  const exits = computeExits(rankings, getPrevRankings());
+
   return (
     <main>
+      <ExitAlerts exits={exits} signature={exitsSignature(exits)} />
+      <InstallApp />
       <HomeView
         stocks={rankings.stocks}
         sparks={buildSparks(rankings.stocks.map((s) => s.ticker))}
@@ -136,6 +145,7 @@ export default function Home() {
         spotlight={spotlight}
         verdict={honestVerdict()}
       />
+      <SuggestBox />
     </main>
   );
 }

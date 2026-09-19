@@ -1,20 +1,8 @@
 import Link from "next/link";
-import { classifyDividend } from "@/lib/dividends";
+import { computeExits, exitCounts, SEVERITY_LABEL, type Severity } from "@/lib/exits";
 import { getPrevRankings, getRankings } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
-
-const SCORE_SELL_LINE = 70;
-
-type Severity = "high" | "med" | "low";
-
-interface Exit {
-  ticker: string;
-  name: string;
-  rule: string;
-  detail: string;
-  severity: Severity;
-}
 
 export default function ExitsPage() {
   const rankings = getRankings();
@@ -31,105 +19,12 @@ export default function ExitsPage() {
     );
   }
 
-  const currentTickers = new Set(rankings.stocks.map((s) => s.ticker));
-  const currentTop20 = new Set(rankings.stocks.slice(0, 20).map((s) => s.ticker));
-  const currentTop50 = new Set(rankings.stocks.slice(0, 50).map((s) => s.ticker));
+  // One implementation of the sell rules, shared with the alert banner and the
+  // app badge. See src/lib/exits.ts.
+  const all = computeExits(rankings, prev);
 
-  const droppedExits: Exit[] = [];
-  if (prev) {
-    for (const s of prev.stocks.slice(0, 50)) {
-      if (!currentTickers.has(s.ticker)) {
-        droppedExits.push({
-          ticker: s.ticker,
-          name: s.name,
-          rule: "Failed filters",
-          detail: `Was #${s.rank}, no longer passes the elimination filters`,
-          severity: "high",
-        });
-      } else if (
-        prev.stocks.slice(0, 20).some((p) => p.ticker === s.ticker) &&
-        !currentTop20.has(s.ticker)
-      ) {
-        const now = rankings.stocks.find((x) => x.ticker === s.ticker)!;
-        droppedExits.push({
-          ticker: s.ticker,
-          name: s.name,
-          rule: "Left top 20",
-          detail: `#${s.rank} → #${now.rank}`,
-          severity: "low",
-        });
-      } else if (!currentTop50.has(s.ticker)) {
-        const now = rankings.stocks.find((x) => x.ticker === s.ticker)!;
-        droppedExits.push({
-          ticker: s.ticker,
-          name: s.name,
-          rule: "Fell below top 50",
-          detail: `#${s.rank} → #${now.rank}`,
-          severity: "high",
-        });
-      }
-    }
-  }
-
-  const belowLine: Exit[] = rankings.stocks
-    .slice(0, 20)
-    .filter((s) => s.finalScore < SCORE_SELL_LINE)
-    .map((s) => ({
-      ticker: s.ticker,
-      name: s.name,
-      rule: "Score below 70",
-      detail: `Final score ${s.finalScore.toFixed(1)}, under the sell threshold`,
-      severity: "med" as Severity,
-    }));
-
-  /**
-   * Dividend cuts, comparing this scan's trailing-twelve-month figure against
-   * the previous scan's.
-   *
-   * The spec's rule is "cuts dividend due to distress". Only the cut is in the
-   * data; intent is not, and a board moving capital return from dividends to
-   * buybacks has not stopped returning capital. So severity is decided by
-   * whether the company is ALSO in trouble on the numbers we do have: a cut
-   * alongside a failing score is the distress case, a cut on its own is a
-   * flag to look at rather than a sell.
-   */
-  const prevDiv = new Map(prev?.stocks.map((s) => [s.ticker, s.dividendTtm]) ?? []);
-  const dividendExits: Exit[] = rankings.stocks
-    .slice(0, 50)
-    .map((s) => {
-      const change = classifyDividend(prevDiv.get(s.ticker), s.dividendTtm);
-      if (change !== "cut" && change !== "suspended") return null;
-      const before = prevDiv.get(s.ticker) ?? 0;
-      const distress = s.finalScore < SCORE_SELL_LINE || s.penalties.length > 0;
-      return {
-        ticker: s.ticker,
-        name: s.name,
-        rule: change === "suspended" ? "Dividend suspended" : "Dividend cut",
-        detail:
-          `$${before.toFixed(2)} to $${(s.dividendTtm ?? 0).toFixed(2)} per share (trailing 12m)` +
-          (distress
-            ? ", alongside a weak score or active penalties"
-            : ", but the company still scores clean"),
-        severity: (distress ? "high" : "low") as Severity,
-      };
-    })
-    .filter((e): e is Exit => e !== null);
-
-  const all = [...droppedExits, ...belowLine, ...dividendExits];
-  const rank = { high: 0, med: 1, low: 2 };
-  all.sort((a, b) => rank[a.severity] - rank[b.severity]);
-
-  const counts = {
-    high: all.filter((e) => e.severity === "high").length,
-    med: all.filter((e) => e.severity === "med").length,
-    low: all.filter((e) => e.severity === "low").length,
-  };
-
-  const SEV_LABEL: Record<Severity, string> = {
-    high: "Sell rule hit",
-    med: "Under threshold",
-    low: "Downgraded",
-  };
+  const counts = exitCounts(all);
+  const SEV_LABEL = SEVERITY_LABEL;
 
   return (
     <main>

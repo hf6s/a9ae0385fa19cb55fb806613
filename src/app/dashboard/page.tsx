@@ -21,6 +21,17 @@ export default function Dashboard() {
   const dataDir = path.join(process.cwd(), "data");
   const universeBuilt = fs.existsSync(path.join(dataDir, "universe.json"));
 
+  /** Suggestions left on the site, newest first. Written by /api/suggest. */
+  const suggestions: { at: string; text: string }[] = (() => {
+    try {
+      const raw = fs.readFileSync(path.join(dataDir, "suggestions.json"), "utf8");
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed.slice(0, 25) : [];
+    } catch {
+      return [];
+    }
+  })();
+
   const growthLeaders = rankings
     ? [...rankings.stocks].sort((a, b) => b.scores.growth - a.scores.growth).slice(0, 10)
     : [];
@@ -60,6 +71,27 @@ export default function Dashboard() {
       <h1 style={{ fontSize: 22, marginBottom: 20 }}>Dashboard</h1>
 
       <div className="cards">
+        {suggestions.length > 0 ? (
+          <section className="card">
+            <h2>Suggestions</h2>
+            <ul className="suggest-list">
+              {suggestions.map((s) => (
+                <li key={`${s.at}-${s.text.slice(0, 12)}`}>
+                  <time>
+                    {new Date(s.at).toLocaleString("en-US", {
+                      day: "numeric",
+                      month: "short",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </time>
+                  <p>{s.text}</p>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
+
         <ScanControl universeBuilt={universeBuilt} />
       </div>
 

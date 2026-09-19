@@ -1991,3 +1991,244 @@ table.rolling-table tbody tr:last-child td {
   border-color: color-mix(in srgb, var(--danger, #e5484d) 50%, var(--border));
   background: color-mix(in srgb, var(--danger, #e5484d) 8%, transparent);
 }
+
+/* ---- Exit alerts, shown when the app opens ------------------------------ */
+
+.exit-alert {
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--amber);
+  background: var(--bg-raised);
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 18px;
+  box-shadow: var(--shadow);
+}
+
+.exit-alert.is-high {
+  border-left-color: var(--red);
+}
+
+.exit-alert-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.exit-alert-head strong {
+  font-size: 15px;
+}
+
+.exit-alert-x,
+.exit-alert-bell {
+  font: inherit;
+  font-size: 12px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 6px 12px;
+  min-height: 34px;
+  color: var(--text-dim);
+  cursor: pointer;
+}
+
+.exit-alert-bell {
+  color: var(--accent);
+  border-color: var(--accent-dim);
+}
+
+.exit-alert-list {
+  list-style: none;
+  margin: 0 0 10px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.exit-alert-list li {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  font-size: 13px;
+}
+
+.exit-alert-list b {
+  min-width: 56px;
+  font-variant-numeric: tabular-nums;
+}
+
+.exit-alert-list span {
+  color: var(--text-dim);
+}
+
+.exit-alert-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+}
+
+.exit-alert-foot a {
+  color: var(--accent);
+}
+
+/* ---- Install prompt ----------------------------------------------------- */
+
+.install-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  border: 1px solid var(--border);
+  background: var(--bg-raised);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 18px;
+}
+
+.install-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.install-body strong {
+  font-size: 14px;
+}
+
+.install-body span {
+  font-size: 12.5px;
+  line-height: 18px;
+  color: var(--text-dim);
+}
+
+.install-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.install-dismiss {
+  font: inherit;
+  font-size: 12px;
+  background: transparent;
+  border: 0;
+  color: var(--text-dim);
+  min-height: 40px;
+  padding: 0 8px;
+  cursor: pointer;
+}
+
+/* ---- Suggestion box ----------------------------------------------------- */
+
+.suggest {
+  margin-top: 28px;
+  border: 1px solid var(--border);
+  background: var(--bg-raised);
+  border-radius: 10px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.suggest label {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.suggest label strong {
+  font-size: 15px;
+}
+
+.suggest label span {
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.suggest textarea {
+  font: inherit;
+  font-size: 14px;
+  line-height: 21px;
+  padding: 11px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  resize: vertical;
+  min-height: 84px;
+}
+
+.suggest textarea:focus {
+  outline: none;
+  border-color: var(--accent-dim);
+}
+
+.suggest-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.suggest-note {
+  font-size: 11.5px;
+  line-height: 16px;
+  color: var(--text-dim);
+  max-width: 42ch;
+}
+
+.suggest-error {
+  margin: 0;
+  font-size: 13px;
+  color: var(--red);
+}
+
+.suggest-done {
+  align-items: flex-start;
+}
+
+.suggest-done strong {
+  font-size: 15px;
+}
+
+.suggest-done span {
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.suggest-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.suggest-list li {
+  border-left: 2px solid var(--border);
+  padding-left: 12px;
+}
+
+.suggest-list time {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 4px;
+}
+
+.suggest-list p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 21px;
+  white-space: pre-wrap;
+}
