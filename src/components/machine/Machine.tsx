@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { useScrollTick } from "@/components/ScrollStory";
 import { DEFAULT_CONFIG, readFrame, simulate, type Bake } from "@/lib/machine-physics";
+import { play } from "@/lib/audio";
 import { pinnedProgress } from "@/lib/scroll-math";
 import { COLOURS, FRAGMENT, VERTEX, WORLD_ZOOM } from "./programs";
 
@@ -395,7 +396,14 @@ export default function Machine({
     const label = p < 0.34 ? "scanned" : p < 0.78 ? "clear every filter" : "make the list";
     const key = `${stage}:${label}`;
     if (key !== shownCount.current) {
+      const first = shownCount.current === "";
       shownCount.current = key;
+      // One cue per stage change, and never on the first paint - a sound on
+      // arrival is a notification, not a response to the reader.
+      if (!first) {
+        play(stage === picked ? "lock" : "gate");
+        navigator.vibrate?.(stage === picked ? 22 : 10);
+      }
       if (counter.current) counter.current.textContent = stage.toLocaleString("en-US");
       if (caption.current) caption.current.textContent = label;
     }

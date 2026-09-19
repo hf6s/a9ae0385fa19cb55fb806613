@@ -1410,3 +1410,101 @@ html.inv-booting body {
   color: var(--ph-text);
   max-width: 58ch;
 }
+
+/* ---- Ticker tape -------------------------------------------------------- */
+
+.inv-tape {
+  overflow: hidden;
+  border-top: 1px solid var(--ph-rule);
+  border-bottom: 1px solid var(--ph-rule);
+  padding: 9px 0;
+  margin-bottom: 4px;
+  /* Bleed past the page gutter: a tape that stops at a margin is a list. */
+  margin-left: calc(var(--gutter) * -1);
+  margin-right: calc(var(--gutter) * -1);
+  mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
+}
+
+.inv-tape-track {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+}
+
+.inv-tape-item {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 0 14px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+
+.inv-tape-item b {
+  font-weight: 600;
+  color: var(--ph-bright);
+}
+
+.inv-tape-item i {
+  font-style: normal;
+  color: var(--ph-green);
+  font-variant-numeric: tabular-nums slashed-zero;
+}
+
+/* ---- The note ----------------------------------------------------------- */
+
+.inv-note p {
+  margin: 0 0 14px;
+  font-size: 14px;
+  line-height: 23px;
+  color: var(--ph-text);
+  max-width: 58ch;
+}
+
+.inv-sign {
+  margin-top: 20px !important;
+  color: var(--ph-bright) !important;
+  font-size: 13px !important;
+}
+
+.inv-sign-prompt {
+  color: var(--ph-green-dim);
+  margin-right: 8px;
+}
+
+/* ---- Sound toggle ------------------------------------------------------- */
+
+.inv-sound {
+  position: fixed;
+  right: 10px;
+  bottom: 10px;
+  z-index: 30;
+  font: inherit;
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  min-height: 34px;
+  padding: 8px 10px;
+  background: rgba(0, 0, 0, 0.72);
+  border: 1px solid var(--ph-rule-bright);
+  color: var(--ph-green-dim);
+  cursor: pointer;
+}
+
+.inv-sound.is-on {
+  color: var(--ph-green);
+  border-color: var(--ph-green-mid);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inv-tape-track {
+    animation: none !important;
+  }
+}
+
+@media print {
+  .inv-tape,
+  .inv-sound {
+    display: none !important;
+  }
+}

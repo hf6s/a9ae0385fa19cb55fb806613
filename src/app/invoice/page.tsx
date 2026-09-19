@@ -8,6 +8,8 @@ import Machine from "@/components/machine/Machine";
 import PayClose from "@/components/PayClose";
 import Receipt from "@/components/Receipt";
 import Record from "@/components/Record";
+import SoundToggle from "@/components/SoundToggle";
+import TickerTape from "@/components/TickerTape";
 import TerminalPanel from "@/components/TerminalPanel";
 import Reveal from "@/components/Reveal";
 import SmoothScroll from "@/components/SmoothScroll";
@@ -52,6 +54,21 @@ const REF = "F20-001";
  * figure rather than an empty box he has to type into.
  */
 const PAY_URL = "https://paypal.me/Marky978/114.99";
+
+/**
+ * DRAFT. marky rewrites this in his own words before it ships.
+ *
+ * It is the last thing read before the number, and for a sale to family it
+ * carries more weight than anything else on the page — which is exactly why
+ * it must not be written by someone else and left that way. Blunt, short, no
+ * persuasion, and it says the unflattering part out loud.
+ */
+const NOTE = [
+  "I built this over the summer to find out whether picking stocks could be done by rules instead of by guessing.",
+  "It reads the filings itself, throws out everything that fails eleven health checks, and ranks what is left on four factors taken from published research. Every number on the site shows its working.",
+  "Some of it went wrong. The data feed lapsed in September and it ran blind for nineteen days. The system caught that and refused to publish stale prices, which is the part I am most pleased about.",
+  "It does not beat the market in the historical test, and I am not going to pretend otherwise. What it does is make the decision visible: why a stock is in, when it should go, and what it cost to find out.",
+];
 
 interface Line {
   item: string;
@@ -279,6 +296,7 @@ export default function Invoice() {
       <div className="inv-grain" aria-hidden="true" />
       <div className="inv-spine" aria-hidden="true" />
       <ScrollRail />
+      <SoundToggle />
 
       <section className="inv-hero">
         <ParallaxHero>
@@ -298,6 +316,8 @@ export default function Invoice() {
           <i />
         </div>
       </section>
+
+      <TickerTape items={top.slice(0, 20).map((t) => ({ ticker: t.ticker, finalScore: t.finalScore }))} />
 
       <dl className="inv-meta">
         {PREPARED_FOR ? (
@@ -346,6 +366,19 @@ export default function Invoice() {
 
       <Reveal>
         <TerminalPanel commands={commands} />
+      </Reveal>
+
+      <Reveal>
+        <section className="inv-section inv-note">
+          <h2>From the builder</h2>
+          {NOTE.map((para) => (
+            <p key={para.slice(0, 24)}>{para}</p>
+          ))}
+          <p className="inv-sign">
+            <span className="inv-sign-prompt">signed</span> marky
+            <i className="inv-caret" />
+          </p>
+        </section>
       </Reveal>
 
       <Reveal>

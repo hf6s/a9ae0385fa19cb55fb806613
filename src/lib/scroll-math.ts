@@ -129,3 +129,16 @@ export function funnelStage(
     pickOpacity: 1,
   };
 }
+
+/**
+ * How much faster the ticker tape runs for a given scroll speed.
+ *
+ * Clamped hard at both ends. A trackpad fling or a momentum scroll on a phone
+ * produces velocities an order of magnitude beyond anything a finger does, and
+ * an unclamped multiplier turns the tape into a strobe.
+ */
+export function tapeRate(velocityPxPerMs: number): number {
+  const v = Math.abs(velocityPxPerMs);
+  if (!Number.isFinite(v)) return 1;
+  return Math.min(6, 1 + v * 1.6);
+}

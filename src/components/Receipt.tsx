@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { prefersReducedMotion } from "@/components/ScrollStory";
+import { play } from "@/lib/audio";
 import { isTearGesture, shouldCommit, stubOffset, tearProgress } from "@/lib/tear";
 
 /**
@@ -67,6 +68,7 @@ export default function Receipt({ children }: { children: ReactNode }) {
       // A short pulse on the phones that support it. Silently ignored
       // elsewhere, which is why it is not worth feature-detecting.
       navigator.vibrate?.(18);
+      play("tear");
     };
 
     const onDown = (e: PointerEvent) => {
@@ -128,6 +130,7 @@ export default function Receipt({ children }: { children: ReactNode }) {
       el.style.opacity = "0";
     }
     navigator.vibrate?.(18);
+    play("tear");
     window.setTimeout(() => {
       setTorn(true);
       try {

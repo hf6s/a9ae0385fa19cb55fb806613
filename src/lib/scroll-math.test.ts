@@ -6,7 +6,15 @@
 
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { clamp01, dotGrid, funnelStage, pinnedProgress, scrubProgress, stepIndex } from "./scroll-math";
+import {
+  clamp01,
+  dotGrid,
+  funnelStage,
+  pinnedProgress,
+  scrubProgress,
+  stepIndex,
+  tapeRate,
+} from "./scroll-math";
 
 const VH = 800;
 
@@ -146,5 +154,30 @@ describe("funnelStage", () => {
     assert.match(funnelStage(0, counts).label, /scanned/);
     assert.match(funnelStage(0.5, counts).label, /filter/);
     assert.match(funnelStage(1, counts).label, /list/);
+  });
+});
+
+describe("tapeRate", () => {
+  it("idles at 1 when nothing is scrolling", () => {
+    assert.equal(tapeRate(0), 1);
+  });
+
+  it("speeds up with scroll", () => {
+    assert.ok(tapeRate(1) > tapeRate(0.2));
+  });
+
+  it("treats scrolling up the same as down", () => {
+    assert.equal(tapeRate(-2), tapeRate(2));
+  });
+
+  it("clamps a fling instead of strobing", () => {
+    // Momentum scrolling reaches velocities a finger never does.
+    assert.equal(tapeRate(9999), 6);
+  });
+
+  it("survives a non-finite velocity", () => {
+    // Two scroll events in the same millisecond divide by zero.
+    assert.equal(tapeRate(Number.POSITIVE_INFINITY), 1);
+    assert.equal(tapeRate(Number.NaN), 1);
   });
 });
