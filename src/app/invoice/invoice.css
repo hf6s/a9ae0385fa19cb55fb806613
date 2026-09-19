@@ -1,341 +1,339 @@
 /*
- * Invoice page styles.
+ * Invoice page — institutional terminal.
  *
- * Kept out of globals.css, which is already 40KB served on every route, for a
- * page one person opens. Imported by src/app/invoice/page.tsx; the App Router
- * bundles CSS imported from any component.
+ * Kept out of globals.css, which is served on every route, for a page one
+ * person opens. Imported by src/app/invoice/page.tsx.
+ *
+ * DESIGN RULES, held deliberately:
+ *
+ *   Structure, not costume. No scanlines, no CRT curvature, no phosphor bloom.
+ *   The terminal reads through monospace, a hard left grid, hairline rules and
+ *   dense data. Retro screen effects would make it a fancy-dress version of a
+ *   trading desk instead of one.
+ *
+ *   Hard left. Everything hangs off one column edge. Centred layouts are what
+ *   every template does; a spec sheet aligns left and stays there.
+ *
+ *   Numerals are the product. Tabular figures so digits never shift, slashed
+ *   zero, real minus signs, decimals aligned, units at reduced weight.
+ *
+ *   Locked dark. One considered surface, every glow tuned against it.
+ *
+ *   Heavy motion. Long settles, slow starts, nothing snappy. Mass is the
+ *   through-line from the particles to the paper.
  */
 
-/* ---- Invoice (/invoice) --------------------------------------------------
-   A page that gets sent to someone who has never seen the site, and may be
-   printed. Wider line-height and a print block that drops the chrome. */
-.inv-page {
-  max-width: 680px;
-  margin: 0 auto;
-  padding: 8px 0 48px;
-}
-.inv-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 16px;
-  padding-bottom: 18px;
-  border-bottom: 1px solid var(--border);
-}
-.inv-head h1 {
-  font-size: 26px;
-  margin: 0 0 4px;
-  letter-spacing: -0.01em;
-}
-.inv-sub {
-  margin: 0;
-  color: var(--text-dim);
+.inv-root {
+  /* Phosphor on black. Deliberately not the site's --accent green: this page
+     is colder and brighter, closer to a monitor than to a chart. */
+  --ph-void: #000000;
+  --ph-panel: #070a09;
+  --ph-raised: #0c110f;
+  --ph-rule: #1a231e;
+  --ph-rule-bright: #2b3a32;
+  --ph-text: #b9c9c0;
+  --ph-bright: #edfff6;
+  --ph-green: #35e08b;
+  --ph-green-mid: #1f9c60;
+  --ph-green-dim: #145c39;
+  --ph-amber: #d9a441;
+  --ph-paper: #efe9dc;
+  --ph-paper-ink: #1a1714;
+
+  /* Monospace baseline grid. Every vertical rhythm is a multiple of --unit. */
+  --unit: 4px;
+  --gutter: 20px;
+  --label-col: 104px;
+
+  /* Heavy easing: long settle, slow start. */
+  --ease-heavy: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-mech: cubic-bezier(0.2, 0.9, 0.1, 1);
+  --dur-1: 700ms;
+  --dur-2: 1100ms;
+
+  font-family: var(--font-mono), ui-monospace, "SF Mono", Menlo, monospace;
+  background: var(--ph-void);
+  color: var(--ph-text);
   font-size: 14px;
+  line-height: 20px;
+  font-variant-numeric: tabular-nums slashed-zero;
+  -webkit-font-smoothing: antialiased;
 }
-.inv-date {
-  margin: 0;
-  color: var(--text-dim);
-  font-size: 13px;
-  white-space: nowrap;
+
+/* The page owns the whole viewport background, not just its own box. */
+.inv-root::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: var(--ph-void);
+  z-index: -2;
 }
-.inv-section {
-  margin-top: 26px;
+
+/*
+ * Film grain.
+ *
+ * Flat colour is the machine tell; real surfaces have noise. One fixed layer,
+ * generated rather than loaded, at an opacity low enough that nobody sees it
+ * and everybody feels it. First thing dropped if a phone struggles.
+ */
+.inv-grain {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  pointer-events: none;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 160px 160px;
 }
-.inv-section h2 {
-  font-size: 13px;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--text-dim);
-  margin: 0 0 10px;
-  font-weight: 600;
-}
-.inv-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-.inv-table td {
-  padding: 11px 0;
-  border-bottom: 1px solid var(--border);
-  vertical-align: top;
-}
-.inv-item {
-  display: block;
-  font-size: 15px;
-  color: var(--text);
-}
-.inv-detail {
-  display: block;
-  margin-top: 3px;
-  font-size: 13px;
-  line-height: 1.5;
-  color: var(--text-dim);
-}
-.inv-amount {
-  text-align: right;
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
-  font-size: 15px;
-  padding-left: 16px !important;
-}
-.inv-total {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  margin-top: 18px;
-  padding: 14px 16px;
-  background: var(--bg-raised);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-}
-.inv-total strong {
-  font-size: 22px;
-  font-variant-numeric: tabular-nums;
-  color: var(--accent);
-}
-.inv-total-sub strong {
-  font-size: 18px;
-  color: var(--text);
-}
-.inv-list {
-  margin: 0;
-  padding-left: 18px;
-  color: var(--text);
-}
-.inv-list li {
-  margin-bottom: 8px;
-  line-height: 1.6;
-  font-size: 14px;
-}
-.inv-plain {
-  margin: 0;
-  line-height: 1.65;
-  font-size: 14px;
-  color: var(--text-dim);
-}
-.inv-foot {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-top: 32px;
-  padding-top: 16px;
-  border-top: 1px solid var(--border);
-  font-size: 13px;
-  color: var(--text-dim);
-}
-@media (max-width: 520px) {
-  .inv-head {
-    flex-direction: column;
-    gap: 6px;
-  }
-  .inv-total strong {
-    font-size: 20px;
-  }
-}
-@media print {
-  .site-header,
-  .inv-foot a {
+
+@media (prefers-reduced-motion: reduce) {
+  .inv-grain {
     display: none;
   }
-  .inv-page {
-    max-width: none;
-  }
 }
-/* Invoice hero + scroll reveal. The reader has never seen the site, so the
-   page opens with the work and only then shows the number. */
-.reveal-block {
-  transition:
-    opacity 0.6s cubic-bezier(0.2, 0.7, 0.3, 1),
-    transform 0.6s cubic-bezier(0.2, 0.7, 0.3, 1);
-  will-change: opacity, transform;
+
+/* ---- Layout ------------------------------------------------------------- */
+
+.inv-page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0 var(--gutter) 64px;
+  position: relative;
 }
-.reveal-block.is-hidden {
-  opacity: 0;
-  transform: translateY(26px);
+
+/*
+ * The spine: one hairline down the left edge that everything aligns to. It is
+ * the whole reason the page reads as a document rather than a landing page.
+ */
+.inv-spine {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: max(calc((100vw - 720px) / 2), 0px);
+  width: 1px;
+  background: var(--ph-rule);
+  z-index: 2;
+  pointer-events: none;
 }
-.reveal-block.is-shown {
-  opacity: 1;
-  transform: none;
+
+.inv-rail {
+  position: fixed;
+  top: 0;
+  left: max(calc((100vw - 720px) / 2), 0px);
+  width: 1px;
+  height: 100vh;
+  z-index: 3;
+  pointer-events: none;
+  background: transparent;
 }
+
+.inv-rail-fill {
+  width: 100%;
+  height: 100%;
+  background: var(--ph-green);
+  transform: scaleY(0);
+  transform-origin: top;
+  will-change: transform;
+  box-shadow: 0 0 8px var(--ph-green-mid);
+}
+
+/* ---- Type --------------------------------------------------------------- */
+
+.inv-label {
+  display: block;
+  font-size: 10px;
+  line-height: 14px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ph-green-mid);
+  font-weight: 500;
+}
+
+.inv-plain {
+  margin: 0;
+  font-size: 14px;
+  line-height: 22px;
+  color: var(--ph-text);
+  max-width: 62ch;
+}
+
+.inv-bright {
+  color: var(--ph-bright);
+}
+
+.inv-num {
+  font-variant-numeric: tabular-nums slashed-zero;
+  letter-spacing: -0.01em;
+}
+
+/* Units and currency symbols sit back so the figure itself reads first. */
+.inv-unit {
+  color: var(--ph-green-mid);
+  font-weight: 400;
+}
+
+.inv-hr {
+  border: 0;
+  border-top: 1px solid var(--ph-rule);
+  margin: 28px 0;
+}
+
+/* ---- Terminal header ---------------------------------------------------- */
+
+.inv-meta {
+  display: grid;
+  grid-template-columns: var(--label-col) 1fr;
+  gap: 2px var(--gutter);
+  padding: 14px 0 18px;
+  border-bottom: 1px solid var(--ph-rule);
+}
+
+.inv-meta dt {
+  font-size: 10px;
+  line-height: 18px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ph-green-dim);
+}
+
+.inv-meta dd {
+  margin: 0;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--ph-bright);
+}
+
+/* ---- Sections ----------------------------------------------------------- */
+
+.inv-section {
+  padding: 40px 0;
+  border-bottom: 1px solid var(--ph-rule);
+}
+
+.inv-section > h2 {
+  font-size: 10px;
+  line-height: 14px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ph-green-mid);
+  font-weight: 500;
+  margin: 0 0 18px;
+}
+
+.inv-h {
+  font-size: clamp(22px, 6.4vw, 34px);
+  line-height: 1.12;
+  letter-spacing: -0.03em;
+  color: var(--ph-bright);
+  font-weight: 600;
+  margin: 0 0 14px;
+}
+
+/* ---- Hero --------------------------------------------------------------- */
+
 .inv-hero {
-  min-height: min(82vh, 640px);
+  min-height: min(84vh, 680px);
   display: flex;
   flex-direction: column;
   justify-content: center;
+  padding: 32px 0 56px;
   position: relative;
-  padding: 40px 0 64px;
 }
+
 .inv-kicker {
-  margin: 0 0 14px;
-  font-size: 12px;
+  margin: 0 0 20px;
+  font-size: 10px;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: var(--accent);
+  color: var(--ph-green);
 }
+
 .inv-hero h1 {
-  margin: 0 0 18px;
-  font-size: clamp(30px, 7vw, 52px);
-  line-height: 1.08;
-  letter-spacing: -0.025em;
-  animation: invHeroIn 0.9s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+  margin: 0 0 20px;
+  font-size: clamp(28px, 8.6vw, 46px);
+  line-height: 1.06;
+  letter-spacing: -0.035em;
+  font-weight: 600;
+  color: var(--ph-bright);
 }
+
 .inv-hero-accent {
-  color: var(--text-dim);
+  color: var(--ph-green);
 }
+
 .inv-hero-sub {
   margin: 0;
-  max-width: 46ch;
-  font-size: clamp(14px, 2.6vw, 17px);
-  line-height: 1.6;
-  color: var(--text-dim);
-  animation: invHeroIn 0.9s cubic-bezier(0.2, 0.7, 0.3, 1) 0.15s both;
+  max-width: 44ch;
+  font-size: 14px;
+  line-height: 22px;
+  color: var(--ph-text);
 }
-@keyframes invHeroIn {
-  from {
-    opacity: 0;
-    transform: translateY(18px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
+
 .inv-scroll-cue {
   position: absolute;
-  bottom: 16px;
+  bottom: 18px;
   left: 0;
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 11px;
-  letter-spacing: 0.18em;
+  font-size: 10px;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--text-dim);
-  animation: invCue 2.4s ease-in-out infinite;
+  color: var(--ph-green-dim);
 }
+
 .inv-scroll-cue i {
   display: block;
   width: 1px;
-  height: 26px;
-  background: linear-gradient(to bottom, var(--accent), transparent);
+  height: 28px;
+  background: linear-gradient(to bottom, var(--ph-green), transparent);
 }
-@keyframes invCue {
-  0%,
-  100% {
-    opacity: 0.45;
-    transform: translateY(0);
-  }
-  50% {
-    opacity: 1;
-    transform: translateY(5px);
-  }
-}
-.inv-facts {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 1px;
-  background: var(--border);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  overflow: hidden;
-  margin-bottom: 8px;
-}
-.inv-fact {
-  background: var(--bg-raised);
-  padding: 18px 16px;
-}
-.inv-fact strong {
-  display: block;
-  font-size: 26px;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
-  color: var(--accent);
-}
-.inv-fact span {
-  display: block;
-  margin-top: 4px;
-  font-size: 12.5px;
-  line-height: 1.45;
-  color: var(--text-dim);
-}
-.inv-story .inv-list li {
-  margin-bottom: 12px;
-}
-.inv-story .inv-list b {
-  color: var(--text);
-}
-.inv-divider {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin: 46px 0 8px;
-  color: var(--text-dim);
-  font-size: 11px;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-}
-.inv-divider::before,
-.inv-divider::after {
-  content: "";
-  flex: 1;
-  height: 1px;
-  background: var(--border);
-}
-.inv-head-title {
-  font-size: 26px !important;
-  margin: 0 0 4px !important;
-  letter-spacing: -0.01em;
-  text-transform: none !important;
-  color: var(--text) !important;
-}
-@media (prefers-reduced-motion: reduce) {
-  .reveal-block,
-  .inv-hero h1,
-  .inv-hero-sub,
-  .inv-scroll-cue {
-    animation: none !important;
-    transition: none !important;
-    opacity: 1 !important;
-    transform: none !important;
-  }
-}
-@media print {
-  .inv-hero,
-  .inv-scroll-cue,
-  .inv-divider {
-    display: none;
-  }
-  .reveal-block {
-    opacity: 1 !important;
-    transform: none !important;
-  }
-}
-/* Scroll-linked pieces: parallax hero, progress rail, sticky steps. */
+
 .inv-parallax {
   will-change: transform, opacity;
 }
-.inv-rail {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 2px;
-  height: 100vh;
-  background: var(--border);
-  z-index: 5;
-  pointer-events: none;
+
+/* ---- Data grid ---------------------------------------------------------- */
+
+.inv-facts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-top: 1px solid var(--ph-rule);
+  border-left: 1px solid var(--ph-rule);
 }
-.inv-rail-fill {
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(to bottom, var(--accent), var(--q));
-  transform: scaleY(0);
-  transform-origin: top;
-  will-change: transform;
+
+.inv-fact {
+  padding: 16px 14px;
+  border-right: 1px solid var(--ph-rule);
+  border-bottom: 1px solid var(--ph-rule);
 }
+
+.inv-fact strong {
+  display: block;
+  font-size: 24px;
+  line-height: 1.1;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  color: var(--ph-green);
+  font-variant-numeric: tabular-nums slashed-zero;
+}
+
+.inv-fact span {
+  display: block;
+  margin-top: 6px;
+  font-size: 10px;
+  line-height: 14px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ph-green-dim);
+}
+
+/* ---- Step rail ---------------------------------------------------------- */
+
 .inv-sticky-wrap {
   position: relative;
-  margin: 0 0 20px;
 }
+
 .inv-sticky {
   position: sticky;
   top: 0;
@@ -343,176 +341,62 @@
   display: flex;
   align-items: center;
 }
+
 .inv-steps {
   list-style: none;
   margin: 0;
   padding: 0;
   width: 100%;
 }
+
 .inv-steps li {
-  display: flex;
+  display: grid;
+  grid-template-columns: 28px 1fr;
   gap: 14px;
-  padding: 14px 0;
-  opacity: 0.22;
-  filter: blur(0.6px);
-  transform: translateY(4px);
+  padding: 12px 0;
+  opacity: 0.18;
   transition:
-    opacity 0.45s ease,
-    filter 0.45s ease,
-    transform 0.45s ease;
-}
-.inv-steps li.is-active {
-  opacity: 1;
-  filter: none;
-  transform: none;
-}
-.inv-step-n {
-  font-size: 12px;
-  font-variant-numeric: tabular-nums;
-  color: var(--accent);
-  padding-top: 4px;
-  min-width: 22px;
-}
-.inv-steps h3 {
-  margin: 0 0 5px;
-  font-size: clamp(17px, 4vw, 21px);
-  letter-spacing: -0.01em;
-}
-.inv-steps p {
-  margin: 0;
-  font-size: 14px;
-  line-height: 1.6;
-  color: var(--text-dim);
-  max-width: 48ch;
-}
-@media (prefers-reduced-motion: reduce) {
-  .inv-parallax {
-    transform: none !important;
-    opacity: 1 !important;
-  }
-  .inv-sticky-wrap {
-    height: auto !important;
-  }
-  .inv-sticky {
-    position: static;
-    min-height: 0;
-  }
-  .inv-steps li {
-    opacity: 1;
-    filter: none;
-    transform: none;
-  }
-}
-@media print {
-  .inv-rail {
-    display: none;
-  }
-  .inv-sticky-wrap {
-    height: auto !important;
-  }
-  .inv-sticky {
-    position: static;
-    min-height: 0;
-  }
-  .inv-steps li {
-    opacity: 1;
-    filter: none;
-  }
-}
-/* ---- Extra polish: gradient headline, glowing total --------------------- */
-.inv-hero h1 {
-  background: linear-gradient(100deg, var(--text) 18%, var(--accent) 50%, var(--q) 82%);
-  background-size: 220% 100%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  animation:
-    invHeroIn 0.9s cubic-bezier(0.2, 0.7, 0.3, 1) both,
-    invSheen 9s ease-in-out 1s infinite;
-}
-.inv-hero-accent {
-  color: inherit;
-  opacity: 0.55;
-}
-@keyframes invSheen {
-  0%,
-  100% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-}
-.inv-total {
-  position: relative;
-  overflow: hidden;
-  border-color: var(--accent-dim);
-  box-shadow:
-    var(--shadow),
-    0 0 0 1px color-mix(in srgb, var(--accent) 22%, transparent),
-    0 0 34px -14px var(--accent);
-}
-.inv-total::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    100deg,
-    transparent 35%,
-    color-mix(in srgb, var(--accent) 12%, transparent) 50%,
-    transparent 65%
-  );
-  transform: translateX(-100%);
-  animation: invShimmer 5.5s ease-in-out 1.2s infinite;
-  pointer-events: none;
-}
-@keyframes invShimmer {
-  0% {
-    transform: translateX(-100%);
-  }
-  55%,
-  100% {
-    transform: translateX(100%);
-  }
-}
-.inv-fact strong {
-  text-shadow: 0 0 18px color-mix(in srgb, var(--accent) 28%, transparent);
-}
-.inv-steps li.is-active .inv-step-n {
-  text-shadow: 0 0 12px var(--accent);
-}
-@media (prefers-reduced-motion: reduce) {
-  .inv-hero h1,
-  .inv-total::after {
-    animation: none !important;
-  }
-  .inv-curve-wrap {
-    height: auto !important;
-  }
-  .inv-curve-sticky {
-    position: static;
-    min-height: 0;
-  }
-}
-@media print {
-  .inv-curve-wrap {
-    height: auto !important;
-  }
-  .inv-curve-sticky {
-    position: static;
-    min-height: 0;
-  }
-  .inv-total::after {
-    display: none;
-  }
+    opacity var(--dur-1) var(--ease-heavy),
+    transform var(--dur-1) var(--ease-heavy);
+  transform: translateY(6px);
 }
 
-/* ---- The funnel: 905 dots becoming 20 ----------------------------------- */
+.inv-steps li.is-active {
+  opacity: 1;
+  transform: none;
+}
+
+.inv-step-n {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--ph-green);
+  padding-top: 5px;
+}
+
+.inv-steps h3 {
+  margin: 0 0 6px;
+  font-size: 17px;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  font-weight: 600;
+  color: var(--ph-bright);
+}
+
+.inv-steps p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 21px;
+  color: var(--ph-text);
+  max-width: 52ch;
+}
+
+/* ---- Funnel ------------------------------------------------------------- */
+
 .inv-funnel-wrap {
   position: relative;
   height: 260vh;
-  margin: 8px 0 44px;
 }
+
 .inv-funnel-sticky {
   position: sticky;
   top: 0;
@@ -520,83 +404,321 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 16px;
+  gap: 18px;
 }
+
 .inv-funnel-head {
   display: flex;
   align-items: baseline;
-  gap: 10px;
-  flex-wrap: wrap;
+  gap: 12px;
 }
+
 .inv-funnel-n {
-  font-size: clamp(38px, 12vw, 76px);
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.04em;
+  font-size: clamp(40px, 13vw, 78px);
   line-height: 1;
-  color: var(--accent);
-  text-shadow: 0 0 32px color-mix(in srgb, var(--accent) 45%, transparent);
+  font-weight: 600;
+  letter-spacing: -0.05em;
+  color: var(--ph-green);
+  font-variant-numeric: tabular-nums slashed-zero;
 }
+
 .inv-funnel-l {
-  font-size: clamp(13px, 3.4vw, 17px);
-  color: var(--text-dim);
-  letter-spacing: 0.04em;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ph-green-dim);
 }
+
 .inv-funnel {
   width: 100%;
-  height: clamp(230px, 42vh, 380px);
-  overflow: visible;
+  height: clamp(220px, 40vh, 340px);
 }
+
 .inv-dots-all circle {
-  fill: var(--text-dim);
+  fill: var(--ph-green-dim);
 }
+
 .inv-dots-pass circle {
-  fill: var(--q);
+  fill: var(--ph-green-mid);
 }
+
 .inv-dots-pick circle {
-  fill: var(--accent);
-  filter: drop-shadow(0 0 6px var(--accent));
+  fill: var(--ph-green);
 }
+
 .inv-dots-all,
 .inv-dots-pass,
 .inv-dots-pick {
-  transition: opacity 0.45s ease;
+  transition: opacity var(--dur-1) var(--ease-heavy);
 }
+
 .inv-funnel-names {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  transition: opacity 0.5s ease;
+  gap: 4px;
+  transition: opacity var(--dur-2) var(--ease-heavy);
 }
+
 .inv-funnel-names span {
-  font-size: 11.5px;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  padding: 3px 6px;
+  border: 1px solid var(--ph-green-dim);
+  color: var(--ph-green);
   font-variant-numeric: tabular-nums;
-  letter-spacing: 0.04em;
-  padding: 3px 7px;
-  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
-  border-radius: 999px;
-  color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 8%, transparent);
 }
+
+/* ---- Bill --------------------------------------------------------------- */
+
+.inv-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.inv-table td {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--ph-rule);
+  vertical-align: top;
+}
+
+.inv-item {
+  display: block;
+  font-size: 14px;
+  color: var(--ph-bright);
+}
+
+.inv-detail {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--ph-text);
+  opacity: 0.85;
+}
+
+.inv-amount {
+  text-align: right;
+  white-space: nowrap;
+  padding-left: 16px !important;
+  font-size: 14px;
+  color: var(--ph-bright);
+  font-variant-numeric: tabular-nums slashed-zero;
+}
+
+.inv-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-top: 20px;
+  padding: 16px 0;
+  border-top: 1px solid var(--ph-rule-bright);
+  border-bottom: 1px solid var(--ph-rule-bright);
+}
+
+.inv-total > span {
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ph-green-mid);
+}
+
+.inv-total strong {
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  color: var(--ph-green);
+  font-variant-numeric: tabular-nums slashed-zero;
+}
+
+.inv-total-sub strong {
+  font-size: 22px;
+  color: var(--ph-bright);
+}
+
+.inv-divider {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 48px 0 0;
+  color: var(--ph-green-dim);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.inv-divider::before,
+.inv-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--ph-rule);
+}
+
+.inv-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 28px 0 6px;
+}
+
+.inv-head-title {
+  font-size: 22px !important;
+  margin: 0 0 4px !important;
+  letter-spacing: -0.02em;
+  text-transform: none !important;
+  color: var(--ph-bright) !important;
+  font-weight: 600;
+}
+
+.inv-sub,
+.inv-date {
+  margin: 0;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--ph-green-dim);
+  text-transform: uppercase;
+}
+
+.inv-list {
+  margin: 0;
+  padding-left: 16px;
+  color: var(--ph-text);
+}
+
+.inv-list li {
+  margin-bottom: 10px;
+  line-height: 21px;
+  font-size: 13px;
+}
+
+.inv-list b {
+  color: var(--ph-bright);
+  font-weight: 600;
+}
+
+.inv-foot {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding-top: 20px;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--ph-green-dim);
+}
+
+.inv-foot a {
+  color: var(--ph-green);
+  text-decoration: none;
+  border-bottom: 1px solid var(--ph-green-dim);
+}
+
+/* ---- Reveal ------------------------------------------------------------- */
+
+.reveal-block {
+  transition:
+    opacity var(--dur-2) var(--ease-heavy),
+    transform var(--dur-2) var(--ease-heavy);
+  will-change: opacity, transform;
+}
+
+.reveal-block.is-hidden {
+  opacity: 0;
+  transform: translateY(24px);
+}
+
+.reveal-block.is-shown {
+  opacity: 1;
+  transform: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .inv-funnel-wrap {
+  .reveal-block,
+  .inv-parallax,
+  .inv-steps li {
+    animation: none !important;
+    transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .inv-funnel-wrap,
+  .inv-sticky-wrap {
     height: auto !important;
   }
-  .inv-funnel-sticky {
+
+  .inv-funnel-sticky,
+  .inv-sticky {
     position: static;
     min-height: 0;
   }
+
   .inv-dots-pass,
   .inv-dots-pick,
   .inv-funnel-names {
     opacity: 1 !important;
   }
 }
+
 @media print {
-  .inv-funnel-wrap {
+  .inv-grain,
+  .inv-rail,
+  .inv-spine,
+  .inv-hero,
+  .inv-scroll-cue {
+    display: none !important;
+  }
+
+  .inv-funnel-wrap,
+  .inv-sticky-wrap {
     height: auto !important;
   }
-  .inv-funnel-sticky {
+
+  .inv-funnel-sticky,
+  .inv-sticky {
     position: static;
     min-height: 0;
   }
+
+  .reveal-block {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/*
+ * Strip the app chrome on this route.
+ *
+ * The invoice is a document sent to someone who has never used the site. A
+ * sidebar offering Factor Lab and Position sizing is furniture from a product
+ * he does not have yet, and it breaks the illusion that he is holding a report
+ * rather than browsing an app. The one way in is the link in the footer, which
+ * is deliberate.
+ *
+ * Scoped with :has() so it can only ever apply on a page that renders .inv-root.
+ */
+body:has(.inv-root) .site-header,
+body:has(.inv-root) .topbar,
+body:has(.inv-root) .sidebar,
+body:has(.inv-root) .sidebar-scrim,
+body:has(.inv-root) .mobile-menu-btn,
+body:has(.inv-root) .cmdk-fab,
+body:has(.inv-root) .scroll-progress,
+body:has(.inv-root) .aurora {
+  display: none !important;
+}
+
+/* The app reserves a left margin for the sidebar; the document does not. */
+body:has(.inv-root) main,
+body:has(.inv-root) .page-enter,
+body:has(.inv-root) .app-content,
+body:has(.inv-root) .app-shell {
+  margin: 0 !important;
+  padding: 0 !important;
+  max-width: none !important;
+}
+
+body:has(.inv-root) {
+  background: #000000;
 }
