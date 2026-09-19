@@ -20,6 +20,7 @@ export const VERTEX = /* glsl */ `
   uniform vec2 uScreen;
   uniform float uDpr;
   uniform float uSize;
+  uniform float uZoom;
 
   varying float vAlpha;
   varying float vRole;
@@ -33,7 +34,7 @@ export const VERTEX = /* glsl */ `
 
     vec2 unit = position / uWorld;
     vec2 ndc = (unit * 2.0 - 1.0) * vec2(1.0, -1.0);
-    gl_Position = vec4(ndc * fit, 0.0, 1.0);
+    gl_Position = vec4(ndc * fit * uZoom, 0.0, 1.0);
 
     // Survivors are drawn larger as well as brighter. Brightness alone is not
     // enough to find twenty dots among nine hundred on a phone.
@@ -69,6 +70,19 @@ export const FRAGMENT = /* glsl */ `
     gl_FragColor = vec4(col * core * vAlpha, core * vAlpha);
   }
 `;
+
+/**
+ * How much of the stage the world occupies.
+ *
+ * A pure contain-fit puts the pile hard against the bottom edge and the field
+ * against the sides, which reads as cropped on a phone — you cannot see that
+ * the machine has a floor. Backing off leaves air around the whole scene.
+ *
+ * Shared by all three consumers: the shader, the canvas-2D fallback, and the
+ * gate rules. If they disagree, a rule stops pointing at the row of world it
+ * is labelling.
+ */
+export const WORLD_ZOOM = 0.84;
 
 /** Phosphor, matched to the page tokens in invoice.css. */
 export const COLOURS = {

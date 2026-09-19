@@ -249,10 +249,10 @@ export function StickySteps({ steps }: { steps: { head: string; body: string }[]
   });
 
   return (
-    // 62vh per step: enough scroll that each one reads as a deliberate beat,
-    // short enough that five of them do not feel like a hostage situation on
-    // a phone.
-    <div ref={wrap} className="inv-sticky-wrap" style={{ height: `${steps.length * 62}vh` }}>
+    // 85vh per step: each one gets most of a screen of travel, so a step is
+    // read rather than glimpsed. Five of them is a long section, which is the
+    // intent - the page is meant to be travelled through.
+    <div ref={wrap} className="inv-sticky-wrap" style={{ height: `${steps.length * 85}vh` }}>
       <div className="inv-sticky">
         <ol className="inv-steps">
           {steps.map((s, i) => (

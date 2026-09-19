@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 import { useScrollTick } from "@/components/ScrollStory";
 import { DEFAULT_CONFIG, readFrame, simulate, type Bake } from "@/lib/machine-physics";
 import { pinnedProgress } from "@/lib/scroll-math";
-import { COLOURS, FRAGMENT, VERTEX } from "./programs";
+import { COLOURS, FRAGMENT, VERTEX, WORLD_ZOOM } from "./programs";
 
 /**
  * The machine: the scan, rendered as falling bodies.
@@ -27,7 +27,14 @@ import { COLOURS, FRAGMENT, VERTEX } from "./programs";
  */
 
 /** Scroll distance the pinned scene occupies. */
-const SCENE_VH = 420;
+/**
+ * Scroll distance the pinned scene occupies.
+ *
+ * Long on purpose. At 420vh the whole sequence went past in one flick and the
+ * gates were over before they registered; the reader should be able to travel
+ * through it and watch each stage happen.
+ */
+const SCENE_VH = 620;
 
 /**
  * Where the gates sit, as a fraction of the world height.
@@ -113,7 +120,7 @@ export default function Machine({
       const { width, height } = stageBox();
       const worldAspect = DEFAULT_CONFIG.width / DEFAULT_CONFIG.height;
       const screenAspect = width / height;
-      const fitY = screenAspect > worldAspect ? 1 : screenAspect / worldAspect;
+      const fitY = (screenAspect > worldAspect ? 1 : screenAspect / worldAspect) * WORLD_ZOOM;
       DEFAULT_CONFIG.gates.forEach((gy, i) => {
         const unit = gy / DEFAULT_CONFIG.height;
         const ndc = (1 - 2 * unit) * fitY;
@@ -140,7 +147,7 @@ export default function Machine({
         dispose: () => undefined,
         draw: (data, roles) => {
           const rect = stageBox();
-          const fit = Math.min(rect.width / bake.width, rect.height / bake.height);
+          const fit = Math.min(rect.width / bake.width, rect.height / bake.height) * WORLD_ZOOM;
           const ox = (rect.width - bake.width * fit) / 2;
           const oy = (rect.height - bake.height * fit) / 2;
           ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -219,6 +226,7 @@ export default function Machine({
             uScreen: { value: [1, 1] },
             uDpr: { value: dpr },
             uSize: { value: 4.6 },
+            uZoom: { value: WORLD_ZOOM },
             uGreen: { value: COLOURS.green },
             uDim: { value: COLOURS.dim },
           },
