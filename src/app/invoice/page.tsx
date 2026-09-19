@@ -3,6 +3,7 @@ import "./invoice.css";
 import fs from "node:fs";
 import path from "node:path";
 import Boot from "@/components/Boot";
+import Machine from "@/components/machine/Machine";
 import PayClose from "@/components/PayClose";
 import Reveal from "@/components/Reveal";
 import SmoothScroll from "@/components/SmoothScroll";
@@ -260,7 +261,9 @@ export default function Invoice() {
       <StickySteps steps={STEPS} />
 
       {scanned > 0 && passed > 0 ? (
-        <ScrollFunnel scanned={scanned} passed={passed} picked={picked} tickers={tickers} />
+        <Machine scanned={scanned} passed={passed} picked={picked}>
+          <ScrollFunnel scanned={scanned} passed={passed} picked={picked} tickers={tickers} />
+        </Machine>
       ) : null}
 
       <Reveal>

@@ -896,3 +896,135 @@ html.inv-booting body {
     display: none !important;
   }
 }
+
+/* ---- The machine -------------------------------------------------------- */
+
+.inv-machine-wrap {
+  position: relative;
+}
+
+.inv-machine-sticky {
+  position: sticky;
+  top: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 16px;
+  padding: 24px 0;
+}
+
+.inv-machine-head {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.inv-machine-n {
+  font-size: clamp(40px, 13vw, 78px);
+  line-height: 1;
+  font-weight: 600;
+  letter-spacing: -0.05em;
+  color: var(--ph-green);
+  font-variant-numeric: tabular-nums slashed-zero;
+}
+
+.inv-machine-l {
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ph-green-dim);
+}
+
+.inv-machine-stage {
+  position: relative;
+  width: 100%;
+  height: clamp(320px, 58vh, 620px);
+}
+
+.inv-machine-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity var(--dur-2) var(--ease-heavy);
+}
+
+.inv-machine-canvas.is-live {
+  opacity: 1;
+}
+
+/*
+ * The static picture stays in the markup and is only hidden once a renderer
+ * has actually started. No WebGL, no canvas, no JS at all - he still sees the
+ * scan he is paying for.
+ */
+.inv-machine-fallback {
+  position: absolute;
+  inset: 0;
+  transition: opacity var(--dur-1) var(--ease-heavy);
+}
+
+.inv-machine-fallback.is-replaced {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.inv-machine-fallback .inv-funnel-wrap {
+  height: auto;
+}
+
+.inv-machine-fallback .inv-funnel-sticky {
+  position: static;
+  min-height: 0;
+  gap: 10px;
+}
+
+.inv-machine-fallback .inv-funnel-head {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inv-machine-wrap {
+    height: auto !important;
+  }
+
+  .inv-machine-sticky {
+    position: static;
+    min-height: 0;
+  }
+
+  .inv-machine-canvas {
+    display: none;
+  }
+
+  .inv-machine-fallback {
+    position: static;
+    opacity: 1 !important;
+  }
+
+  .inv-machine-stage {
+    height: auto;
+  }
+}
+
+@media print {
+  .inv-machine-wrap {
+    height: auto !important;
+  }
+
+  .inv-machine-sticky {
+    position: static;
+    min-height: 0;
+  }
+
+  .inv-machine-canvas {
+    display: none;
+  }
+
+  .inv-machine-fallback {
+    position: static;
+    opacity: 1 !important;
+  }
+}
