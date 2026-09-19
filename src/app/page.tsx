@@ -1,7 +1,7 @@
+import AlertToggle from "@/components/AlertToggle";
 import ExitAlerts from "@/components/ExitAlerts";
 import HomeView, { type Spotlight } from "@/components/HomeView";
 import InstallApp from "@/components/InstallApp";
-import SuggestBox from "@/components/SuggestBox";
 import { type Stat } from "@/components/StatTiles";
 import fs from "node:fs";
 import path from "node:path";
@@ -136,6 +136,7 @@ export default function Home() {
     <main>
       <ExitAlerts exits={exits} signature={exitsSignature(exits)} />
       <InstallApp />
+      <AlertToggle vapidKey={process.env.NEXT_PUBLIC_VAPID_KEY ?? ""} />
       <HomeView
         stocks={rankings.stocks}
         sparks={buildSparks(rankings.stocks.map((s) => s.ticker))}
@@ -145,7 +146,6 @@ export default function Home() {
         spotlight={spotlight}
         verdict={honestVerdict()}
       />
-      <SuggestBox />
     </main>
   );
 }

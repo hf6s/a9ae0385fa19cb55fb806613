@@ -2232,3 +2232,35 @@ table.rolling-table tbody tr:last-child td {
   line-height: 21px;
   white-space: pre-wrap;
 }
+
+/* ---- Sell alert toggle -------------------------------------------------- */
+
+.alerts-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  border: 1px solid var(--border);
+  background: var(--bg-raised);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 18px;
+}
+
+.alerts-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  max-width: 52ch;
+}
+
+.alerts-copy strong {
+  font-size: 14px;
+}
+
+.alerts-copy span {
+  font-size: 12.5px;
+  line-height: 18px;
+  color: var(--text-dim);
+}

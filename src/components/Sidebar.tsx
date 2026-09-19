@@ -18,6 +18,7 @@ const LINKS = [
   { href: "/dashboard", icon: "⣿", label: "Dashboard" },
   { href: "/lab", icon: "⚗", label: "Factor Lab" },
   { href: "/methodology", icon: "?", label: "How it works" },
+  { href: "/suggest", icon: "✎", label: "Suggest" },
 ];
 
 export default function Sidebar() {
