@@ -7,6 +7,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
+  approach,
   clamp01,
   dotGrid,
   funnelStage,
@@ -179,5 +180,41 @@ describe("tapeRate", () => {
     // Two scroll events in the same millisecond divide by zero.
     assert.equal(tapeRate(Number.POSITIVE_INFINITY), 1);
     assert.equal(tapeRate(Number.NaN), 1);
+  });
+});
+
+describe("approach", () => {
+  it("never overshoots the target", () => {
+    assert.equal(approach(0.9, 1, 0.5), 1);
+    assert.equal(approach(0.1, 0, 0.5), 0);
+  });
+
+  it("moves by at most one step", () => {
+    assert.ok(Math.abs(approach(0, 1, 0.01) - 0.01) < 1e-9);
+  });
+
+  it("caps a flick instead of jumping", () => {
+    // The bug this exists for: a whole section travelled in one gesture.
+    let p = 0;
+    let frames = 0;
+    while (p < 1 && frames < 1000) {
+      p = approach(p, 1, 0.45 / 60); // 0.45 progress per second at 60fps
+      frames++;
+    }
+    const seconds = frames / 60;
+    assert.ok(seconds > 1.8 && seconds < 2.6, `full sweep took ${seconds}s`);
+  });
+
+  it("works downward as well as up", () => {
+    assert.ok(approach(1, 0, 0.1) < 1);
+  });
+
+  it("stands still when the step is zero or broken", () => {
+    assert.equal(approach(0.4, 1, 0), 0.4);
+    assert.equal(approach(0.4, 1, Number.NaN), 0.4);
+  });
+
+  it("recovers from a broken current value", () => {
+    assert.equal(approach(Number.NaN, 0.5, 0.1), 0.5);
   });
 });

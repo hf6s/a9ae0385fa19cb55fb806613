@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 import { useScrollTick } from "@/components/ScrollStory";
 import { DEFAULT_CONFIG, readFrame, simulate, type Bake } from "@/lib/machine-physics";
 import { play } from "@/lib/audio";
-import { pinnedProgress } from "@/lib/scroll-math";
+import { approach, pinnedProgress } from "@/lib/scroll-math";
 import { COLOURS, FRAGMENT, VERTEX, WORLD_ZOOM } from "./programs";
 
 /**
@@ -35,7 +35,22 @@ import { COLOURS, FRAGMENT, VERTEX, WORLD_ZOOM } from "./programs";
  * enough that nobody is trapped scrolling through it. The whole sequence is
  * about three screens of travel.
  */
-const SCENE_VH = 300;
+const SCENE_VH = 450;
+
+/**
+ * The slowest the scene is allowed to play, in progress per second.
+ *
+ * iOS momentum scrolling covers a whole pinned section in one flick, so
+ * mapping scroll position straight to scene progress meant the machine jumped
+ * from empty to finished with nothing to watch. The rendered progress now
+ * chases the scrolled progress at a capped rate: the page still moves exactly
+ * as fast as the thumb asks, but the animation takes at least ~2.2 seconds to
+ * traverse its full length, and keeps playing after the flick has stopped.
+ *
+ * It is a speed limit, not scroll-jacking. Nothing is prevented, nothing is
+ * snapped, and scrolling away mid-catch-up simply leaves it where it got to.
+ */
+const MAX_PROGRESS_PER_SEC = 0.45;
 
 /**
  * Where the gates sit, as a fraction of the world height.
@@ -95,6 +110,12 @@ export default function Machine({
   const frameRef = useRef<Float32Array | null>(null);
   const drawRef = useRef<((t: number) => void) | null>(null);
   const shownCount = useRef("");
+  /** Where the scroll says we are, and where the picture has actually got to. */
+  const targetP = useRef(0);
+  const renderedP = useRef(0);
+  const chasing = useRef(0);
+  const lastChase = useRef(0);
+  const primed = useRef(false);
   const [mode, setMode] = useState<Mode>("fallback");
   /**
    * The static picture is 1,063 SVG circles. It has to be in the markup, and
@@ -222,6 +243,32 @@ export default function Machine({
       return r;
     };
 
+    /**
+     * Paint the true frame for wherever the reader already is, once a renderer
+     * exists.
+     *
+     * Priming used to happen on the first scroll tick, but the tick bails
+     * while the renderer is still loading - so the first tick that counted was
+     * whatever scroll happened next, and if that was a flick it primed at the
+     * end of the scene and snapped there. Exactly the jump the speed limit
+     * exists to prevent.
+     */
+    const primeFromScroll = () => {
+      const host = wrap.current;
+      if (!host) return;
+      const r = host.getBoundingClientRect();
+      const doc = document.documentElement;
+      targetP.current = pinnedProgress({
+        top: r.top,
+        height: r.height,
+        viewportHeight: window.innerHeight,
+        atPageBottom: doc.scrollTop + doc.clientHeight >= doc.scrollHeight - 2,
+      });
+      renderedP.current = targetP.current;
+      primed.current = true;
+      paint(renderedP.current);
+    };
+
     const start2D = (): boolean => {
       const ctx = el.getContext("2d");
       if (!ctx) return false;
@@ -275,6 +322,7 @@ export default function Machine({
         r2d.dispose();
       };
       (window.__f20diag ??= {}).mode = "2d";
+      primeFromScroll();
       setMode("2d");
       return true;
     };
@@ -348,6 +396,7 @@ export default function Machine({
         };
 
         (window.__f20diag ??= {}).mode = "gl";
+        primeFromScroll();
         cleanup = () => {
           window.removeEventListener("resize", resize);
           ro.disconnect();
@@ -376,6 +425,74 @@ export default function Machine({
     return () => window.clearTimeout(t);
   }, [mode]);
 
+  /**
+   * Advance the rendered progress toward the scrolled progress, at the speed
+   * limit, and keep going on its own until it arrives.
+   */
+  const chase = () => {
+    chasing.current = 0;
+    const draw = drawRef.current;
+    if (!draw) return;
+
+    const now = performance.now();
+    const dt = Math.min(64, now - (lastChase.current || now));
+    lastChase.current = now;
+
+    renderedP.current = approach(
+      renderedP.current,
+      targetP.current,
+      (MAX_PROGRESS_PER_SEC * dt) / 1000,
+    );
+
+    paint(renderedP.current);
+
+    if (Math.abs(targetP.current - renderedP.current) > 0.0008) {
+      chasing.current = requestAnimationFrame(chase);
+    }
+  };
+
+  /** Draw one frame at a given progress, and update the headline with it. */
+  const paint = (p: number) => {
+    const draw = drawRef.current;
+    const el = wrap.current;
+    if (!draw || !el) return;
+    const r = el.getBoundingClientRect();
+    const offscreen = r.bottom < -200 || r.top > window.innerHeight + 200;
+    if (!offscreen) {
+      draw(p);
+      const drawn = (window.__f20diag ??= {});
+      drawn.draws = (drawn.draws ?? 0) + 1;
+    }
+
+    const l = labels.current;
+    if (l) {
+      const lock = easeOut(Math.max(0, Math.min(1, (p - LOCK_FROM) / (1 - LOCK_FROM))));
+      l.style.opacity = String(lock);
+    }
+
+    const stage = p < 0.34 ? scanned : p < 0.78 ? passed : picked;
+    const label = p < 0.34 ? "scanned" : p < 0.78 ? "clear every filter" : "make the list";
+    const key = `${stage}:${label}`;
+    if (key !== shownCount.current) {
+      const first = shownCount.current === "";
+      shownCount.current = key;
+      if (!first) {
+        play(stage === picked ? "lock" : "gate");
+        navigator.vibrate?.(stage === picked ? 22 : 10);
+      }
+      if (counter.current) counter.current.textContent = stage.toLocaleString("en-US");
+      if (caption.current) caption.current.textContent = label;
+    }
+
+    (window.__f20diag ??= {}).progress = p;
+  };
+
+  useEffect(() => {
+    return () => {
+      if (chasing.current) cancelAnimationFrame(chasing.current);
+    };
+  }, []);
+
   useScrollTick(() => {
     const el = wrap.current;
     const draw = drawRef.current;
@@ -383,50 +500,39 @@ export default function Machine({
     const r = el.getBoundingClientRect();
     const doc = document.documentElement;
 
-    const p = pinnedProgress({
+    targetP.current = pinnedProgress({
       top: r.top,
       height: r.height,
       viewportHeight: window.innerHeight,
       atPageBottom: doc.scrollTop + doc.clientHeight >= doc.scrollHeight - 2,
     });
 
-    // Progress and the counter are computed even off screen, so scrolling
-    // past the scene and back does not leave the headline reading 905 over a
-    // finished grid. Only the drawing is skipped, which is the part that
-    // costs a phone anything.
-    const offscreen = r.bottom < -200 || r.top > window.innerHeight + 200;
-    if (!offscreen) {
-      draw(p);
-      // Counted only when a frame is actually rendered: a diagnostic that
-      // counts skipped frames as draws would send the next person debugging
-      // this in exactly the wrong direction.
-      const drawn = (window.__f20diag ??= {});
-      drawn.draws = (drawn.draws ?? 0) + 1;
+    /**
+     * Snap only when nobody is watching the catch-up.
+     *
+     * The first version snapped whenever progress reached 0 or 1, which is
+     * precisely the case a flick produces: iOS momentum carries the whole
+     * section in one go, progress arrives at 1, and the scene jumped to
+     * finished with nothing to watch — the bug this cap exists to fix.
+     *
+     * So: snap on the very first frame (a reader arriving mid-page should see
+     * the true state immediately) and snap while the section is off screen.
+     * Everything else eases, including a flick to the end.
+     */
+    const rect = el.getBoundingClientRect();
+    const offscreen = rect.bottom < -200 || rect.top > window.innerHeight + 200;
+    if (!primed.current || offscreen) {
+      (window.__f20diag ??= {}).snap = !primed.current ? "first" : "offscreen";
+      primed.current = true;
+      renderedP.current = targetP.current;
+      paint(renderedP.current);
+      return;
     }
-    // Labels arrive with the formation, not before it.
-    const l = labels.current;
-    if (l) {
-      const lock = easeOut(Math.max(0, Math.min(1, (p - LOCK_FROM) / (1 - LOCK_FROM))));
-      l.style.opacity = String(lock);
-    }
-    const d = (window.__f20diag ??= {});
-    d.progress = p;
 
-    // The counter states only figures the scan actually produced.
-    const stage = p < 0.34 ? scanned : p < 0.78 ? passed : picked;
-    const label = p < 0.34 ? "scanned" : p < 0.78 ? "clear every filter" : "make the list";
-    const key = `${stage}:${label}`;
-    if (key !== shownCount.current) {
-      const first = shownCount.current === "";
-      shownCount.current = key;
-      // One cue per stage change, and never on the first paint - a sound on
-      // arrival is a notification, not a response to the reader.
-      if (!first) {
-        play(stage === picked ? "lock" : "gate");
-        navigator.vibrate?.(stage === picked ? 22 : 10);
-      }
-      if (counter.current) counter.current.textContent = stage.toLocaleString("en-US");
-      if (caption.current) caption.current.textContent = label;
+    (window.__f20diag ??= {}).snap = "chasing";
+    if (!chasing.current) {
+      lastChase.current = performance.now();
+      chasing.current = requestAnimationFrame(chase);
     }
   });
 

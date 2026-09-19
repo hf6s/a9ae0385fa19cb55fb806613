@@ -23,6 +23,8 @@ interface Probe {
   draws?: number;
   progress?: number;
   glError?: string;
+  /** Which branch the machine's scroll tick last took. */
+  snap?: string;
 }
 
 declare global {
@@ -55,6 +57,7 @@ export default function Diag() {
         draws: String(p.draws ?? 0),
         progress: (p.progress ?? 0).toFixed(3),
         glError: p.glError ?? "-",
+        tickPath: p.snap ?? "-",
         webgl: gl,
         reducedMotion: String(
           window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false,

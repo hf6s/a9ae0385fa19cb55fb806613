@@ -142,3 +142,23 @@ export function tapeRate(velocityPxPerMs: number): number {
   if (!Number.isFinite(v)) return 1;
   return Math.min(6, 1 + v * 1.6);
 }
+
+/**
+ * Move `current` toward `target` by at most `maxStep`.
+ *
+ * The speed limit behind the machine's scrub. iOS momentum covers a whole
+ * pinned section in one flick, so the rendered progress chases the scrolled
+ * progress at a capped rate rather than jumping to it — the page still moves
+ * as fast as the thumb asks, the picture just refuses to skip.
+ *
+ * Never overshoots: arriving exactly is what stops the scene oscillating
+ * around its own target forever.
+ */
+export function approach(current: number, target: number, maxStep: number): number {
+  if (!Number.isFinite(current) || !Number.isFinite(target)) return target;
+  const step = Math.abs(maxStep);
+  if (!Number.isFinite(step) || step <= 0) return current;
+  const gap = target - current;
+  if (Math.abs(gap) <= step) return target;
+  return current + Math.sign(gap) * step;
+}
