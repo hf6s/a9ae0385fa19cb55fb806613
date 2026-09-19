@@ -35,7 +35,7 @@ function prefersReducedMotion(): boolean {
 const useIsomorphicLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect;
 
 /** Subscribe to scroll with a single shared rAF tick. */
-function useScrollTick(onTick: () => void, enabled = true) {
+export function useScrollTick(onTick: () => void, enabled = true) {
   useIsomorphicLayoutEffect(() => {
     if (!enabled || prefersReducedMotion()) return;
     let frame = 0;

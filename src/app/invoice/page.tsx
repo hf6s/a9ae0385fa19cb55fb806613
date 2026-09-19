@@ -1,7 +1,9 @@
 import Link from "next/link";
+import "./invoice.css";
 import fs from "node:fs";
 import path from "node:path";
 import Reveal from "@/components/Reveal";
+import SmoothScroll from "@/components/SmoothScroll";
 import {
   ParallaxHero,
   ScrollFunnel,
@@ -155,6 +157,7 @@ export default function Invoice() {
 
   return (
     <main className="inv-page">
+      <SmoothScroll />
       <ScrollRail />
 
       <section className="inv-hero">
