@@ -45,13 +45,27 @@ function useScrollTick(onTick: () => void, enabled = true) {
         onTick();
       });
     };
+    // Browsers pause rAF in a hidden tab, so a scroll that happens while the
+    // page is in the background never gets its frame: the pending handle
+    // stays set, every later scroll is swallowed by the guard, and the page
+    // comes back showing a position the reader left long ago. Resetting on
+    // the way back to visible repairs that.
+    const onVisible = () => {
+      if (document.hidden) return;
+      if (frame) cancelAnimationFrame(frame);
+      frame = 0;
+      onTick();
+    };
+
     onTick();
     window.addEventListener("scroll", schedule, { passive: true });
     window.addEventListener("resize", schedule, { passive: true });
+    document.addEventListener("visibilitychange", onVisible);
     return () => {
       if (frame) cancelAnimationFrame(frame);
       window.removeEventListener("scroll", schedule);
       window.removeEventListener("resize", schedule);
+      document.removeEventListener("visibilitychange", onVisible);
     };
     // onTick is stable per mount by construction (defined in the component
     // body and only reading refs), so this intentionally runs once.
