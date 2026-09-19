@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { prefersReducedMotion } from "@/components/ScrollStory";
 
 /**
  * Inertia scrolling for the invoice page, and the single frame source that
@@ -25,7 +26,7 @@ export default function SmoothScroll() {
   useEffect(() => {
     // Someone who asked their system to stop animating things did not ask for
     // scroll inertia either. Native scrolling is the accessible default.
-    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+    if (prefersReducedMotion()) return;
 
     let dispose: (() => void) | undefined;
     let cancelled = false;

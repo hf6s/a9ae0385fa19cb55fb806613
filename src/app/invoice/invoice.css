@@ -1062,3 +1062,66 @@ html.inv-booting body {
   text-align: right;
   word-break: break-all;
 }
+
+/* ---- Gate rules --------------------------------------------------------- */
+
+/*
+ * Hidden until a renderer places them. A rule floating over the static
+ * fallback would point at nothing.
+ */
+.inv-machine-gates {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--dur-2) var(--ease-heavy);
+  z-index: 2;
+}
+
+.inv-machine-gates.is-placed {
+  opacity: 1;
+}
+
+.inv-machine-gate {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--ph-green-mid) 12%,
+    var(--ph-green-mid) 88%,
+    transparent
+  );
+  opacity: 0.55;
+}
+
+.inv-machine-gate span {
+  position: absolute;
+  top: 4px;
+  left: 0;
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ph-green-mid);
+  white-space: nowrap;
+}
+
+/*
+ * Reduced-motion boot: it still introduces the page, it just does not travel.
+ * The curtain fades where it would otherwise slide, and the log is printed
+ * whole rather than typed.
+ */
+.inv-boot.is-gentle {
+  transition: opacity 500ms linear;
+}
+
+.inv-boot.is-gentle.is-lifting {
+  transform: none;
+  opacity: 0;
+}
+
+.inv-boot.is-gentle .inv-caret {
+  animation: none;
+}

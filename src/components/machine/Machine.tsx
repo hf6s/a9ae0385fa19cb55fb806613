@@ -27,7 +27,16 @@ import { COLOURS, FRAGMENT, VERTEX } from "./programs";
  */
 
 /** Scroll distance the pinned scene occupies. */
-const SCENE_VH = 320;
+const SCENE_VH = 420;
+
+/**
+ * Where the gates sit, as a fraction of the world height.
+ *
+ * Drawn as real rules across the stage with the filter they represent. Without
+ * them the scene is dots falling for no visible reason; with them the reader
+ * watches companies hit a named test and get thrown out by it.
+ */
+const GATE_LABELS = ["Financial health", "Profitability", "Trend"] as const;
 
 type Mode = "fallback" | "gl" | "2d";
 
@@ -49,6 +58,8 @@ export default function Machine({
   children: ReactNode;
 }) {
   const wrap = useRef<HTMLDivElement>(null);
+  const stage = useRef<HTMLDivElement>(null);
+  const gates = useRef<HTMLDivElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
   const counter = useRef<HTMLSpanElement>(null);
   const caption = useRef<HTMLSpanElement>(null);
@@ -61,11 +72,6 @@ export default function Machine({
   useEffect(() => {
     const el = canvas.current;
     if (!el || scanned <= 0) return;
-    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
-      (window.__f20diag ??= {}).mode = "reduced-motion";
-      return;
-    }
-
     let disposed = false;
     let cleanup: (() => void) | undefined;
 
@@ -91,6 +97,30 @@ export default function Machine({
       const parent = el.parentElement;
       const r = (parent ?? el).getBoundingClientRect();
       return { width: Math.max(1, r.width), height: Math.max(1, r.height) };
+    };
+
+    /**
+     * Put the gate rules exactly where the shader puts that row of world.
+     *
+     * The scene is fitted "contain", so on a stage narrower than the world the
+     * vertical does not fill and a rule pinned at a CSS percentage would float
+     * away from the particles it is supposed to be stopping. This repeats the
+     * shader's own fit so the line and the rejection happen on the same pixel.
+     */
+    const layoutGates = () => {
+      const g = gates.current;
+      if (!g) return;
+      const { width, height } = stageBox();
+      const worldAspect = DEFAULT_CONFIG.width / DEFAULT_CONFIG.height;
+      const screenAspect = width / height;
+      const fitY = screenAspect > worldAspect ? 1 : screenAspect / worldAspect;
+      DEFAULT_CONFIG.gates.forEach((gy, i) => {
+        const unit = gy / DEFAULT_CONFIG.height;
+        const ndc = (1 - 2 * unit) * fitY;
+        const el = g.children[i] as HTMLElement | undefined;
+        if (el) el.style.top = `${((1 - ndc) / 2) * height}px`;
+      });
+      g.classList.add("is-placed");
     };
 
     const sizeCanvas = () => {
@@ -122,12 +152,12 @@ export default function Machine({
             const survivor = roles[i] === 3;
             ctx.fillStyle = survivor
               ? `rgba(53, 224, 139, ${a})`
-              : `rgba(20, 92, 57, ${a})`;
+              : `rgba(38, 140, 90, ${a})`;
             ctx.beginPath();
             ctx.arc(
               ox + data[i * 3] * fit,
               oy + data[i * 3 + 1] * fit,
-              (survivor ? 3.4 : 2.1) * Math.max(fit, 0.35),
+              (survivor ? 4.6 : 3.0) * Math.max(fit, 0.35),
               0,
               Math.PI * 2,
             );
@@ -136,11 +166,15 @@ export default function Machine({
         },
       };
       sizeCanvas();
+      layoutGates();
       drawRef.current = (t: number) => {
         readFrame(bake, t, frame);
         r2d.draw(frame, bake.roles);
       };
-      const onResize = () => r2d.resize();
+      const onResize = () => {
+        r2d.resize();
+        layoutGates();
+      };
       window.addEventListener("resize", onResize);
       const ro2 = new ResizeObserver(onResize);
       if (el.parentElement) ro2.observe(el.parentElement);
@@ -184,7 +218,7 @@ export default function Machine({
             uWorld: { value: [bake.width, bake.height] },
             uScreen: { value: [1, 1] },
             uDpr: { value: dpr },
-            uSize: { value: 3.1 },
+            uSize: { value: 4.6 },
             uGreen: { value: COLOURS.green },
             uDim: { value: COLOURS.dim },
           },
@@ -196,6 +230,7 @@ export default function Machine({
           const r = stageBox();
           renderer.setSize(r.width, r.height);
           program.uniforms.uScreen.value = [r.width, r.height];
+          layoutGates();
         };
         resize();
         window.addEventListener("resize", resize);
@@ -286,7 +321,14 @@ export default function Machine({
             scanned
           </span>
         </div>
-        <div className="inv-machine-stage">
+        <div className="inv-machine-stage" ref={stage}>
+          <div className="inv-machine-gates" ref={gates} aria-hidden="true">
+            {GATE_LABELS.map((label, i) => (
+              <div className="inv-machine-gate" key={label} data-gate={i}>
+                <span>{label}</span>
+              </div>
+            ))}
+          </div>
           <canvas
             ref={canvas}
             className={`inv-machine-canvas${mode === "fallback" ? "" : " is-live"}`}

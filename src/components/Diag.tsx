@@ -59,6 +59,7 @@ export default function Diag() {
         reducedMotion: String(
           window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false,
         ),
+        rmOverride: new URLSearchParams(window.location.search).get("rm") ?? "-",
         lenis: String(document.documentElement.classList.contains("lenis")),
         dpr: String(window.devicePixelRatio),
         viewport: `${window.innerWidth}x${window.innerHeight}`,

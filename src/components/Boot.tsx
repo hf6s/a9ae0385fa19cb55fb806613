@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { prefersReducedMotion } from "@/components/ScrollStory";
 
 /**
  * The boot sequence: a terminal starting up, then a curtain lift.
@@ -13,9 +14,12 @@ import { useEffect, useRef, useState } from "react";
  *     a promise never settles, the reader waits BOOT_MAX_MS and not a
  *     millisecond longer.
  *   - Tapping anywhere lifts it immediately.
- *   - It is skipped entirely under prefers-reduced-motion, and skipped when
- *     the tab is hidden at mount — nobody is watching a boot sequence they
- *     cannot see, and rAF is paused there anyway.
+ *   - Under prefers-reduced-motion it still runs, because it is the page
+ *     introducing itself rather than decoration, but it prints the log at once
+ *     instead of typing it and fades instead of sliding. Skipping it entirely
+ *     left a phone with that setting looking at a dead document.
+ *   - Skipped when the tab is hidden at mount — nobody is watching a boot
+ *     sequence they cannot see, and rAF is paused there anyway.
  *   - Once seen, it stays down for six hours. Re-reading an invoice should not
  *     cost three seconds every time.
  *
@@ -52,13 +56,14 @@ export default function Boot({ lines }: { lines: BootLine[] }) {
   const [typed, setTyped] = useState(0);
   const [pct, setPct] = useState(0);
   const [lifting, setLifting] = useState(false);
+  const [gentle, setGentle] = useState(false);
   const done = useRef(false);
 
   // The whole script is one flat string; `typed` is how much of it has printed.
   const script = lines.map((l) => `${l.label} ${l.value}`).join("\n");
 
   useEffect(() => {
-    const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    const reduced = prefersReducedMotion();
     let seenRecently = false;
     try {
       const seen = Number(localStorage.getItem(SEEN_KEY) ?? 0);
@@ -67,9 +72,10 @@ export default function Boot({ lines }: { lines: BootLine[] }) {
       // Private mode or blocked storage: play it. A boot sequence is not worth
       // an exception.
     }
-    if (reduced || seenRecently || document.hidden) return;
+    if (seenRecently || document.hidden) return;
 
     setActive(true);
+    if (reduced) setGentle(true);
     document.documentElement.classList.add("inv-booting");
 
     const started = performance.now();
@@ -95,16 +101,22 @@ export default function Boot({ lines }: { lines: BootLine[] }) {
       );
     };
 
-    // Type the script out, character by character, at an uneven rhythm.
+    // Type the script out, character by character, at an uneven rhythm — or
+    // print it whole, for a reader who asked for less movement.
     let i = 0;
-    const typeNext = () => {
-      i += 1;
+    if (reduced) {
+      i = script.length;
       setTyped(i);
-      if (i < script.length) {
-        timers.push(window.setTimeout(typeNext, delayFor(i)));
-      }
-    };
-    timers.push(window.setTimeout(typeNext, 220));
+    } else {
+      const typeNext = () => {
+        i += 1;
+        setTyped(i);
+        if (i < script.length) {
+          timers.push(window.setTimeout(typeNext, delayFor(i)));
+        }
+      };
+      timers.push(window.setTimeout(typeNext, 220));
+    }
 
     // Real readiness, not a fake timer. Each signal is worth a share of the
     // counter, and the last share is the printing itself.
@@ -157,7 +169,10 @@ export default function Boot({ lines }: { lines: BootLine[] }) {
   const printed = script.slice(0, typed).split("\n");
 
   return (
-    <div className={`inv-boot${lifting ? " is-lifting" : ""}`} aria-hidden="true">
+    <div
+      className={`inv-boot${lifting ? " is-lifting" : ""}${gentle ? " is-gentle" : ""}`}
+      aria-hidden="true"
+    >
       <div className="inv-boot-inner">
         <pre className="inv-boot-log">
           {printed.map((line, n) => (

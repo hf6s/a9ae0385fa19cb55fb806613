@@ -2,6 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
+import { prefersReducedMotion } from "@/components/ScrollStory";
 
 /**
  * Reveals its children the first time they scroll into view.
@@ -41,7 +42,7 @@ export default function Reveal({
 
   useIsomorphicLayoutEffect(() => {
     const el = ref.current;
-    const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    const reduced = prefersReducedMotion();
     if (!el || reduced || typeof IntersectionObserver === "undefined") return;
 
     // Already on screen at mount: leave it alone rather than hide and re-show,

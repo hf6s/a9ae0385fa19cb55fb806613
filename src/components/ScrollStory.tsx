@@ -19,25 +19,54 @@ import { clamp01, dotGrid, funnelStage, pinnedProgress, scrubProgress, stepIndex
  *     queue hundreds of updates
  *   - state is written to the DOM node directly rather than through React
  *     state, so scrolling does not re-render the tree sixty times a second
- *   - prefers-reduced-motion disables all of it and leaves the page static
+ *   - reduced motion silences the DECORATIVE effects only (see below)
  *
  * Like Reveal, the markup renders in its FINAL state and script takes over
  * before the first paint. If the bundle never loads, the reader still gets a
  * readable invoice instead of an empty screen.
  */
 
-function prefersReducedMotion(): boolean {
-  return typeof window !== "undefined"
-    ? (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false)
-    : false;
+/**
+ * Whether the OS asked for less movement.
+ *
+ * `?rm=1` forces it on and `?rm=0` forces it off, which is how this gets
+ * tested at all: no emulator I can drive exposes the setting, and the phone
+ * that has it switched on is not one I can attach a debugger to. The override
+ * is read from the URL, so it costs a normal reader nothing.
+ */
+export function prefersReducedMotion(): boolean {
+  if (typeof window === "undefined") return false;
+  const forced = new URLSearchParams(window.location.search).get("rm");
+  if (forced === "1") return true;
+  if (forced === "0") return false;
+  return window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
 }
 
 const useIsomorphicLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect;
 
-/** Subscribe to scroll with a single shared rAF tick. */
-export function useScrollTick(onTick: () => void, enabled = true) {
+/**
+ * Subscribe to scroll with a single shared rAF tick.
+ *
+ * REDUCED MOTION IS NOT AN OFF SWITCH FOR THE PAGE.
+ *
+ * It used to be: any consumer of this hook went silent when the OS asked for
+ * reduced motion, and a phone with that setting on — which is common, and was
+ * on the phone this page is built for — scrolled through a completely dead
+ * document. The setting is a request to stop gratuitous movement, not a
+ * request to stop showing what the product does.
+ *
+ * So the rule is per-effect. Anything that only drifts, floats or parallaxes
+ * passes `decorative: true` and stands down. The machine, the counters and the
+ * section reveals are content: they track the reader's own scroll position,
+ * they move only because the reader moved, and they keep working.
+ */
+export function useScrollTick(
+  onTick: () => void,
+  { enabled = true, decorative = false }: { enabled?: boolean; decorative?: boolean } = {},
+) {
   useIsomorphicLayoutEffect(() => {
-    if (!enabled || prefersReducedMotion()) return;
+    if (!enabled) return;
+    if (decorative && prefersReducedMotion()) return;
     let frame = 0;
     let lastRun = 0;
     const run = () => {
@@ -95,7 +124,7 @@ export function useScrollTick(onTick: () => void, enabled = true) {
     // onTick is stable per mount by construction (defined in the component
     // body and only reading refs), so this intentionally runs once.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [enabled]);
+  }, [enabled, decorative]);
 }
 
 /**
@@ -116,7 +145,7 @@ export function ParallaxHero({ children }: { children: ReactNode }) {
     const p = clamp01(y / fadeOver);
     el.style.transform = `translate3d(0, ${y * 0.32}px, 0) scale(${1 - p * 0.04})`;
     el.style.opacity = String(1 - p);
-  });
+  }, { decorative: true });
 
   return (
     <div ref={ref} className="inv-parallax">
