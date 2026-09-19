@@ -722,3 +722,177 @@ body:has(.inv-root) .app-shell {
 body:has(.inv-root) {
   background: #000000;
 }
+
+/* ---- Boot --------------------------------------------------------------- */
+
+/* Scroll is frozen only while the curtain is down, and the class is removed
+   by the same timeout that lifts it - never by a promise that might not
+   settle. */
+html.inv-booting,
+html.inv-booting body {
+  overflow: hidden;
+}
+
+.inv-boot {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: var(--ph-void);
+  display: flex;
+  align-items: flex-end;
+  padding: 0 var(--gutter) 18vh;
+  transform: translateY(0);
+  transition: transform 860ms var(--ease-heavy);
+}
+
+.inv-boot.is-lifting {
+  transform: translateY(-101%);
+}
+
+.inv-boot-inner {
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.inv-boot-log {
+  margin: 0 0 22px;
+  font-family: inherit;
+  font-size: 11.5px;
+  line-height: 19px;
+  color: var(--ph-green);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.inv-caret {
+  display: inline-block;
+  width: 7px;
+  height: 13px;
+  margin-left: 2px;
+  background: var(--ph-green);
+  vertical-align: -2px;
+  animation: invCaret 1.1s steps(1) infinite;
+}
+
+@keyframes invCaret {
+  0%,
+  55% {
+    opacity: 1;
+  }
+  56%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.inv-boot-pct {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.inv-boot-n {
+  font-size: 34px;
+  line-height: 1;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  color: var(--ph-bright);
+  font-variant-numeric: tabular-nums slashed-zero;
+}
+
+.inv-boot-bar {
+  flex: 1;
+  height: 1px;
+  background: var(--ph-rule-bright);
+  overflow: hidden;
+}
+
+.inv-boot-bar i {
+  display: block;
+  height: 100%;
+  background: var(--ph-green);
+  transform-origin: left;
+  transition: transform 200ms linear;
+}
+
+/* ---- Settlement --------------------------------------------------------- */
+
+.inv-pay {
+  padding: 36px 0 12px;
+}
+
+.inv-pay-label {
+  margin: 0 0 14px;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ph-green-mid);
+}
+
+.inv-pay-btn {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-height: 60px;
+  padding: 16px 18px;
+  border: 1px solid var(--ph-green-mid);
+  background: color-mix(in srgb, var(--ph-green) 8%, transparent);
+  color: var(--ph-bright);
+  text-decoration: none;
+  transition:
+    background var(--dur-1) var(--ease-heavy),
+    border-color var(--dur-1) var(--ease-heavy),
+    transform var(--dur-1) var(--ease-heavy);
+}
+
+.inv-pay-btn:active {
+  transform: translateY(1px);
+  background: color-mix(in srgb, var(--ph-green) 16%, transparent);
+}
+
+.inv-pay-verb {
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ph-green);
+}
+
+.inv-pay-figure {
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums slashed-zero;
+}
+
+.inv-pay-arrow {
+  margin-left: auto;
+  color: var(--ph-green);
+  font-size: 18px;
+}
+
+.inv-pay-plain {
+  margin: 0;
+  font-size: 16px;
+  color: var(--ph-bright);
+}
+
+.inv-pay-terms {
+  margin: 14px 0 0;
+  font-size: 12px;
+  line-height: 19px;
+  color: var(--ph-text);
+  max-width: 56ch;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inv-caret {
+    animation: none !important;
+  }
+}
+
+@media print {
+  .inv-boot {
+    display: none !important;
+  }
+}

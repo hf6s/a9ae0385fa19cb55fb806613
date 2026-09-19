@@ -2,6 +2,8 @@ import Link from "next/link";
 import "./invoice.css";
 import fs from "node:fs";
 import path from "node:path";
+import Boot from "@/components/Boot";
+import PayClose from "@/components/PayClose";
 import Reveal from "@/components/Reveal";
 import SmoothScroll from "@/components/SmoothScroll";
 import {
@@ -37,8 +39,14 @@ export const dynamic = "force-dynamic";
  * Empty until marky supplies the name: an empty value drops the row instead of
  * rendering a placeholder at his stepdad.
  */
-const PREPARED_FOR = "";
+const PREPARED_FOR = "Jorge";
 const REF = "F20-001";
+
+/**
+ * Supplied by marky. The amount is prefilled so the tap lands on the right
+ * figure rather than an empty box he has to type into.
+ */
+const PAY_URL = "https://paypal.me/Marky978/114.99";
 
 interface Line {
   item: string;
@@ -179,6 +187,15 @@ export default function Invoice() {
 
   return (
     <main className="inv-page">
+      <Boot
+        lines={[
+          { label: "FACTOR20 SYSTEM", value: "v1.0" },
+          { label: "LOADING UNIVERSE .........", value: `${scanned} OK` },
+          { label: "APPLYING FILTERS .........", value: `${passed} PASS` },
+          { label: "RANKING ..................", value: `${picked} SELECTED` },
+          { label: "PREPARING REPORT .........", value: PREPARED_FOR.toUpperCase() },
+        ]}
+      />
       <SmoothScroll />
       <div className="inv-grain" aria-hidden="true" />
       <div className="inv-spine" aria-hidden="true" />
@@ -188,9 +205,9 @@ export default function Invoice() {
         <ParallaxHero>
           <p className="inv-kicker">Factor20 · ranking system</p>
           <h1>
-            905 in.
+            {scanned} in.
             <br />
-            <span className="inv-hero-accent">20 out.</span>
+            <span className="inv-hero-accent">{picked} out.</span>
           </h1>
           <p className="inv-hero-sub">
             It scores the US market on published research, throws out everything that fails, and
@@ -301,6 +318,10 @@ export default function Invoice() {
             <ScrubNumber value={monthly} decimals={2} prefix="$" />
           </strong>
         </div>
+      </Reveal>
+
+      <Reveal>
+        <PayClose url={PAY_URL} amount={oneTime} monthly={monthly} />
       </Reveal>
 
       <Reveal>
