@@ -50,7 +50,20 @@ const SCENE_VH = 450;
  * It is a speed limit, not scroll-jacking. Nothing is prevented, nothing is
  * snapped, and scrolling away mid-catch-up simply leaves it where it got to.
  */
-const MAX_PROGRESS_PER_SEC = 0.45;
+const MAX_PROGRESS_PER_SEC = 0.17;
+
+/**
+ * How fast the scene advances on its own while it is on screen.
+ *
+ * A speed limit alone does not survive an iPhone flick: momentum carries the
+ * section past before the catch-up finishes, and a scene nobody is looking at
+ * might as well not exist. So once the section is visible the animation also
+ * plays forward by itself, and scroll only ever pushes it further ahead.
+ *
+ * A reader who stops anywhere in the section watches the whole thing without
+ * moving a thumb. A reader who flicks sees it playing on the way past.
+ */
+const AUTOPLAY_PER_SEC = 0.15;
 
 /**
  * Where the gates sit, as a fraction of the world height.
@@ -438,15 +451,25 @@ export default function Machine({
     const dt = Math.min(64, now - (lastChase.current || now));
     lastChase.current = now;
 
+    // Autoplay only counts while the reader can actually see it.
+    const host = wrap.current;
+    const rect = host?.getBoundingClientRect();
+    const visible =
+      !!rect && rect.bottom > 0 && rect.top < window.innerHeight && targetP.current > 0;
+    const goal = visible
+      ? Math.max(targetP.current, renderedP.current + (AUTOPLAY_PER_SEC * dt) / 1000)
+      : targetP.current;
+
     renderedP.current = approach(
       renderedP.current,
-      targetP.current,
+      Math.min(1, goal),
       (MAX_PROGRESS_PER_SEC * dt) / 1000,
     );
 
     paint(renderedP.current);
 
-    if (Math.abs(targetP.current - renderedP.current) > 0.0008) {
+    const settled = Math.abs(targetP.current - renderedP.current) <= 0.0008;
+    if (!settled || (visible && renderedP.current < 1)) {
       chasing.current = requestAnimationFrame(chase);
     }
   };
@@ -520,8 +543,9 @@ export default function Machine({
      * Everything else eases, including a flick to the end.
      */
     const rect = el.getBoundingClientRect();
+    const onScreen = rect.bottom > 0 && rect.top < window.innerHeight;
     const offscreen = rect.bottom < -200 || rect.top > window.innerHeight + 200;
-    if (!primed.current || offscreen) {
+    if (!primed.current || (offscreen && !onScreen)) {
       (window.__f20diag ??= {}).snap = !primed.current ? "first" : "offscreen";
       primed.current = true;
       renderedP.current = targetP.current;
