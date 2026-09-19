@@ -50,20 +50,22 @@ const SCENE_VH = 450;
  * It is a speed limit, not scroll-jacking. Nothing is prevented, nothing is
  * snapped, and scrolling away mid-catch-up simply leaves it where it got to.
  */
-const MAX_PROGRESS_PER_SEC = 0.1;
+const MAX_PROGRESS_PER_SEC = 0.38;
 
 /**
- * How fast the scene advances on its own while it is on screen.
+ * NO AUTOPLAY HERE. It was tried and it broke the scene.
  *
- * A speed limit alone does not survive an iPhone flick: momentum carries the
- * section past before the catch-up finishes, and a scene nobody is looking at
- * might as well not exist. So once the section is visible the animation also
- * plays forward by itself, and scroll only ever pushes it further ahead.
+ * Advancing the animation on a timer whenever the section was "visible" meant
+ * it started the moment its top edge crossed the viewport - while the reader
+ * was still scrolling toward it - and ran to completion before they arrived.
+ * They reached a finished, motionless picture and reported, correctly, that
+ * the animations were gone.
  *
- * A reader who stops anywhere in the section watches the whole thing without
- * moving a thumb. A reader who flicks sees it playing on the way past.
+ * Playing without being asked is also unable to go backwards: scrolling up
+ * could never rewind it. The scene is driven by scroll position and nothing
+ * else. Watching it hands-free is what the auto-scroll offers instead, and
+ * that moves the page, so the scene follows honestly.
  */
-const AUTOPLAY_PER_SEC = 0.1;
 
 /**
  * Where the gates sit, as a fraction of the world height.
@@ -451,25 +453,15 @@ export default function Machine({
     const dt = Math.min(64, now - (lastChase.current || now));
     lastChase.current = now;
 
-    // Autoplay only counts while the reader can actually see it.
-    const host = wrap.current;
-    const rect = host?.getBoundingClientRect();
-    const visible =
-      !!rect && rect.bottom > 0 && rect.top < window.innerHeight && targetP.current > 0;
-    const goal = visible
-      ? Math.max(targetP.current, renderedP.current + (AUTOPLAY_PER_SEC * dt) / 1000)
-      : targetP.current;
-
     renderedP.current = approach(
       renderedP.current,
-      Math.min(1, goal),
+      targetP.current,
       (MAX_PROGRESS_PER_SEC * dt) / 1000,
     );
 
     paint(renderedP.current);
 
-    const settled = Math.abs(targetP.current - renderedP.current) <= 0.0008;
-    if (!settled || (visible && renderedP.current < 1)) {
+    if (Math.abs(targetP.current - renderedP.current) > 0.0008) {
       chasing.current = requestAnimationFrame(chase);
     }
   };
@@ -554,6 +546,23 @@ export default function Machine({
     }
 
     (window.__f20diag ??= {}).snap = "chasing";
+
+    /**
+     * If a requested frame has not arrived, run the step inline.
+     *
+     * The chase is an animation loop, so it depends on rAF — and a paused or
+     * throttled rAF leaves a handle outstanding forever, after which every
+     * later scroll finds a chase "already running" that never runs. The scene
+     * freezes and the page looks dead. The scroll loop already learned this
+     * lesson; this is the same guard for the same reason.
+     */
+    if (chasing.current && performance.now() - lastChase.current > 200) {
+      cancelAnimationFrame(chasing.current);
+      chasing.current = 0;
+      chase();
+      return;
+    }
+
     if (!chasing.current) {
       lastChase.current = performance.now();
       chasing.current = requestAnimationFrame(chase);

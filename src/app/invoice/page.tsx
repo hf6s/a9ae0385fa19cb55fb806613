@@ -2,6 +2,7 @@ import Link from "next/link";
 import "./invoice.css";
 import fs from "node:fs";
 import path from "node:path";
+import AutoScroll from "@/components/AutoScroll";
 import Boot from "@/components/Boot";
 import Diag from "@/components/Diag";
 import Machine from "@/components/machine/Machine";
@@ -304,6 +305,7 @@ export default function Invoice() {
         ]}
       />
       <SmoothScroll />
+      <AutoScroll />
       <Diag />
       <div className="inv-grain" aria-hidden="true" />
       <div className="inv-spine" aria-hidden="true" />
