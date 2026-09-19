@@ -1028,3 +1028,37 @@ html.inv-booting body {
     opacity: 1 !important;
   }
 }
+
+/* Diagnostic readout, only rendered with ?diag=1. */
+.inv-diag {
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 200;
+  max-width: 62vw;
+  padding: 8px 10px;
+  background: rgba(0, 0, 0, 0.88);
+  border-left: 1px solid var(--ph-green-dim);
+  border-bottom: 1px solid var(--ph-green-dim);
+  font-size: 9.5px;
+  line-height: 14px;
+  color: var(--ph-green);
+  pointer-events: none;
+}
+
+.inv-diag div {
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+}
+
+.inv-diag b {
+  color: var(--ph-green-dim);
+  font-weight: 400;
+}
+
+.inv-diag span {
+  color: var(--ph-bright);
+  text-align: right;
+  word-break: break-all;
+}

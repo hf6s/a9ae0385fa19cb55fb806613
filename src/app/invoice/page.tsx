@@ -3,6 +3,7 @@ import "./invoice.css";
 import fs from "node:fs";
 import path from "node:path";
 import Boot from "@/components/Boot";
+import Diag from "@/components/Diag";
 import Machine from "@/components/machine/Machine";
 import PayClose from "@/components/PayClose";
 import Reveal from "@/components/Reveal";
@@ -198,6 +199,7 @@ export default function Invoice() {
         ]}
       />
       <SmoothScroll />
+      <Diag />
       <div className="inv-grain" aria-hidden="true" />
       <div className="inv-spine" aria-hidden="true" />
       <ScrollRail />

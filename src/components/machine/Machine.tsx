@@ -61,7 +61,10 @@ export default function Machine({
   useEffect(() => {
     const el = canvas.current;
     if (!el || scanned <= 0) return;
-    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
+      (window.__f20diag ??= {}).mode = "reduced-motion";
+      return;
+    }
 
     let disposed = false;
     let cleanup: (() => void) | undefined;
@@ -146,6 +149,7 @@ export default function Machine({
         ro2.disconnect();
         r2d.dispose();
       };
+      (window.__f20diag ??= {}).mode = "2d";
       setMode("2d");
       return true;
     };
@@ -215,6 +219,7 @@ export default function Machine({
           renderer.render({ scene: mesh });
         };
 
+        (window.__f20diag ??= {}).mode = "gl";
         cleanup = () => {
           window.removeEventListener("resize", resize);
           ro.disconnect();
@@ -222,9 +227,10 @@ export default function Machine({
           lose?.loseContext();
         };
         setMode("gl");
-      } catch {
+      } catch (err) {
         // No WebGL, a blocked context, or a chunk that never arrived. The 2D
         // path draws the same bake; failing that, the static fallback stays.
+        (window.__f20diag ??= {}).glError = String(err).slice(0, 80);
         if (!disposed) start2D();
       }
     })();
@@ -254,6 +260,9 @@ export default function Machine({
       atPageBottom: doc.scrollTop + doc.clientHeight >= doc.scrollHeight - 2,
     });
     draw(p);
+    const d = (window.__f20diag ??= {});
+    d.draws = (d.draws ?? 0) + 1;
+    d.progress = p;
 
     // The counter states only figures the scan actually produced.
     const stage = p < 0.34 ? scanned : p < 0.78 ? passed : picked;

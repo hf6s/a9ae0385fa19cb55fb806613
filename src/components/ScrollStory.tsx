@@ -44,6 +44,10 @@ export function useScrollTick(onTick: () => void, enabled = true) {
       frame = 0;
       lastRun = performance.now();
       onTick();
+      // Counted so ?diag=1 can distinguish "the loop never ran" from "the loop
+      // runs but nothing draws". Cheap, and only read by the diagnostic.
+      const d = (window.__f20diag ??= {});
+      d.ticks = (d.ticks ?? 0) + 1;
     };
     /**
      * Batching must never outrank correctness.
