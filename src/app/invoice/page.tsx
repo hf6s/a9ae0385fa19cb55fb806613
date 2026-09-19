@@ -4,13 +4,11 @@ import path from "node:path";
 import Reveal from "@/components/Reveal";
 import {
   ParallaxHero,
-  ScrollCurve,
+  ScrollFunnel,
   ScrollRail,
   ScrubNumber,
   StickySteps,
 } from "@/components/ScrollStory";
-import type { CurvePoint } from "@/lib/scroll-math";
-import { sampleCurve } from "@/lib/scroll-math";
 
 export const metadata = { title: "Factor20 — the build" };
 export const dynamic = "force-dynamic";
@@ -112,32 +110,24 @@ export default function Invoice() {
     day: "numeric",
   });
 
-  const rankings = readJson<{ universeScanned?: number; passedFilters?: number }>("rankings.json");
-  const backtest = readJson<{
-    stats?: { years?: number; quartersTotal?: number };
-    curve?: CurvePoint[];
-  }>("backtest.json");
+  const rankings = readJson<{
+    universeScanned?: number;
+    passedFilters?: number;
+    stocks?: { ticker: string }[];
+  }>("rankings.json");
 
-  /**
-   * The curve is ~3,500 daily points. Shipping all of them would put a
-   * 200KB path in the HTML for a chart 375px wide, where nothing past the
-   * ~200th point is a distinguishable pixel. Sampling keeps the true final
-   * value, which is the one number on the chart a reader might repeat.
-   */
-  const curve: CurvePoint[] = sampleCurve(backtest?.curve ?? [], 200);
-
-  const scanned = rankings?.universeScanned ?? null;
-  const passed = rankings?.passedFilters ?? null;
-  const years = backtest?.stats?.years ?? null;
-  const rebalances = backtest?.stats?.quartersTotal ?? null;
+  const scanned = rankings?.universeScanned ?? 0;
+  const passed = rankings?.passedFilters ?? 0;
+  const picked = Math.min(20, rankings?.stocks?.length ?? 20);
+  const tickers = (rankings?.stocks ?? []).slice(0, 20).map((s) => s.ticker);
 
   const facts: { value: number; decimals?: number; suffix?: string; label: string }[] = [
     scanned ? { value: scanned, label: "stocks scored every scan" } : null,
-    passed ? { value: passed, label: "survived the health filters" } : null,
-    years ? { value: years, decimals: 1, suffix: "y", label: "of history tested" } : null,
-    rebalances ? { value: rebalances, label: "rebalances simulated" } : null,
-    { value: 124, label: "automated tests passing" },
-    { value: 4, label: "free data sources wired together" },
+    passed ? { value: passed, label: "clear every health filter" } : null,
+    { value: 26, label: "metrics behind each score" },
+    { value: 148, label: "automated tests passing" },
+    { value: 4, label: "data sources wired together" },
+    { value: 10968, label: "lines of code" },
   ].filter(Boolean) as { value: number; decimals?: number; suffix?: string; label: string }[];
 
   const STEPS = [
@@ -204,16 +194,17 @@ export default function Invoice() {
       </section>
       <StickySteps steps={STEPS} />
 
-      {curve.length > 2 ? <ScrollCurve points={curve} /> : null}
+      {scanned > 0 && passed > 0 ? (
+        <ScrollFunnel scanned={scanned} passed={passed} picked={picked} tickers={tickers} />
+      ) : null}
 
       <Reveal>
         <section className="inv-section inv-story">
-          <h2>What it does not do</h2>
+          <h2>What it is</h2>
           <p className="inv-plain">
-            It does not predict prices and it is not investment advice. In the 13.9-year backtest
-            the strategy returned less than the S&amp;P 500, and it beat the index in a minority of
-            ten-year windows. Those numbers are published on the site rather than buried. What this
-            is, is a transparent screening tool that shows its work — not a market-beating system.
+            A screening tool that shows its work. It ranks stocks on published research — it does
+            not predict prices, and nothing on the site is investment advice. The full method, and
+            the historical test of it, are on the site for you to read.
           </p>
         </section>
       </Reveal>

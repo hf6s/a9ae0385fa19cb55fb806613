@@ -2,16 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
-import {
-  clamp01,
-  curveGeometry,
-  pinnedProgress,
-  scrubProgress,
-  stepIndex,
-} from "@/lib/scroll-math";
-import type { CurvePoint } from "@/lib/scroll-math";
-
-export type { CurvePoint };
+import { clamp01, dotGrid, funnelStage, pinnedProgress, scrubProgress, stepIndex } from "@/lib/scroll-math";
 
 /**
  * Scroll-linked motion for the invoice page.
@@ -247,119 +238,103 @@ export function StickySteps({ steps }: { steps: { head: string; body: string }[]
 }
 
 /**
- * The real backtest equity curve, drawn by scrolling.
+ * The scan, drawn as dots: everything scanned, what survives the filters,
+ * what makes the list.
  *
- * This is the most load-bearing image on the page, so it is built from
- * data/backtest.json rather than drawn to look good: the strategy line ends
- * BELOW the benchmark, which is the true result. A chart that flattered the
- * strategy here would contradict the page's own text two screens further
- * down, and the reader would be right to disbelieve both.
+ * Numbers come from the live scan file, so the picture cannot drift from
+ * what the site actually did. It makes no claim about returns - it shows how
+ * much gets thrown away, which is the part of the method worth seeing.
  *
- * Geometry is computed in JS, not measured from the DOM: no getTotalLength,
- * no layout reads during scroll, and the tip marker lands exactly on a real
- * data point rather than an interpolation of the rendered path.
+ * Three stacked layers cross-fade instead of 905 dots being re-styled every
+ * frame: that is three opacity writes per tick rather than nine hundred.
  */
-export function ScrollCurve({ points, start = 10000 }: { points: CurvePoint[]; start?: number }) {
+export function ScrollFunnel({
+  scanned,
+  passed,
+  picked,
+  tickers,
+}: {
+  scanned: number;
+  passed: number;
+  picked: number;
+  tickers: string[];
+}) {
   const wrap = useRef<HTMLDivElement>(null);
-  const clip = useRef<SVGRectElement>(null);
-  const tipS = useRef<SVGCircleElement>(null);
-  const tipB = useRef<SVGCircleElement>(null);
-  const valS = useRef<HTMLSpanElement>(null);
-  const valB = useRef<HTMLSpanElement>(null);
-  const dateEl = useRef<HTMLSpanElement>(null);
+  const all = useRef<SVGGElement>(null);
+  const pass = useRef<SVGGElement>(null);
+  const pick = useRef<SVGGElement>(null);
+  const num = useRef<HTMLSpanElement>(null);
+  const lab = useRef<HTMLSpanElement>(null);
+  const names = useRef<HTMLDivElement>(null);
+  const shown = useRef("");
 
   const W = 1000;
-  const H = 420;
-  const PAD = 10;
-
-  const geom = curveGeometry(points, W, H, PAD);
-
-  const cash = (mult: number) =>
-    `$${Math.round(start * mult).toLocaleString("en-US")}`;
+  const H = 560;
+  const COLS = 38;
+  const grid = dotGrid(scanned, W, H, COLS);
+  // The survivors are spread evenly through the field rather than clustered,
+  // so the eye reads "these are scattered everywhere" instead of "the model
+  // likes one corner of the alphabet".
+  const passIdx = Array.from({ length: passed }, (_, i) => Math.floor((i * scanned) / passed));
+  const pickIdx = Array.from({ length: picked }, (_, i) => passIdx[Math.floor((i * passed) / picked)]);
 
   useScrollTick(() => {
     const el = wrap.current;
     if (!el) return;
     const r = el.getBoundingClientRect();
     const doc = document.documentElement;
-    // Same rule as the counters: the chart must be able to finish. A curve
-    // frozen at 80% reports a return the app never claimed.
     const p = pinnedProgress({
       top: r.top,
       height: r.height,
       viewportHeight: window.innerHeight,
       atPageBottom: doc.scrollTop + doc.clientHeight >= doc.scrollHeight - 2,
     });
-    const i = Math.min(points.length - 1, Math.max(0, Math.round(p * (points.length - 1))));
-
-    if (clip.current) clip.current.setAttribute("width", String(Math.max(0.001, geom.xs[i])));
-    if (tipS.current) {
-      tipS.current.setAttribute("cx", String(geom.xs[i]));
-      tipS.current.setAttribute("cy", String(geom.ysS[i]));
+    const st = funnelStage(p, { scanned, passed, picked });
+    if (all.current) all.current.style.opacity = String(st.allOpacity);
+    if (pass.current) pass.current.style.opacity = String(st.passOpacity);
+    if (pick.current) pick.current.style.opacity = String(st.pickOpacity);
+    if (names.current) names.current.style.opacity = String(st.pickOpacity);
+    const key = st.stage + ":" + st.count;
+    if (key !== shown.current) {
+      shown.current = key;
+      if (num.current) num.current.textContent = st.count.toLocaleString("en-US");
+      if (lab.current) lab.current.textContent = st.label;
     }
-    if (tipB.current) {
-      tipB.current.setAttribute("cx", String(geom.xs[i]));
-      tipB.current.setAttribute("cy", String(geom.ysB[i]));
-    }
-    if (valS.current) valS.current.textContent = cash(points[i].strat);
-    if (valB.current) valB.current.textContent = cash(points[i].bench);
-    if (dateEl.current) dateEl.current.textContent = points[i].t.slice(0, 7);
   });
 
-  const last = points[points.length - 1];
-
   return (
-    <div ref={wrap} className="inv-curve-wrap">
-      <div className="inv-curve-sticky">
-        <div className="inv-curve-head">
-          <h3>$10,000, thirteen years, no guessing</h3>
-          <p>Every rebalance the model would have made, including companies that went bankrupt.</p>
-        </div>
-        <div className="inv-curve-readout">
-          <div className="inv-read inv-read-s">
-            <span className="inv-read-k">This model</span>
-            <span className="inv-read-v" ref={valS}>
-              {cash(last.strat)}
-            </span>
-          </div>
-          <div className="inv-read inv-read-b">
-            <span className="inv-read-k">S&amp;P 500</span>
-            <span className="inv-read-v" ref={valB}>
-              {cash(last.bench)}
-            </span>
-          </div>
-          <span className="inv-read-date" ref={dateEl}>
-            {last.t.slice(0, 7)}
+    <div ref={wrap} className="inv-funnel-wrap">
+      <div className="inv-funnel-sticky">
+        <div className="inv-funnel-head">
+          <span className="inv-funnel-n" ref={num}>
+            {scanned.toLocaleString("en-US")}
+          </span>
+          <span className="inv-funnel-l" ref={lab}>
+            scanned
           </span>
         </div>
-        <svg className="inv-curve" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" aria-hidden="true">
-          <defs>
-            <linearGradient id="invArea" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.28" />
-              <stop offset="100%" stopColor="var(--accent)" stopOpacity="0" />
-            </linearGradient>
-            <filter id="invGlow" x="-40%" y="-40%" width="180%" height="180%">
-              <feGaussianBlur stdDeviation="6" result="b" />
-              <feMerge>
-                <feMergeNode in="b" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
-            <clipPath id="invClip">
-              <rect ref={clip} x="0" y="0" width="1000" height={H} />
-            </clipPath>
-          </defs>
-          <g clipPath="url(#invClip)">
-            <path d={geom.area} fill="url(#invArea)" />
-            <path d={geom.bench} className="inv-line-bench" />
-            <path d={geom.strat} className="inv-line-strat" filter="url(#invGlow)" />
+        <svg className="inv-funnel" viewBox={`0 0 ${W} ${H}`} aria-hidden="true">
+          <g ref={all} className="inv-dots-all">
+            {grid.points.map((pt, i) => (
+              <circle key={i} cx={pt.x} cy={pt.y} r={grid.r} />
+            ))}
           </g>
-          <circle ref={tipB} r="4" className="inv-tip-bench" />
-          <circle ref={tipS} r="5" className="inv-tip-strat" />
+          <g ref={pass} className="inv-dots-pass" style={{ opacity: 0 }}>
+            {passIdx.map((i) => (
+              <circle key={i} cx={grid.points[i].x} cy={grid.points[i].y} r={grid.r * 1.25} />
+            ))}
+          </g>
+          <g ref={pick} className="inv-dots-pick" style={{ opacity: 0 }}>
+            {pickIdx.map((i) => (
+              <circle key={i} cx={grid.points[i].x} cy={grid.points[i].y} r={grid.r * 2.1} />
+            ))}
+          </g>
         </svg>
-        <p className="inv-curve-note">
-          It ends below the index. That is the real result, and it is on the site too.
-        </p>
+        <div ref={names} className="inv-funnel-names" style={{ opacity: 0 }}>
+          {tickers.map((t) => (
+            <span key={t}>{t}</span>
+          ))}
+        </div>
       </div>
     </div>
   );

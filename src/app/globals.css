@@ -2405,109 +2405,6 @@ table.rolling-table tbody tr:last-child td {
     filter: none;
   }
 }
-/* ---- Scroll-drawn equity curve ------------------------------------------ */
-.inv-curve-wrap {
-  position: relative;
-  height: 230vh;
-  margin: 10px 0 40px;
-}
-.inv-curve-sticky {
-  position: sticky;
-  top: 0;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 14px;
-}
-.inv-curve-head h3 {
-  margin: 0 0 6px;
-  font-size: clamp(19px, 4.6vw, 26px);
-  letter-spacing: -0.02em;
-}
-.inv-curve-head p {
-  margin: 0;
-  font-size: 13.5px;
-  line-height: 1.55;
-  color: var(--text-dim);
-  max-width: 46ch;
-}
-.inv-curve-readout {
-  display: flex;
-  align-items: flex-end;
-  gap: 18px;
-  flex-wrap: wrap;
-}
-.inv-read {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding-left: 10px;
-  border-left: 2px solid var(--border);
-}
-.inv-read-s {
-  border-left-color: var(--accent);
-}
-.inv-read-b {
-  border-left-color: var(--text-dim);
-}
-.inv-read-k {
-  font-size: 11px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--text-dim);
-}
-.inv-read-v {
-  font-size: clamp(19px, 5vw, 25px);
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
-}
-.inv-read-s .inv-read-v {
-  color: var(--accent);
-}
-.inv-read-date {
-  margin-left: auto;
-  font-size: 12px;
-  font-variant-numeric: tabular-nums;
-  color: var(--text-dim);
-  padding-bottom: 2px;
-}
-.inv-curve {
-  width: 100%;
-  height: clamp(220px, 40vh, 360px);
-  overflow: visible;
-}
-.inv-line-strat {
-  fill: none;
-  stroke: var(--accent);
-  stroke-width: 2.5;
-  vector-effect: non-scaling-stroke;
-  stroke-linejoin: round;
-}
-.inv-line-bench {
-  fill: none;
-  stroke: var(--text-dim);
-  stroke-width: 1.5;
-  stroke-dasharray: 5 5;
-  vector-effect: non-scaling-stroke;
-  opacity: 0.75;
-}
-.inv-tip-strat {
-  fill: var(--accent);
-  filter: drop-shadow(0 0 7px var(--accent));
-}
-.inv-tip-bench {
-  fill: var(--text-dim);
-}
-.inv-curve-note {
-  margin: 0;
-  font-size: 12.5px;
-  line-height: 1.5;
-  color: var(--text-dim);
-  border-left: 2px solid var(--border);
-  padding-left: 10px;
-}
-
 /* ---- Extra polish: gradient headline, glowing total --------------------- */
 .inv-hero h1 {
   background: linear-gradient(100deg, var(--text) 18%, var(--accent) 50%, var(--q) 82%);
@@ -2593,5 +2490,99 @@ table.rolling-table tbody tr:last-child td {
   }
   .inv-total::after {
     display: none;
+  }
+}
+
+/* ---- The funnel: 905 dots becoming 20 ----------------------------------- */
+.inv-funnel-wrap {
+  position: relative;
+  height: 260vh;
+  margin: 8px 0 44px;
+}
+.inv-funnel-sticky {
+  position: sticky;
+  top: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 16px;
+}
+.inv-funnel-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.inv-funnel-n {
+  font-size: clamp(38px, 12vw, 76px);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: var(--accent);
+  text-shadow: 0 0 32px color-mix(in srgb, var(--accent) 45%, transparent);
+}
+.inv-funnel-l {
+  font-size: clamp(13px, 3.4vw, 17px);
+  color: var(--text-dim);
+  letter-spacing: 0.04em;
+}
+.inv-funnel {
+  width: 100%;
+  height: clamp(230px, 42vh, 380px);
+  overflow: visible;
+}
+.inv-dots-all circle {
+  fill: var(--text-dim);
+}
+.inv-dots-pass circle {
+  fill: var(--q);
+}
+.inv-dots-pick circle {
+  fill: var(--accent);
+  filter: drop-shadow(0 0 6px var(--accent));
+}
+.inv-dots-all,
+.inv-dots-pass,
+.inv-dots-pick {
+  transition: opacity 0.45s ease;
+}
+.inv-funnel-names {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  transition: opacity 0.5s ease;
+}
+.inv-funnel-names span {
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+  padding: 3px 7px;
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  border-radius: 999px;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .inv-funnel-wrap {
+    height: auto !important;
+  }
+  .inv-funnel-sticky {
+    position: static;
+    min-height: 0;
+  }
+  .inv-dots-pass,
+  .inv-dots-pick,
+  .inv-funnel-names {
+    opacity: 1 !important;
+  }
+}
+@media print {
+  .inv-funnel-wrap {
+    height: auto !important;
+  }
+  .inv-funnel-sticky {
+    position: static;
+    min-height: 0;
   }
 }

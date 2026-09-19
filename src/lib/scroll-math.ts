@@ -66,66 +66,66 @@ export function stepIndex(progress: number, count: number): number {
   return Math.min(count - 1, Math.max(0, Math.floor(clamp01(progress) * count)));
 }
 
-export interface CurvePoint {
-  t: string;
-  strat: number;
-  bench: number;
-}
-
 /**
- * Even sample of a long curve, always keeping the final point.
+ * Layout for the funnel: a dot per stock scanned, in a grid that fills the
+ * given box.
  *
- * Dropping the last point would end the line on a value the backtest never
- * reported, which is the one number on the chart a reader might repeat.
+ * Deterministic, so the same scan always draws the same picture and a reader
+ * scrolling back sees what they saw before.
  */
-export function sampleCurve(raw: CurvePoint[], target: number): CurvePoint[] {
-  if (raw.length <= target + 20) return raw;
-  const step = raw.length / target;
-  const out: CurvePoint[] = [];
-  for (let i = 0; i < target; i++) out.push(raw[Math.floor(i * step)]);
-  const last = raw[raw.length - 1];
-  if (out[out.length - 1] !== last) out.push(last);
-  return out;
-}
-
-export interface CurveGeometry {
-  strat: string;
-  bench: string;
-  area: string;
-  xs: number[];
-  ysS: number[];
-  ysB: number[];
-}
-
-/**
- * SVG geometry for the equity curve.
- *
- * Both series share one scale. Drawing them on separate scales would let the
- * losing line sit above the winning one, which on this page would be a lie
- * told by arithmetic rather than by words.
- */
-export function curveGeometry(
-  points: CurvePoint[],
-  width: number,
-  height: number,
-  pad: number,
-): CurveGeometry {
-  const values = points.flatMap((p) => [p.strat, p.bench]);
-  const max = Math.max(...values);
-  const min = Math.min(...values, 1);
-  const span = max - min || 1;
-  const n = Math.max(1, points.length - 1);
-  const x = (i: number) => (i / n) * width;
-  const y = (v: number) => height - pad - ((v - min) / span) * (height - pad * 2);
-  const line = (key: "strat" | "bench") =>
-    points.map((p, i) => `${i === 0 ? "M" : "L"}${x(i).toFixed(1)},${y(p[key]).toFixed(1)}`).join(" ");
-  const strat = line("strat");
+export function dotGrid(count: number, width: number, height: number, cols: number) {
+  const rows = Math.ceil(count / cols);
+  const cw = width / cols;
+  const ch = height / Math.max(1, rows);
+  const r = Math.max(1.1, Math.min(cw, ch) * 0.3);
   return {
-    strat,
-    bench: line("bench"),
-    area: `${strat} L${width},${height} L0,${height} Z`,
-    xs: points.map((_, i) => x(i)),
-    ysS: points.map((p) => y(p.strat)),
-    ysB: points.map((p) => y(p.bench)),
+    rows,
+    r,
+    points: Array.from({ length: count }, (_, i) => ({
+      x: (i % cols) * cw + cw / 2,
+      y: Math.floor(i / cols) * ch + ch / 2,
+    })),
+  };
+}
+
+/**
+ * Which stocks are still lit at a given point in the funnel.
+ *
+ * Three stages share the scroll: everything scanned, everything that cleared
+ * the filters, then the final list. The counts are the scan's real numbers,
+ * so the picture cannot drift from what the site says it did.
+ */
+export function funnelStage(
+  progress: number,
+  counts: { scanned: number; passed: number; picked: number },
+): { stage: 0 | 1 | 2; count: number; label: string; allOpacity: number; passOpacity: number; pickOpacity: number } {
+  const p = clamp01(progress);
+  if (p < 0.34) {
+    return {
+      stage: 0,
+      count: counts.scanned,
+      label: "scanned",
+      allOpacity: 1,
+      passOpacity: 0,
+      pickOpacity: 0,
+    };
+  }
+  if (p < 0.7) {
+    return {
+      stage: 1,
+      count: counts.passed,
+      label: "pass every filter",
+      allOpacity: 0.14,
+      passOpacity: 1,
+      pickOpacity: 0,
+    };
+  }
+  return {
+    stage: 2,
+    count: counts.picked,
+    label: "make the list",
+    allOpacity: 0.08,
+    passOpacity: 0.22,
+    pickOpacity: 1,
   };
 }
