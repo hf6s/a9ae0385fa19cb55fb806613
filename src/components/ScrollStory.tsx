@@ -208,3 +208,141 @@ export function StickySteps({ steps }: { steps: { head: string; body: string }[]
     </div>
   );
 }
+
+/** One point of the backtest curve, already downsampled by the server. */
+export interface CurvePoint {
+  t: string;
+  strat: number;
+  bench: number;
+}
+
+/**
+ * The real backtest equity curve, drawn by scrolling.
+ *
+ * This is the most load-bearing image on the page, so it is built from
+ * data/backtest.json rather than drawn to look good: the strategy line ends
+ * BELOW the benchmark, which is the true result. A chart that flattered the
+ * strategy here would contradict the page's own text two screens further
+ * down, and the reader would be right to disbelieve both.
+ *
+ * Geometry is computed in JS, not measured from the DOM: no getTotalLength,
+ * no layout reads during scroll, and the tip marker lands exactly on a real
+ * data point rather than an interpolation of the rendered path.
+ */
+export function ScrollCurve({ points, start = 10000 }: { points: CurvePoint[]; start?: number }) {
+  const wrap = useRef<HTMLDivElement>(null);
+  const clip = useRef<SVGRectElement>(null);
+  const tipS = useRef<SVGCircleElement>(null);
+  const tipB = useRef<SVGCircleElement>(null);
+  const valS = useRef<HTMLSpanElement>(null);
+  const valB = useRef<HTMLSpanElement>(null);
+  const dateEl = useRef<HTMLSpanElement>(null);
+
+  const W = 1000;
+  const H = 420;
+  const PAD = 10;
+
+  const geom = (() => {
+    const max = Math.max(...points.map((p) => Math.max(p.strat, p.bench)));
+    const min = Math.min(...points.map((p) => Math.min(p.strat, p.bench)), 1);
+    const x = (i: number) => (i / (points.length - 1)) * W;
+    const y = (v: number) => H - PAD - ((v - min) / (max - min)) * (H - PAD * 2);
+    const line = (key: "strat" | "bench") =>
+      points.map((p, i) => `${i === 0 ? "M" : "L"}${x(i).toFixed(1)},${y(p[key]).toFixed(1)}`).join(" ");
+    return {
+      strat: line("strat"),
+      bench: line("bench"),
+      area: `${line("strat")} L${W},${H} L0,${H} Z`,
+      xs: points.map((_, i) => x(i)),
+      ysS: points.map((p) => y(p.strat)),
+      ysB: points.map((p) => y(p.bench)),
+    };
+  })();
+
+  const cash = (mult: number) =>
+    `$${Math.round(start * mult).toLocaleString("en-US")}`;
+
+  useScrollTick(() => {
+    const el = wrap.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    const travel = r.height - window.innerHeight;
+    const doc = document.documentElement;
+    const atBottom = doc.scrollTop + doc.clientHeight >= doc.scrollHeight - 2;
+    // Same rule as the counters: the chart must be able to finish. A curve
+    // frozen at 80% would report a return the app never claimed.
+    const p = atBottom ? 1 : travel > 0 ? clamp01(-r.top / travel) : clamp01((window.innerHeight - r.top) / window.innerHeight);
+    const i = Math.min(points.length - 1, Math.max(0, Math.round(p * (points.length - 1))));
+
+    if (clip.current) clip.current.setAttribute("width", String(Math.max(0.001, geom.xs[i])));
+    if (tipS.current) {
+      tipS.current.setAttribute("cx", String(geom.xs[i]));
+      tipS.current.setAttribute("cy", String(geom.ysS[i]));
+    }
+    if (tipB.current) {
+      tipB.current.setAttribute("cx", String(geom.xs[i]));
+      tipB.current.setAttribute("cy", String(geom.ysB[i]));
+    }
+    if (valS.current) valS.current.textContent = cash(points[i].strat);
+    if (valB.current) valB.current.textContent = cash(points[i].bench);
+    if (dateEl.current) dateEl.current.textContent = points[i].t.slice(0, 7);
+  });
+
+  const last = points[points.length - 1];
+
+  return (
+    <div ref={wrap} className="inv-curve-wrap">
+      <div className="inv-curve-sticky">
+        <div className="inv-curve-head">
+          <h3>$10,000, thirteen years, no guessing</h3>
+          <p>Every rebalance the model would have made, including companies that went bankrupt.</p>
+        </div>
+        <div className="inv-curve-readout">
+          <div className="inv-read inv-read-s">
+            <span className="inv-read-k">This model</span>
+            <span className="inv-read-v" ref={valS}>
+              {cash(last.strat)}
+            </span>
+          </div>
+          <div className="inv-read inv-read-b">
+            <span className="inv-read-k">S&amp;P 500</span>
+            <span className="inv-read-v" ref={valB}>
+              {cash(last.bench)}
+            </span>
+          </div>
+          <span className="inv-read-date" ref={dateEl}>
+            {last.t.slice(0, 7)}
+          </span>
+        </div>
+        <svg className="inv-curve" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" aria-hidden="true">
+          <defs>
+            <linearGradient id="invArea" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.28" />
+              <stop offset="100%" stopColor="var(--accent)" stopOpacity="0" />
+            </linearGradient>
+            <filter id="invGlow" x="-40%" y="-40%" width="180%" height="180%">
+              <feGaussianBlur stdDeviation="6" result="b" />
+              <feMerge>
+                <feMergeNode in="b" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+            <clipPath id="invClip">
+              <rect ref={clip} x="0" y="0" width="1000" height={H} />
+            </clipPath>
+          </defs>
+          <g clipPath="url(#invClip)">
+            <path d={geom.area} fill="url(#invArea)" />
+            <path d={geom.bench} className="inv-line-bench" />
+            <path d={geom.strat} className="inv-line-strat" filter="url(#invGlow)" />
+          </g>
+          <circle ref={tipB} r="4" className="inv-tip-bench" />
+          <circle ref={tipS} r="5" className="inv-tip-strat" />
+        </svg>
+        <p className="inv-curve-note">
+          It ends below the index. That is the real result, and it is on the site too.
+        </p>
+      </div>
+    </div>
+  );
+}
