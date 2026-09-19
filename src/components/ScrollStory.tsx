@@ -38,12 +38,32 @@ function useScrollTick(onTick: () => void, enabled = true) {
   useIsomorphicLayoutEffect(() => {
     if (!enabled || prefersReducedMotion()) return;
     let frame = 0;
+    let lastRun = 0;
+    const run = () => {
+      frame = 0;
+      lastRun = performance.now();
+      onTick();
+    };
+    /**
+     * Batching must never outrank correctness.
+     *
+     * The plain "skip if a frame is already pending" guard assumes rAF always
+     * fires. A background tab pauses it, so the pending handle never clears
+     * and every later scroll is dropped for good — observed in production
+     * with the invoice total reading $0.00 and the hero stuck 1,100px from
+     * where the page actually was. If a frame has been outstanding longer
+     * than a slow frame could explain, rAF is not running and the update
+     * happens inline instead.
+     */
+    const STALE_MS = 120;
     const schedule = () => {
+      if (frame && performance.now() - lastRun > STALE_MS) {
+        cancelAnimationFrame(frame);
+        run();
+        return;
+      }
       if (frame) return;
-      frame = requestAnimationFrame(() => {
-        frame = 0;
-        onTick();
-      });
+      frame = requestAnimationFrame(run);
     };
     // Browsers pause rAF in a hidden tab, so a scroll that happens while the
     // page is in the background never gets its frame: the pending handle
