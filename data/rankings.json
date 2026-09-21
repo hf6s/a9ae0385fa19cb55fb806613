@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-19T10:22:51.486Z",
+  "generatedAt": "2026-09-21T11:46:24.365Z",
   "universeScanned": 905,
   "passedFilters": 136,
   "skippedFilters": [
@@ -1095,8 +1095,8 @@
       "ticker": "LLY",
       "name": "Eli Lilly and Co",
       "sector": "Pharmaceuticals",
-      "price": 1152.93,
-      "marketCap": 1034524.089,
+      "price": 1152.9301,
+      "marketCap": 1034524.17873,
       "scores": {
         "quality": 70.5,
         "value": 5.1,
@@ -1109,10 +1109,10 @@
       "nextEarningsDate": null,
       "dividendTtm": 6.69,
       "metrics": {
-        "pe": 85.09838847394052,
-        "pb": 38.98715240248728,
-        "ps": 15.872046042436981,
-        "pfcf": 61.53120139178017,
+        "pe": 85.09839585499473,
+        "pb": 38.98715578405879,
+        "ps": 15.872047419107382,
+        "pfcf": 61.53120672872182,
         "roe": 77.78405879027699,
         "roic": null,
         "grossMargin": 83.04361834333143,
@@ -3192,7 +3192,7 @@
       "finalScore": 46.7,
       "recommended": false,
       "nextEarningsDate": null,
-      "dividendTtm": 1.87,
+      "dividendTtm": 1.97,
       "metrics": {
         "pe": 16.95209600728267,
         "pb": 2.8640667539582743,
