@@ -38,3 +38,24 @@ export function getHistory(ticker: string): Candle[] | null {
   if (!fs.existsSync(file)) return null;
   return JSON.parse(fs.readFileSync(file, "utf8")) as Candle[];
 }
+
+/**
+ * The last trading day the stored price history covers.
+ *
+ * NOT the scan's timestamp. A scan runs the morning after the close it works
+ * from, so `generatedAt` is a day later than the prices in it, and anything
+ * that dates a position by the scan time lands one day past the newest price
+ * it has - which is enough to leave a chart with nothing to draw.
+ *
+ * Every history file is written by the same scan and ends on the same day, so
+ * the first one that answers is the answer. A handful of candidates are tried
+ * in case the leading ticker is new and has no file yet.
+ */
+export function getPriceAsOf(tickers: string[]): string | null {
+  for (const ticker of tickers.slice(0, 5)) {
+    const candles = getHistory(ticker);
+    const last = candles?.[candles.length - 1];
+    if (last?.t) return last.t;
+  }
+  return null;
+}
