@@ -39,14 +39,15 @@ export default function EquityChart({ curve }: { curve: EquityPoint[] }) {
   }, []);
 
   useEffect(() => {
-    if (!containerRef.current) return;
+    const host = containerRef.current;
+    if (!host) return;
     const green = cssVar("--accent", "#4fd1a5");
     const blue = cssVar("--q", "#6ea8fe");
     const dim = cssVar("--text-dim", "#8b94a7");
     const border = cssVar("--border", "#232a37");
     const grid = cssVar("--bg-hover", "#171c26");
 
-    const chart: IChartApi = createChart(containerRef.current, {
+    const chart: IChartApi = createChart(host, {
       height: 400,
       layout: { background: { type: ColorType.Solid, color: "transparent" }, textColor: dim },
       grid: { vertLines: { color: grid }, horzLines: { color: grid } },
@@ -64,7 +65,26 @@ export default function EquityChart({ curve }: { curve: EquityPoint[] }) {
     bench.setData(data.map((p) => ({ time: p.t, value: p.bench })));
 
     chart.timeScale().fitContent();
-    return () => chart.remove();
+
+    /*
+      Refit on every width change.
+
+      autoSize resizes the canvas but keeps the bar spacing fitContent chose, so
+      a chart built before the layout settled holds the spacing worked out for a
+      narrow box and anchors it to the right edge. The canvas then grows to full
+      width with every point crammed into the last tenth of it, which reads as a
+      long flat stretch followed by a sudden move.
+    */
+    const refit = () => chart.timeScale().fitContent();
+    const frame = requestAnimationFrame(refit);
+    const ro = new ResizeObserver(refit);
+    ro.observe(host);
+
+    return () => {
+      cancelAnimationFrame(frame);
+      ro.disconnect();
+      chart.remove();
+    };
   }, [curve, theme]);
 
   return (

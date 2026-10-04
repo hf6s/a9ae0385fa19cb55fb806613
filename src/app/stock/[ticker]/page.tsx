@@ -5,6 +5,7 @@ import { getAnalyses, getHistory, getRankings } from "@/lib/data";
 import AskClaude from "@/components/AskClaude";
 import PriceChart from "@/components/PriceChart";
 import StarButton from "@/components/StarButton";
+import AddToPortfolio from "@/components/AddToPortfolio";
 import { computeRiskStats } from "@/lib/stats";
 
 export const dynamic = "force-dynamic";
@@ -72,6 +73,7 @@ export default async function StockPage({
           );
         })()}
         <StarButton ticker={stock.ticker} />
+        <AddToPortfolio ticker={stock.ticker} full />
       </div>
       <p className="meta-line">
         {stock.sector} · Market cap ${Math.round(stock.marketCap / 1000)}B · Final score{" "}

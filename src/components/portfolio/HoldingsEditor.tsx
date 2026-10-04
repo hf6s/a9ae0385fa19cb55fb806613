@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { makeHolding, MAX_HOLDINGS, normaliseTicker, type Holding, type Position } from "@/lib/portfolio";
 
 /**
@@ -47,21 +47,46 @@ export default function HoldingsEditor({
   positions,
   candidates,
   onChange,
+  prefill,
 }: {
   holdings: Holding[];
   positions: Position[];
   candidates: Candidate[];
   onChange: (next: Holding[]) => void;
+  /** A ticker arrived at from a link, to fill the form in with. */
+  prefill?: string | null;
 }) {
   const [draft, setDraft] = useState<Draft>({ ...EMPTY, at: today() });
   const [editing, setEditing] = useState<string | null>(null);
   const [editDraft, setEditDraft] = useState<Draft>(EMPTY);
   const [error, setError] = useState("");
+  const sharesRef = useRef<HTMLInputElement>(null);
 
   const byTicker = useMemo(
     () => new Map(candidates.map((c) => [c.ticker, c])),
     [candidates],
   );
+
+  /**
+   * Fills the form in for a stock arrived at from a link.
+   *
+   * The price comes from the ranking, and the cursor lands on the share count,
+   * because that is the one thing no page can know. The date stays today's, the
+   * same as typing the ticker in by hand would give - a link is a shortcut to
+   * the form, not a different way of recording a holding.
+   */
+  useEffect(() => {
+    if (!prefill) return;
+    const known = byTicker.get(prefill);
+    setDraft({
+      ticker: prefill,
+      shares: "",
+      cost: known ? known.price.toFixed(2) : "",
+      at: today(),
+    });
+    sharesRef.current?.focus();
+    sharesRef.current?.scrollIntoView({ block: "center", behavior: "smooth" });
+  }, [prefill, byTicker]);
 
   const matches = useMemo(() => {
     const q = normaliseTicker(draft.ticker);
@@ -309,6 +334,7 @@ export default function HoldingsEditor({
           </label>
           <input
             id="add-shares"
+            ref={sharesRef}
             className="alloc-input"
             type="number"
             step="any"

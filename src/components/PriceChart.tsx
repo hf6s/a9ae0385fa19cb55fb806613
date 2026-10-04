@@ -56,7 +56,8 @@ export default function PriceChart({ candles }: { candles: Candle[] }) {
   }, [view]);
 
   useEffect(() => {
-    if (!containerRef.current || view.length === 0) return;
+    const host = containerRef.current;
+    if (!host || view.length === 0) return;
 
     const green = cssVar("--accent", "#4fd1a5");
     const red = cssVar("--red", "#e06c75");
@@ -67,7 +68,7 @@ export default function PriceChart({ candles }: { candles: Candle[] }) {
     const grid = cssVar("--bg-hover", "#171c26");
     const up = view[view.length - 1].c >= view[0].c;
 
-    const chart = createChart(containerRef.current, {
+    const chart = createChart(host, {
       height: 400,
       layout: { background: { type: ColorType.Solid, color: "transparent" }, textColor: dim },
       grid: { vertLines: { color: grid }, horzLines: { color: grid } },
@@ -125,7 +126,24 @@ export default function PriceChart({ candles }: { candles: Candle[] }) {
     });
 
     chart.timeScale().fitContent();
+
+    /*
+      Refit on every width change.
+
+      autoSize resizes the canvas but keeps the bar spacing fitContent chose, so
+      a chart built before the layout settled holds the spacing worked out for a
+      narrow box and anchors it to the right edge. The canvas then grows to full
+      width with every point crammed into the last tenth of it, which reads as a
+      long flat stretch followed by a sudden move.
+    */
+    const refit = () => chart.timeScale().fitContent();
+    const frame = requestAnimationFrame(refit);
+    const ro = new ResizeObserver(refit);
+    ro.observe(host);
+
     return () => {
+      cancelAnimationFrame(frame);
+      ro.disconnect();
       chart.remove();
       chartRef.current = null;
     };

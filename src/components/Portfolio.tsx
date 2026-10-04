@@ -25,7 +25,14 @@ import ValueChart from "./portfolio/ValueChart";
 import AllocationRing from "./portfolio/AllocationRing";
 import PnlBars from "./portfolio/PnlBars";
 import ModelCheck from "./portfolio/ModelCheck";
-import { clearHash, holdingsFromHash, loadHoldings, LINK_PARAM, saveHoldings } from "./portfolio/storage";
+import {
+  clearHash,
+  consumeAddParam,
+  holdingsFromHash,
+  loadHoldings,
+  LINK_PARAM,
+  saveHoldings,
+} from "./portfolio/storage";
 
 /**
  * The portfolio page: holdings in, every view of them out.
@@ -117,6 +124,8 @@ export default function Portfolio({
   const [copied, setCopied] = useState(false);
   /** What the quick-start splits across the model's twenty. */
   const [startAmount, setStartAmount] = useState("10000");
+  /** A stock a link asked to add, which opens the form filled in. */
+  const [pendingAdd, setPendingAdd] = useState<string | null>(null);
 
   // Storage and the URL fragment are both read once, on mount, because neither
   // exists during the server render.
@@ -137,6 +146,11 @@ export default function Portfolio({
       setHoldings(saved);
       if (fromLink) clearHash();
     }
+    // Only ever set, never cleared. Reading the parameter removes it from the
+    // URL, and this effect runs twice on mount in development - so assigning
+    // the second, empty read would wipe the ticker the link just delivered.
+    const add = consumeAddParam();
+    if (add) setPendingAdd(add);
     setReady(true);
   }, []);
 
@@ -433,13 +447,13 @@ export default function Portfolio({
 
       {holdings.length === 0 ? (
         <div className="empty-state portfolio-empty">
-          <h2>Nothing in here yet</h2>
+          <h2>{pendingAdd ? `Add ${pendingAdd}` : "Nothing in here yet"}</h2>
           <p>
             Add what you bought — ticker, how many shares, what you paid per share, and the date.
             This page then values it against the last scan and against what the same money would
             have done in the S&amp;P 500.
           </p>
-          {top20.length > 0 && (
+          {!pendingAdd && top20.length > 0 && (
             <>
               <div className="start-row">
                 <label className="control-label" htmlFor="start-amount">
@@ -479,6 +493,16 @@ export default function Portfolio({
                 to edit into what you actually bought, not a record of anything you own.
               </p>
             </>
+          )}
+
+          {pendingAdd && (
+            <HoldingsEditor
+              holdings={holdings}
+              positions={positions}
+              candidates={candidates}
+              onChange={update}
+              prefill={pendingAdd}
+            />
           )}
         </div>
       ) : (
@@ -683,6 +707,7 @@ export default function Portfolio({
               positions={positions}
               candidates={candidates}
               onChange={update}
+              prefill={pendingAdd}
             />
           </section>
 

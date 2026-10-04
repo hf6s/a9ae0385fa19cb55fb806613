@@ -1,6 +1,12 @@
 "use client";
 
-import { decodeHoldings, makeHolding, MAX_HOLDINGS, type Holding } from "@/lib/portfolio";
+import {
+  decodeHoldings,
+  makeHolding,
+  MAX_HOLDINGS,
+  normaliseTicker,
+  type Holding,
+} from "@/lib/portfolio";
 
 /**
  * Where holdings live in the browser, and how they get out of it.
@@ -86,3 +92,37 @@ export function clearHash(): void {
     /* a blocked history API is cosmetic here */
   }
 }
+
+/**
+ * Reads the ticker a link asked to add, and takes it out of the URL.
+ *
+ * The rankings and stock pages link here with ?add=TICKER rather than writing a
+ * holding themselves, so that every holding is still created by the one
+ * validated form and nothing invents a position size on someone's behalf.
+ *
+ * It is consumed on arrival: left in place, a reload or a shared link would
+ * re-open the form for a stock the owner has already dealt with.
+ */
+export function consumeAddParam(): string | null {
+  if (typeof window === "undefined") return null;
+  const params = new URLSearchParams(window.location.search);
+  const raw = params.get(ADD_PARAM);
+  if (!raw) return null;
+
+  const ticker = normaliseTicker(raw);
+  params.delete(ADD_PARAM);
+  try {
+    const query = params.toString();
+    window.history.replaceState(
+      null,
+      "",
+      window.location.pathname + (query ? `?${query}` : "") + window.location.hash,
+    );
+  } catch {
+    /* a blocked history API is cosmetic here */
+  }
+  return ticker.length > 0 ? ticker : null;
+}
+
+/** The query key a link uses to open the add form on a stock: /portfolio?add=AAPL */
+export const ADD_PARAM = "add";

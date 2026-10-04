@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import type { FactorScores, RankedStock } from "@/lib/types";
+import AddToPortfolio from "./AddToPortfolio";
+import { loadHoldings } from "./portfolio/storage";
 
 const WATCHLIST_KEY = "f20-watchlist";
 
@@ -127,11 +129,15 @@ export default function RankingsExplorer({
   const [capKey, setCapKey] = useState<string>("all");
   const [watchlist, setWatchlist] = useState<string[]>([]);
   const [watchOnly, setWatchOnly] = useState(false);
+  const [held, setHeld] = useState<Set<string>>(new Set());
   const [sectorRel, setSectorRel] = useState(false);
   const [compare, setCompare] = useState<string[]>([]);
 
   useEffect(() => {
     setWatchlist(readWatchlist());
+    // Read once for the whole table. A hundred rows each opening localStorage
+    // would be a hundred synchronous reads for one answer.
+    setHeld(new Set(loadHoldings().map((h) => h.ticker)));
   }, []);
 
   const horizon = HORIZONS.find((h) => h.key === horizonKey) ?? HORIZONS[2];
@@ -269,7 +275,8 @@ export default function RankingsExplorer({
               <th style={{ textAlign: "right" }}>M</th>
               <th style={{ textAlign: "right" }}>G</th>
               <th></th>
-              <th></th>
+              <th className="action-col">Chart</th>
+              <th className="action-col add-pf-col">Own</th>
             </tr>
           </thead>
           <tbody key={`${horizonKey}-${capKey}-${sectorRel}`}>
@@ -328,13 +335,29 @@ export default function RankingsExplorer({
                     {i < 20 ? <span className="badge">Top 20</span> : <span className="watch">watch</span>}
                   </td>
                   <td className="compare-cell">
+                    {/*
+                      A chart glyph rather than a plus. This picks stocks for the
+                      comparison chart and stops at four, because five price
+                      lines on one chart cannot be read - but as a "+" beside a
+                      stock it read as "add to my portfolio", and hitting the
+                      limit of four read as the portfolio refusing a fifth
+                      holding.
+                    */}
                     <button
                       className={compare.includes(s.ticker) ? "on" : ""}
                       onClick={() => toggleCompare(s.ticker)}
-                      title="Add to compare"
+                      title={
+                        compare.includes(s.ticker)
+                          ? `Remove ${s.ticker} from the comparison chart`
+                          : `Compare ${s.ticker} on one chart (up to ${MAX_COMPARE})`
+                      }
+                      aria-label={`Compare ${s.ticker} on one chart`}
                     >
-                      {compare.includes(s.ticker) ? "✓" : "+"}
+                      {compare.includes(s.ticker) ? "✓" : "◫"}
                     </button>
+                  </td>
+                  <td className="add-pf-col">
+                    <AddToPortfolio ticker={s.ticker} held={held.has(s.ticker)} />
                   </td>
                 </tr>
               );
