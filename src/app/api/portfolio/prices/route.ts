@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { getHistory } from "@/lib/data";
+import { getHistory, getPriceAsOf, getRankings } from "@/lib/data";
 import { dailyHistory, sp500History, usingPaidPrices } from "@/lib/prices";
-import { MAX_HOLDINGS, normaliseTicker, type Bar } from "@/lib/portfolio";
+import { CHART_LAG_DAYS, daysBetween, MAX_HOLDINGS, normaliseTicker, type Bar } from "@/lib/portfolio";
 import type { Candle } from "@/lib/types";
 
 /**
@@ -16,10 +16,16 @@ import type { Candle } from "@/lib/types";
  *
  * SPEND. The feed is a paid subscription with a daily call budget, and this is
  * a public endpoint, so the budget is protected rather than trusted: a request
- * may name at most MAX_HOLDINGS tickers, at most MAX_LIVE of them can trigger a
- * live download, and anything downloaded is memoised for an hour so a page that
- * re-renders costs nothing. The worst a stranger can do is warm the cache for
- * six symbols.
+ * may name at most MAX_HOLDINGS tickers, and anything downloaded is memoised
+ * for an hour so a page that re-renders costs nothing.
+ *
+ * That cap used to be six, which was wrong by an order of magnitude and broke
+ * the thing this endpoint exists for: someone holding twenty ordinary stocks
+ * got ten of them priced and ten reported as missing, because only the handful
+ * the scan happens to cover and six more could be fetched. The budget is a
+ * hundred thousand calls a day; a full portfolio is forty. Downloads run a few
+ * at a time so a large portfolio does not arrive as one burst and earn a rate
+ * limit.
  *
  * WHICH CLOSE. The paid feed's raw close is not split-adjusted - a 4:1 split
  * reads as a 75% loss on it - while the adjusted close is scaled to a different
@@ -35,8 +41,21 @@ export const dynamic = "force-dynamic";
 
 /** Tickers named in one request. Matches the holdings ceiling. */
 const MAX_TICKERS = MAX_HOLDINGS;
-/** Tickers one request may download from the paid feed. */
-const MAX_LIVE = 6;
+/**
+ * Tickers one request may download from the paid feed.
+ *
+ * A whole portfolio, because a portfolio is the unit this serves. Anything less
+ * leaves holdings unpriced and silently absent from the totals.
+ */
+const MAX_LIVE = MAX_HOLDINGS;
+/** Downloads in flight at once, to stay under the feed's rate limit. */
+const LIVE_CONCURRENCY = 6;
+/**
+ * How far behind the newest local file a stored series may be before it is
+ * treated as abandoned and downloaded again. Matches the chart's own tolerance
+ * for lag, so a file that would be dropped from the chart is refreshed instead.
+ */
+const STALE_LOCAL_DAYS = CHART_LAG_DAYS;
 const LIVE_TTL_MS = 60 * 60 * 1000;
 const BENCH_TTL_MS = 6 * 60 * 60 * 1000;
 
@@ -90,11 +109,52 @@ export async function GET(req: Request) {
   const missing: string[] = [];
   const needLive: string[] = [];
 
+  // Read every local file first, then decide which are still current.
+  const local = new Map<string, Bar[]>();
   for (const t of tickers) {
-    const local = getHistory(t);
-    if (local && local.length > 0) {
-      series[t] = toBars(local);
-      continue;
+    const candles = getHistory(t);
+    if (candles && candles.length > 0) local.set(t, toBars(candles));
+  }
+
+  /*
+    ABANDONED FILES MUST NOT WIN OVER LIVE DATA.
+
+    The history folder accumulates downloads from every universe the scan has
+    ever covered, and it only refreshes the tickers in the current one. So a
+    name the scan dropped keeps a file that stopped updating months ago - and
+    preferring local data meant serving that instead of fetching the real thing.
+    One such file, on a holding the owner still owns, cut six weeks off the
+    chart for every other holding.
+
+    The scan writes all of its files on the same day, so the close the current
+    universe carries dates the live set. Anything much older than that was
+    abandoned, and is refetched. In the ordinary case every file shares that
+    date, nothing is stale, and nothing is downloaded.
+
+    The reference has to come from the scan's own universe rather than from the
+    newest file in the request. A portfolio of twenty ordinary large caps - none
+    of which this small-cap scan ranks - can consist entirely of abandoned
+    files, and measuring them against each other would find them all perfectly
+    current and serve every one of them stale.
+  */
+  const ranked = getRankings()?.stocks ?? [];
+  const freshestLocal =
+    getPriceAsOf(ranked.map((r) => r.ticker)) ??
+    [...local.values()].reduce((max, bars) => {
+      const t = bars[bars.length - 1].t;
+      return t > max ? t : max;
+    }, "");
+
+  for (const t of tickers) {
+    const bars = local.get(t);
+    if (bars) {
+      const end = bars[bars.length - 1].t;
+      if (daysBetween(end, freshestLocal) <= STALE_LOCAL_DAYS) {
+        series[t] = bars;
+        continue;
+      }
+      // Stale: fall through to a live download, but keep it as the fallback so
+      // a failed fetch leaves an old chart rather than no chart.
     }
     const memo = cached(t, LIVE_TTL_MS);
     if (memo) {
@@ -108,19 +168,29 @@ export async function GET(req: Request) {
   // valued at zero, so the page can say which holdings it could not price.
   for (const t of needLive.slice(MAX_LIVE)) missing.push(t);
 
+  // A shared queue rather than one promise per ticker: forty simultaneous
+  // downloads is how a paid feed answers with 429s instead of prices.
+  const queue = needLive.slice(0, MAX_LIVE);
+  let next = 0;
   await Promise.all(
-    needLive.slice(0, MAX_LIVE).map(async (t) => {
-      try {
-        const candles = await dailyHistory(t, 520, "2y");
-        if (candles && candles.length > 0) {
-          const bars = toBars(candles);
-          liveCache.set(t, { bars, at: Date.now() });
-          series[t] = bars;
-        } else {
-          missing.push(t);
+    Array.from({ length: Math.min(LIVE_CONCURRENCY, queue.length) }, async () => {
+      for (let i = next++; i < queue.length; i = next++) {
+        const t = queue[i];
+        try {
+          const candles = await dailyHistory(t, 520, "2y");
+          if (candles && candles.length > 0) {
+            const bars = toBars(candles);
+            liveCache.set(t, { bars, at: Date.now() });
+            series[t] = bars;
+          } else if (local.has(t)) {
+            series[t] = local.get(t)!;
+          } else {
+            missing.push(t);
+          }
+        } catch {
+          if (local.has(t)) series[t] = local.get(t)!;
+          else missing.push(t);
         }
-      } catch {
-        missing.push(t);
       }
     }),
   );

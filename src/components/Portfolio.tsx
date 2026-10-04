@@ -11,10 +11,12 @@ import {
   maxDrawdown,
   returnIndex,
   sectorMix,
+  isFresh,
   summarise,
   unchartable,
   type Bar,
   type Holding,
+  type LiveQuote,
   type TickerMeta,
 } from "@/lib/portfolio";
 import type { Exit } from "@/lib/exits";
@@ -48,6 +50,41 @@ interface PricePayload {
   source: string;
 }
 
+interface QuotePayload {
+  quotes: Record<string, LiveQuote>;
+  missing: string[];
+  at: string;
+}
+
+/**
+ * How often the page asks for new prices while it is open.
+ *
+ * The server holds each answer for forty-five seconds, so this is the rate the
+ * page sees changes at, not the rate the paid feed is called at. Polling stops
+ * entirely when the tab is hidden: a phone in a pocket has no one to show a
+ * price to, and a page left open overnight should not spend a night's worth of
+ * requests on nobody.
+ */
+const POLL_MS = 60_000;
+
+/**
+ * The slower rate once prices have stopped moving.
+ *
+ * Outside market hours every poll returns the same close. Backing off keeps a
+ * page left open all weekend from asking a thousand times for Friday's number.
+ */
+const IDLE_POLL_MS = 10 * 60_000;
+
+/**
+ * How old the scan may get before the page says something has gone wrong.
+ *
+ * Scans run every two days, but they run on trading days, so a Friday scan is
+ * ordinarily four days old by Tuesday and a long weekend stretches that
+ * further. Warning at five would have cried wolf every weekend, and a warning
+ * that is usually wrong is one nobody reads on the day it is right.
+ */
+const STALE_SCAN_DAYS = 6;
+
 const money = (n: number, digits = 2) =>
   n.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: digits });
 
@@ -74,9 +111,12 @@ export default function Portfolio({
   const [holdings, setHoldings] = useState<Holding[]>([]);
   const [ready, setReady] = useState(false);
   const [data, setData] = useState<PricePayload | null>(null);
+  const [quotes, setQuotes] = useState<QuotePayload | null>(null);
   const [loading, setLoading] = useState(false);
   const [offered, setOffered] = useState<Holding[] | null>(null);
   const [copied, setCopied] = useState(false);
+  /** What the quick-start splits across the model's twenty. */
+  const [startAmount, setStartAmount] = useState("10000");
 
   // Storage and the URL fragment are both read once, on mount, because neither
   // exists during the server render.
@@ -134,15 +174,107 @@ export default function Portfolio({
     };
   }, [tickers, ready]);
 
-  /** Latest close per ticker, with the scan's price as the fallback. */
+  /**
+   * Keeps prices current while the page is open.
+   *
+   * Three rules, each from something that would otherwise go wrong:
+   *   - nothing polls while the tab is hidden, so a page left open does not
+   *     spend the night asking for prices nobody is looking at;
+   *   - coming back to the tab refreshes at once rather than waiting out the
+   *     interval, because a stale number is exactly what someone returning to
+   *     the page is about to read;
+   *   - once the newest print is old - evenings, weekends - the interval backs
+   *     off, since every request would return the same close.
+   */
+  useEffect(() => {
+    if (!ready || tickers.length === 0) {
+      setQuotes(null);
+      return;
+    }
+
+    let live = true;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+
+    const poll = async () => {
+      try {
+        const res = await fetch(`/api/portfolio/quote?t=${encodeURIComponent(tickers)}`);
+        if (res.ok && live) {
+          const json = (await res.json()) as QuotePayload;
+          setQuotes(json);
+          return json;
+        }
+      } catch {
+        // Keep whatever prices are already on screen. A refresh that fails is a
+        // price that did not move, not a page that should break.
+      }
+      return null;
+    };
+
+    const schedule = (json: QuotePayload | null) => {
+      if (!live) return;
+      const newest = Object.values(json?.quotes ?? {}).reduce(
+        (max, q) => (q.at > max ? q.at : max),
+        "",
+      );
+      const wait = newest && isFresh(newest) ? POLL_MS : IDLE_POLL_MS;
+      timer = setTimeout(() => void tick(), wait);
+    };
+
+    const tick = async (first = false) => {
+      // The first fetch always runs. A page can load in a background tab - or
+      // in a pane the browser considers hidden - and gating the opening request
+      // on visibility left those showing closing prices with no live quote ever
+      // requested, silently, for as long as the tab stayed in the background.
+      // Only the repeats are conditional.
+      if (!first && document.visibilityState !== "visible") return; // resumes on focus
+      schedule(await poll());
+    };
+
+    void tick(true);
+
+    const onVisible = () => {
+      if (document.visibilityState !== "visible") {
+        clearTimeout(timer);
+        return;
+      }
+      void tick();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+
+    return () => {
+      live = false;
+      clearTimeout(timer);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [tickers, ready]);
+
+  /**
+   * The price each holding is valued at.
+   *
+   * Three sources, worst to best: the scan's own price, the last close in the
+   * downloaded history, and the live quote. Later ones overwrite earlier ones,
+   * so a holding the live feed cannot answer for still gets valued rather than
+   * dropping out of the totals.
+   */
   const prices = useMemo(() => {
     const out: Record<string, number> = { ...scanPrices };
     for (const [ticker, bars] of Object.entries(data?.series ?? {})) {
       const last = bars[bars.length - 1];
       if (last && last.c > 0) out[ticker] = last.c;
     }
+    for (const [ticker, q] of Object.entries(quotes?.quotes ?? {})) {
+      if (q.price > 0) out[ticker] = q.price;
+    }
     return out;
-  }, [data, scanPrices]);
+  }, [data, quotes, scanPrices]);
+
+  /** The newest print time across the live quotes, and whether it counts as current. */
+  const liveAt = useMemo(
+    () =>
+      Object.values(quotes?.quotes ?? {}).reduce((max, q) => (q.at > max ? q.at : max), ""),
+    [quotes],
+  );
+  const live = liveAt.length > 0 && isFresh(liveAt);
 
   const positions = useMemo(() => buildPositions(holdings, prices, meta), [holdings, prices, meta]);
   const summary = useMemo(() => summarise(positions), [positions]);
@@ -228,17 +360,27 @@ export default function Portfolio({
     }
   }
 
+  /**
+   * Fills the page with the model's twenty, split equally.
+   *
+   * Equal weight is the model's own rule, so the split is the total divided by
+   * twenty rather than anything cleverer. Priced and dated at the close those
+   * prices came from: stamping them today would date every position past the
+   * newest price available for it, and then the chart has nothing to draw.
+   *
+   * A starting point to correct, not a claim about what anyone owns, which is
+   * why the page says so next to the button.
+   */
   function loadTop20() {
+    const total = Number(startAmount);
+    if (!Number.isFinite(total) || total <= 0) return;
+    const each = total / top20.length;
     const next = top20
       .map((s) =>
         makeHolding({
           id: `${s.ticker}-${Date.now()}-${s.rank}`,
           ticker: s.ticker,
-          // One model slot each, at the scan price and dated the close that
-          // price came from. Stamping it today, or even with the scan's own
-          // timestamp, would date the position past the newest price available
-          // for it - and then the chart has nothing to draw.
-          shares: scanPrices[s.ticker] > 0 ? Number((1000 / scanPrices[s.ticker]).toFixed(4)) : 1,
+          shares: scanPrices[s.ticker] > 0 ? Number((each / scanPrices[s.ticker]).toFixed(4)) : 1,
           cost: scanPrices[s.ticker] ?? 0,
           at: scanPriceAsOf,
         }),
@@ -298,17 +440,46 @@ export default function Portfolio({
             have done in the S&amp;P 500.
           </p>
           {top20.length > 0 && (
-            <p>
-              <button type="button" className="btn-outline" onClick={loadTop20}>
-                Start from the model&apos;s top 20
-              </button>
-            </p>
+            <>
+              <div className="start-row">
+                <label className="control-label" htmlFor="start-amount">
+                  Total invested
+                </label>
+                <div className="alloc-field">
+                  <span className="alloc-currency">$</span>
+                  <input
+                    id="start-amount"
+                    className="alloc-input"
+                    type="number"
+                    min="0"
+                    step="500"
+                    value={startAmount}
+                    onChange={(e) => setStartAmount(e.target.value)}
+                  />
+                </div>
+                <button
+                  type="button"
+                  className="btn"
+                  onClick={loadTop20}
+                  disabled={!(Number(startAmount) > 0)}
+                >
+                  Add the top {top20.length}
+                </button>
+              </div>
+              <p className="disclaimer" style={{ marginTop: 4 }}>
+                {Number(startAmount) > 0 ? (
+                  <>
+                    {money(Number(startAmount) / top20.length, 0)} in each of the model&apos;s{" "}
+                    {top20.length}, equally weighted,
+                  </>
+                ) : (
+                  <>Equally weighted across the model&apos;s {top20.length},</>
+                )}{" "}
+                priced and dated at the last close in the data ({scanPriceAsOf}). A starting point
+                to edit into what you actually bought, not a record of anything you own.
+              </p>
+            </>
           )}
-          <p className="disclaimer" style={{ marginTop: 4 }}>
-            That button fills in all twenty at $1,000 each, priced and dated at the last close in
-            the data ({scanPriceAsOf}). It is a starting point to edit, not a record of anything
-            you own.
-          </p>
         </div>
       ) : (
         <>
@@ -384,22 +555,52 @@ export default function Portfolio({
             </div>
           </div>
 
+          {/*
+            What the totals are priced at, said exactly.
+            "Live" only when the feed's own print time is recent. Outside market
+            hours the newest real price IS the last close, and calling that live
+            would be the one lie this page cannot afford.
+          */}
           <p className="meta-line portfolio-asof">
-            {priceDates.oldest && priceDates.newest !== priceDates.oldest ? (
+            {live ? (
+              <>
+                <span className="live-dot" aria-hidden="true" />
+                Live prices, last trade{" "}
+                {new Date(liveAt).toLocaleTimeString("en-US", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+                . Refreshing every minute while this page is open
+              </>
+            ) : liveAt ? (
+              <>
+                Markets are closed. Valued at the last trade,{" "}
+                {new Date(liveAt).toLocaleString("en-US", {
+                  dateStyle: "medium",
+                  timeStyle: "short",
+                })}
+              </>
+            ) : priceDates.oldest && priceDates.newest !== priceDates.oldest ? (
               <>
                 Valued at each holding&apos;s last close, {priceDates.oldest} to{" "}
-                {priceDates.newest} — the scanned names are the older date, anything fetched live is
-                the newer one
+                {priceDates.newest}
               </>
             ) : (
               <>Valued at the close on {asOf}</>
             )}
             {loading ? " · fetching prices…" : ""}
+            {quotes?.missing.length ? (
+              <>
+                {" "}
+                · no live quote for {quotes.missing.join(", ")}, so{" "}
+                {quotes.missing.length === 1 ? "it is" : "they are"} valued at the last close
+              </>
+            ) : null}
             {data?.missing.length ? (
               <>
                 {" "}
-                · no price found for {data.missing.join(", ")}, so{" "}
-                {data.missing.length === 1 ? "it is" : "they are"} left out of the totals
+                · no price history for {data.missing.join(", ")}, so{" "}
+                {data.missing.length === 1 ? "it is" : "they are"} off the chart
               </>
             ) : null}
           </p>
@@ -411,11 +612,11 @@ export default function Portfolio({
             whether to sell deserves to know the prices are a fortnight old
             before they act on them.
           */}
-          {scanAge > 4 && (
+          {scanAge > STALE_SCAN_DAYS && (
             <p className="stale-warn">
               The last completed scan was {scanAge} days ago, on {generatedAt.slice(0, 10)}. Scans
-              run every two days, so something has stopped — these prices and every rank below are
-              that old.
+              run every two days, so something has stopped — the ranks and scores below are that
+              old. Prices are separate and still current.
             </p>
           )}
 
@@ -458,8 +659,10 @@ export default function Portfolio({
             {offChart.length > 0 && curve.length >= 2 && (
               <p className="check-foot">
                 {offChart.join(", ")} {offChart.length === 1 ? "is" : "are"} counted in the totals
-                above but not on this chart: there is no price history covering{" "}
-                {offChart.length === 1 ? "it" : "them"} since the buy date.
+                above but not on this chart: the price history for{" "}
+                {offChart.length === 1 ? "it" : "them"} does not cover the period the other
+                holdings do, either because the shares were bought after the last close available
+                or because that feed stopped updating.
               </p>
             )}
             {curve.length >= 2 && last && priceAsOf && last.t < priceAsOf && (

@@ -271,15 +271,29 @@ describe("equityCurve", () => {
   });
 
   it("stops on the last day every holding has a price, not the last day any does", () => {
-    // AAA is priced from the scan and stops on the 3rd; BBB was fetched live and
-    // runs to the 9th. Charting to the 9th would hold AAA flat for six days
-    // against a live index and show a divergence that is pure data artefact.
+    // Ordinary lag: AAA stops on the 3rd, BBB runs to the 5th. Charting to the
+    // 5th would hold AAA flat for two days against a moving index and show a
+    // divergence that is pure data artefact.
     const curve = equityCurve({
       holdings: [hold("AAA", 1, 100, "2026-01-01"), hold("BBB", 1, 100, "2026-01-01")],
-      series: { AAA: flat(100, 3), BBB: flat(100, 9) },
-      bench: flat(1000, 9),
+      series: { AAA: flat(100, 3), BBB: flat(100, 5) },
+      bench: flat(1000, 5),
     });
     assert.equal(curve[curve.length - 1].t, "2026-01-03");
+    assert.equal(curve[curve.length - 1].value, 200, "both holdings still counted");
+  });
+
+  it("drops a series that has fallen weeks behind instead of truncating the chart", () => {
+    // One abandoned download - a leftover from a universe the scan no longer
+    // covers - must not cut every other holding's chart back to its own last
+    // day. It leaves the chart and gets named instead.
+    const holdings = [hold("AAA", 1, 100, "2026-01-01"), hold("BBB", 1, 100, "2026-01-01")];
+    const series = { AAA: flat(100, 3), BBB: flat(100, 20) };
+    const curve = equityCurve({ holdings, series, bench: flat(1000, 20) });
+
+    assert.equal(curve[curve.length - 1].t, "2026-01-20", "the fresh holding still charts in full");
+    assert.equal(curve[curve.length - 1].value, 100, "only BBB is on the line");
+    assert.deepEqual(unchartable(holdings, series), ["AAA"], "and the page can say which");
   });
 
   it("stops where the holdings' prices stop, not where the index does", () => {

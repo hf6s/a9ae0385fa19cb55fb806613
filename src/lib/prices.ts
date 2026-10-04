@@ -25,7 +25,7 @@ function yahooSymbol(ticker: string): string {
 }
 
 /** BRK.B -> BRK-B.US, ^GSPC -> GSPC.INDX */
-function eodhdSymbol(ticker: string): string {
+export function eodhdSymbol(ticker: string): string {
   if (ticker === "^GSPC") return "GSPC.INDX";
   return `${ticker.replace(/\./g, "-")}.US`;
 }

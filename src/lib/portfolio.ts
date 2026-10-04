@@ -311,8 +311,10 @@ export interface CurveInput {
  * the other could not be measured over.
  */
 export function equityCurve({ holdings, series, bench }: CurveInput): CurvePoint[] {
-  const parts = holdings
-    .map((h) => {
+  // Same rule the page's notice uses, so what is drawn and what is said about
+  // it can never drift apart.
+  const parts = splitByChartability(holdings, series)
+    .charted.map((h) => {
       const bars = series[h.ticker];
       if (!bars || bars.length === 0) return null;
       const cursor = new Cursor(bars);
@@ -400,14 +402,78 @@ export function equityCurve({ holdings, series, bench }: CurveInput): CurvePoint
  * not match the number above it.
  */
 export function unchartable(holdings: Holding[], series: Record<string, Bar[]>): string[] {
-  const out: string[] = [];
-  for (const h of holdings) {
+  return splitByChartability(holdings, series).skipped;
+}
+
+/**
+ * How far behind the rest a holding's prices may fall and still be charted.
+ *
+ * Feeds do not all end on the same day, and a day or two of lag is ordinary.
+ * Weeks is not: it means that series stopped being maintained.
+ */
+export const CHART_LAG_DAYS = 5;
+
+export interface Chartability {
+  charted: Holding[];
+  /** Tickers left off the chart, each for one of the reasons below. */
+  skipped: string[];
+}
+
+/**
+ * Decides which holdings the chart can honestly include.
+ *
+ * Three reasons to leave one out, and the third is the one that took real data
+ * to find. The chart can only run as far as its least current holding, or it
+ * would hold that position flat while the others moved. With a single stale
+ * series in the set - an orphaned download from a universe the scan no longer
+ * covers - that rule silently cut six weeks off the chart for every other
+ * holding. So a series that has fallen weeks behind the rest is dropped and
+ * named, rather than being allowed to drag the whole picture back with it.
+ *
+ * One implementation, used by both the curve and the notice beside it. Two
+ * would eventually disagree, and then the page would omit a holding from the
+ * chart while claiming it was on it.
+ */
+export function splitByChartability(
+  holdings: Holding[],
+  series: Record<string, Bar[]>,
+): Chartability {
+  const skipped: string[] = [];
+  const skip = (ticker: string) => {
+    if (!skipped.includes(ticker)) skipped.push(ticker);
+  };
+
+  // Pass one: a series has to exist and reach past the buy date.
+  const covered = holdings.filter((h) => {
     const bars = series[h.ticker];
     if (!bars || bars.length === 0 || bars[bars.length - 1].t < h.at) {
-      if (!out.includes(h.ticker)) out.push(h.ticker);
+      skip(h.ticker);
+      return false;
     }
-  }
-  return out;
+    return true;
+  });
+
+  if (covered.length === 0) return { charted: [], skipped };
+
+  const endOf = (h: Holding) => {
+    const bars = series[h.ticker];
+    return bars[bars.length - 1].t;
+  };
+  const newest = covered.reduce((max, h) => {
+    const t = endOf(h);
+    return t > max ? t : max;
+  }, "");
+
+  // Pass two: and it has to be roughly as current as the others.
+  const charted = covered.filter((h) => {
+    if (daysBetween(endOf(h), newest) > CHART_LAG_DAYS) {
+      skip(h.ticker);
+      return false;
+    }
+    return true;
+  });
+
+  return { charted, skipped };
 }
 
 export interface ReturnPoint {
@@ -529,4 +595,32 @@ export function decodeHoldings(encoded: string): Holding[] | null {
     out.push(h);
   }
   return out;
+}
+
+/** A live price, as the page receives it. */
+export interface LiveQuote {
+  ticker: string;
+  price: number;
+  prevClose: number | null;
+  /** ISO time the feed says this price printed. */
+  at: string;
+}
+
+/**
+ * Whether a print time is recent enough to call the price current.
+ *
+ * Outside market hours the newest real price is the last close, which is
+ * correct and is not live. Twenty minutes covers a delayed feed during the
+ * session without ever describing a Friday close on a Sunday as current, which
+ * is the whole reason the page reports the feed's print time instead of the
+ * time it asked.
+ *
+ * Lives here rather than beside the fetching code so the browser can call it
+ * without importing the server's feed client.
+ */
+export function isFresh(at: string, now = Date.now()): boolean {
+  const t = Date.parse(at);
+  if (!Number.isFinite(t) || t <= 0) return false;
+  const age = now - t;
+  return age >= 0 && age < 20 * 60 * 1000;
 }

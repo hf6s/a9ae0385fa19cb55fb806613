@@ -2888,3 +2888,55 @@ table.rolling-table tbody tr:last-child td {
 :root[data-theme="light"] .seg button.active {
   color: #06281c;
 }
+
+/* live price indicator */
+
+.live-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  margin-right: 7px;
+  vertical-align: middle;
+  animation: live-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes live-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 rgba(79, 209, 165, 0.45);
+  }
+  50% {
+    opacity: 0.55;
+    box-shadow: 0 0 0 5px rgba(79, 209, 165, 0);
+  }
+}
+
+/*
+  A pulse is decorative: it says nothing the text beside it does not. Someone
+  who asked for less motion still gets the words.
+*/
+@media (prefers-reduced-motion: reduce) {
+  .live-dot {
+    animation: none;
+  }
+}
+
+.start-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 18px 0 6px;
+}
+
+.start-row .control-label {
+  align-self: center;
+}
+
+.start-row .alloc-field {
+  max-width: 180px;
+}
