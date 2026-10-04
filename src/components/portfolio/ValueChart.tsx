@@ -83,7 +83,8 @@ export default function ValueChart({
   const index = useMemo(() => returnIndex(view), [view]);
 
   useEffect(() => {
-    if (!hostRef.current || view.length < 2) return;
+    const host = hostRef.current;
+    if (!host || view.length < 2) return;
 
     const green = cssVar("--accent", "#4fd1a5");
     const blue = cssVar("--q", "#6ea8fe");
@@ -91,7 +92,7 @@ export default function ValueChart({
     const border = cssVar("--border", "#232a37");
     const grid = cssVar("--bg-hover", "#171c26");
 
-    const chart: IChartApi = createChart(hostRef.current, {
+    const chart: IChartApi = createChart(host, {
       height: 360,
       layout: { background: { type: ColorType.Solid, color: "transparent" }, textColor: dim },
       grid: { vertLines: { color: grid }, horzLines: { color: grid } },
@@ -169,7 +170,27 @@ export default function ValueChart({
     });
 
     chart.timeScale().fitContent();
-    return () => chart.remove();
+
+    /*
+      And again whenever the width changes.
+
+      autoSize resizes the canvas but keeps the bar spacing fitContent chose, so
+      a chart built before the layout settled holds the spacing it worked out
+      for a narrow box and anchors it to the right edge. The canvas then grows
+      to full width with every point crammed into the last tenth of it and empty
+      space to the left - which reads as "nothing happened until last week"
+      rather than as a chart that has not been refitted.
+    */
+    const refit = () => chart.timeScale().fitContent();
+    const frame = requestAnimationFrame(refit);
+    const ro = new ResizeObserver(refit);
+    ro.observe(host);
+
+    return () => {
+      cancelAnimationFrame(frame);
+      ro.disconnect();
+      chart.remove();
+    };
   }, [view, index, mode, hasBench, theme]);
 
   if (curve.length < 2) {
