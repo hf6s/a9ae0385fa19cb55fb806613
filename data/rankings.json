@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-03T11:12:08.242Z",
+  "generatedAt": "2026-10-05T13:16:34.858Z",
   "universeScanned": 905,
   "passedFilters": 118,
   "skippedFilters": [
@@ -1712,7 +1712,7 @@
       "finalScore": 54.1,
       "recommended": false,
       "nextEarningsDate": null,
-      "dividendTtm": 0.93,
+      "dividendTtm": 1.26,
       "metrics": {
         "pe": 12.628985682264176,
         "pb": 2.2566469837623706,
